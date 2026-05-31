@@ -34,7 +34,7 @@ enum RotateResult {
 /// Gate: runs [buildFn] (defaults to the workspace `afterFixCommand`) between
 /// archiving and seeding. If the build fails the rotation is aborted — the
 /// archive already written remains, but the live handoff is not overwritten.
-Future<RotateResult>  runRotate({
+Future<RotateResult> runRotate({
   FileIO? io,
   String? projectRootOverride,
   Never Function(int code)? exitFn,
@@ -51,7 +51,8 @@ Future<RotateResult>  runRotate({
   print('═══════════════════════════════════════');
 
   // 1 — Registry lookup.
-  final projectRoot = projectRootOverride ?? await (await detectGitContext())?.root;
+  final projectRoot =
+      projectRootOverride ?? await (await detectGitContext())?.root;
   if (projectRoot == null) {
     print('✗ Not inside a git repository. Cannot detect project.');
     exit_(1);
@@ -156,12 +157,9 @@ WorkspaceConfig _loadConfig(FileIO fileIO, String workspace) {
 }
 
 Future<bool> _defaultBuild(String command) async {
-  final parts = command.split(' ');
-  final result = await Process.run(
-    parts.first,
-    parts.skip(1).toList(),
-    runInShell: true,
-  );
+  final parts = command.trim().split(RegExp(r"\s+"));
+  if (parts.isEmpty || parts.first.isEmpty) return true;
+  final result = await Process.run(parts.first, parts.skip(1).toList());
   return result.exitCode == 0;
 }
 
