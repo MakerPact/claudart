@@ -1,4 +1,5 @@
 import 'session_state.dart';
+import 'utilities.dart';
 import '../teardown_utils.dart';
 export 'utilities.dart';
 
@@ -71,7 +72,7 @@ SyncCheckResult checkSkillsSync(
 
   if (!state.hasActiveContent) return SyncCheckResult.clean();
 
-  final rootCauseConfirmed = !_isBlank(state.rootCause);
+  final rootCauseConfirmed = !SessionState.isBlank(state.rootCause);
   if (!rootCauseConfirmed) return SyncCheckResult.clean();
 
   final pendingHasBranch = _pendingHasBranch(skillsContent, state.branch);
