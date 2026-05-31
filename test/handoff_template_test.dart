@@ -48,6 +48,46 @@ void main() {
     });
   });
 
+  group('stampHandoffUpdated', () {
+    test('replaces existing updated line', () {
+      final input = '''# Agent Handoff
+
+> Session started: 2026-03-15 | Branch: main
+> Updated: 2025-01-01T00:00:00
+> Source of truth between suggest and debug agents.
+''';
+      final result = stampHandoffUpdated(input);
+      expect(result, contains('> Updated: '));
+      expect(result, isNot(contains('2025-01-01T00:00:00')));
+      final lines = result.split('\n');
+      expect(lines.where((l) => l.startsWith('> Updated: ')).length, 1);
+    });
+
+    test('inserts after started line if updated line is missing', () {
+      final input = '''# Agent Handoff
+
+> Session started: 2026-03-15 | Branch: main
+> Source of truth between suggest and debug agents.
+''';
+      final result = stampHandoffUpdated(input);
+      expect(result, contains('> Session started: 2026-03-15 | Branch: main\n> Updated: '));
+      final lines = result.split('\n');
+      expect(lines.where((l) => l.startsWith('> Updated: ')).length, 1);
+    });
+
+    test('prepends to first blockquote if neither is present', () {
+      final input = '''# Agent Handoff
+
+> Source of truth between suggest and debug agents.
+''';
+      final result = stampHandoffUpdated(input);
+      expect(result, contains('> Updated: '));
+      final lines = result.split('\n');
+      expect(lines.where((l) => l.startsWith('> Updated: ')).length, 1);
+      expect(result, contains('\n> Source of truth'));
+    });
+  });
+
   group('blankHandoff', () {
     test('is non-empty', () {
       expect(blankHandoff, isNotEmpty);
