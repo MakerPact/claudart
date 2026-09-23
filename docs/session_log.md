@@ -5,6 +5,125 @@
 
 ---
 
+## 2026-09-22 — PR #46 merged: StepResult metadata, headless teardown, README rewrite, plus 5 audit follow-ups
+
+### What this session did
+
+Closed out an earlier codebase audit's 5 remaining actionable follow-ups, then
+pushed 4 rounds of fixes against PR #46 in response to Copilot's actual
+re-reviews (not assumed-resolved), then merged. Every fix ran through
+claudart's own self-hosting workflow — `setup`/confirmed-KT → `save` →
+implement → `dart analyze`/`custom_lint`/`test` → real `teardown` — closing
+the self-hosting loop each time, per the standing law this project holds
+itself to.
+
+### Audit follow-ups (5 items, item 2 skipped)
+
+1. **`tool/claudart_lints` analyzer strictness** — added its own
+   `analysis_options.yaml` matching the root workspace's shape (minus the
+   circular `custom_lint` self-reference), fixed 3 `deprecated_member_use`
+   warnings (`ErrorReporter` → `DiagnosticReporter`, analyzer 8.x's rename).
+2. **Dead `ModelTier` methods — skipped.** The audit's premise ("zero call
+   sites") was wrong: zedup's own `test/features/chat/claudart_model_test.dart`
+   imports `AgentModel` from `package:claudart/claudart.dart` and exercises
+   `bestForLookup`/`bestForAnalysis`/`bestForExplore` directly. Deleting them
+   would have broken zedup's test suite. No change made.
+3. **Branch-display bug cluster** — `kill.dart`, `rotate.dart`, `save.dart`,
+   `setup.dart` all displayed the handoff's stale `state.branch` instead of
+   the live `detectGitContext()` branch, same bug already fixed once in
+   `status.dart`/`launch.dart`. Fixed all 4, one regression test each.
+4. **`ClaudartSurface`/`SurfaceExecutorConfig` test coverage** — zero tests
+   despite being real, zedup-consumed public API. Added 8 tests covering both
+   surfaces' declaration, build success, and runner/strict wiring — each
+   printing its observed value so `dart test` output reads as a per-case
+   report, not silent pass/fail.
+5. **`workspace/workspace_config.dart` test coverage** — `StackType`,
+   `WorkspaceRole`, `ProofNotation`, `WorkspaceConfig` (distinct from the
+   already-tested, unrelated `lib/config.dart` class of the same name) had
+   zero tests. Added 22, enum-owned loop generating one `test()` per
+   `StackType` variant (loop wraps `test()`, not inside it) plus
+   `WorkspaceConfig.load()` coverage for missing-file/malformed-json/
+   defaults/silent-drop paths.
+
+### PR #46 review rounds (4 rounds, post the audit follow-ups)
+
+Copilot's reviews were verified against the actual code each round, not
+trusted at face value — one finding ("unused analyzer error listener import"
+in `claudart_lints.dart`) was checked twice by actually removing the import
+and confirming `dart analyze` broke with `undefined_class DiagnosticReporter`
+— a confirmed false positive, left open on GitHub with an explanation rather
+than silently resolved.
+
+Real findings fixed:
+- Headless teardown's hot-files sentinel (`'unspecified'`) was written into
+  `skills.md` as if it were a real file.
+- The new stream-to-metadata parsing (`_accumulateThinking`) had no test
+  seam — extracted `consumeClaudeStream` so it's testable without spawning a
+  real `claude` subprocess.
+- **HIGH severity**: `_accumulateThinking`'s `jsonDecode(line) as
+  Map<String, dynamic>` cast threw an uncaught `TypeError` (not the
+  `FormatException` the try/catch anticipated) on valid-but-non-object JSON
+  at any nested level. Guarded every object/string access through
+  `_asJsonMap`/`_asJsonString` helpers instead. Verified the fix was real by
+  reverting it locally and confirming the regression test failed with
+  exactly the predicted error before restoring.
+- `step_status.dart`'s doc comment showed `StepStatus.fromEvent` as the call
+  syntax; `fromEvent` is a static member of the `StepStatusFromEvent`
+  extension, so that line doesn't compile. Compiler-probed to confirm,
+  corrected the doc comment.
+- Extracted `parseClaudeResultLine` out of `defaultClaudeRunner` so
+  `stop_reason`/`duration_ms`/`num_turns` extraction is directly testable —
+  closed the remaining half of the stream-metadata coverage gap.
+- Added an executor-level test asserting `AgentCompleted` actually forwards
+  `StepResult`'s metadata fields, not just that the parsing helpers produce
+  them correctly in isolation.
+- `teardown.dart`'s headless mode printed a "Headless decisions" summary
+  before archiving a *resolved* fix, but the non-resolved reminder path
+  wrote its archive entry with no equivalent summary — a write with no
+  human prompt and no visible confirmation. Added a matching summary print.
+- Manually reviewed the full PR diff (standing in for Copilot while it hit a
+  quota limit) and found two more real, pre-existing README issues: the
+  "Full command table"'s `bin/claudart.dart` line citations were wrong from
+  the commit that wrote them (traced to `880866e`), and `teardown --headless`
+  was never documented anywhere. Fixed both.
+- 5 of 6 GitHub review threads marked resolved with commit citations; the
+  1 false positive left open with its verification method attached.
+
+### Merge
+
+PR #46 merged as `e75ba27` (14 commits, `main` fast-forwarded, feature branch
+deleted locally and remotely). `claudart compile` re-run afterward — the
+installed `~/bin/claudart` binary had gone stale mid-session once already
+(its `save`/`teardown` output still showed `Branch : unknown` after the
+branch-display fix landed in source, until recompiled), which is itself a
+live demonstration of the self-hosting law: claudart caught its own bug via
+its own workflow output, not via a separate check.
+
+### Test coverage summary
+
+| Area | Tests |
+|------|-------|
+| (unchanged from 2026-03-18 baseline — not re-broken out per-area this entry) | — |
+| `claudart_surface_test.dart` (new) | 8 |
+| `workspace_config_test.dart` (new) | 22 |
+| `pipeline_executor_test.dart` (stream/result-line/forwarding additions) | +10 |
+| `step_status_test.dart` | 5 |
+| `kill_test.dart`/`rotate_test.dart`/`save_test.dart`/`setup_test.dart` (branch-display regression tests) | +4 |
+| `teardown_test.dart` (headless-summary regression test) | +1 |
+| **Total** | **1047 passing** (11 pre-existing, unrelated `test/ui/render*.dart` ANSI failures — environment-dependent, not this session's code) |
+
+> **As of 2026-09-22:** 1047 passing / 1058 total. Was 449 at the 2026-03-18
+> entry — six merged PRs' worth of growth in between, only some of which
+> (this entry) got a session-log write-up.
+
+### Commit at end of session
+
+```
+e75ba27 Merge pull request #46 from liitx/feature/step-result-metadata
+```
+
+---
+
 ## 2026-03-18 — Audit: enum-first enforcement, matrix completion, test depth, fixture namespace sweep
 
 ### What this session did

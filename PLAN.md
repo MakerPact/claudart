@@ -269,8 +269,8 @@ stateDiagram-v2
     resolved --> [*]
 ```
 
-### v2 — Registry-based workspace model (in progress)
-Moving from single global workspace to per-project workspaces:
+### v2 — Registry-based workspace model (complete)
+Per-project workspaces, migrated from the single global workspace:
 
 ```
 ~/.claudart/
@@ -288,11 +288,18 @@ Moving from single global workspace to per-project workspaces:
 **Why:** Current single-workspace model is fragile — string matching on CLAUDE.md, no per-project
 isolation, manual `claudart link` required, CLAUDE.md bleeds into project root.
 
-**Key changes:**
+**Key changes (all landed):**
 - `paths.dart`: `claudeDir → workspaceFor(projectName)`
 - `launch.dart`: Phase 1 registry read, Phase 2 workspace load on selection
 - `link.dart`: `.claude` symlink only (no CLAUDE.md symlink), writes .gitignore entries
 - `_isLinked`: reads registry + checks symlink (no CLAUDE.md string matching)
+- Every session command (`setup`, `save`, `teardown`, `kill`, `rotate`,
+  `status`, `launch`) resolves its workspace via `Registry.load(io:
+  fileIO)` → `entry.workspacePath` — no legacy global-path assumptions
+  remain in any of them (verified 2026-09-22).
+- `WorkspaceConfig` (`lib/workspace/workspace_config.dart`) — the
+  configuration struct Phase 2 needed — already exists and is consumed by
+  `scan.dart`, `flow.dart`, `debug.dart`, `suggest.dart`, `rotate.dart`.
 
 ### Prototype templates (proven manually, not yet in code)
 - dartrix `CLAUDE.md` + zedup `CLAUDE.md` + claudart `CLAUDE.md` — hand-written this session
@@ -307,12 +314,9 @@ automatically for the next project.
 
 ## What's next
 
-### Phase 1 — Finish v2 migration (unblocks everything else)
-- `setup.dart`: registry-based workspace paths, drop legacy path assumptions (todo #6)
-- `teardown.dart`: same migration (todo #7)
-
 ### Phase 2 — Template system (pure Dart, zero regression risk)
-- `WorkspaceConfig` struct — the configuration model
+`WorkspaceConfig` (the configuration model this phase needed) is already
+built — see "What's been built" above. Remaining:
 - `lib/templates/plan_template.dart` — PLAN.md generator with conditional sections
 - `lib/templates/claude_template.dart` — CLAUDE.md generator with profile + pre-wired paths
 - `lib/templates/diagram_template.dart` — Mermaid string generators per diagram type
