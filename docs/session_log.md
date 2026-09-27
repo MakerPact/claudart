@@ -5,6 +5,94 @@
 
 ---
 
+## 2026-09-27 — Phase 8: README Roadmap generation, PLAN.md backfill, two Phase-number collisions found and fixed
+
+### What this session did
+
+Asked to plan PLAN.md's next "What's next" item ("Phase 5 — README
+migration": generate all three READMEs from PLAN.md content) via
+`claudart flow` before implementing, "verifying what's in place to
+execute" first rather than trusting the roadmap entry at face value.
+That verification step surfaced two real, pre-existing problems before
+any code was written:
+
+1. **A Phase-number collision inside PLAN.md itself.** The top of the
+   file already has an unrelated, deferred `## Phase 5 — design
+   subagent` entry. Renumbered the README work to Phase 6 — which
+   immediately collided with a *second*, undiscovered problem.
+2. **README.md's own Roadmap table has 7 rows; 6 have no PLAN.md
+   source at all.** Grepping PLAN.md for "sensitivity mode," "token
+   map," "cosine retrieval," "static analysis scanner," "agent flow
+   registry," and "planner.dart" found zero matches — directly
+   violating PLAN.md's own stated law ("no information exists only in
+   README"). Row 6 of that table ("Agent flow registry + planner.dart")
+   was the second collision with the newly-renumbered Phase 6.
+
+Backfilled the 6 orphaned rows into PLAN.md first (verified against
+code and first-commit date via `git log --diff-filter=A`, not copied
+from README's stale labels — e.g. found the "agent flow registry" half
+of row 6 is actually already shipped, `lib/pipeline/agent_flow.dart`,
+while a standalone `planner.dart` genuinely isn't), then renumbered the
+README work a second time to its final Phase 8, once 6 and 7 were
+legitimately taken.
+
+### The row-data-source design question, routed through claudart itself
+
+`readmeTemplate` needs Roadmap row data from somewhere, but PLAN.md's
+phase headers turned out to use 3 different shapes for marking status
+— a regex extractor risked silently misparsing a future phase. Per
+explicit instruction, this design fork was routed through a second
+`claudart flow` session rather than decided unilaterally. Its
+plan/construct steps chose Option C: a hand-maintained `List<RoadmapRow>`
+literal in `link.dart` (same "caller assembles, template renders"
+discipline `plan_template.dart` already uses), with PLAN.md
+heading-standardization opened as its own separate future phase
+(Phase 10) instead of gated to this one.
+
+Running `claudart flow` a second time mid-session required a safety
+step first: `flow.dart`'s `_writeHandoff` unconditionally overwrites
+the live handoff.md with no merge — running it blind would have
+destroyed the in-progress Phase 8 KT already captured from the first
+flow run. Backed up handoff.md, ran the design-question flow, then
+manually reconciled its answer back into the original handoff instead
+of accepting the overwrite. Also caught one fabricated citation in the
+flow's own output — it claimed a regex existed "at line 46" of
+`readme_sync_test.dart`; the regex was real but at line 60. Corrected
+before treating the handoff as ground truth.
+
+### Implementation and a real live-caught bug
+
+Built `lib/templates/readme_template.dart` (`readmeTemplate`, matching
+`claudeTemplate`/`planStub`'s explicit-named-params style) and wired it
+into `link.dart`'s `runLink`, opt-in via a `<!-- claudart:link:roadmap
+-->` marker (unlike CLAUDE.md's always-on splice — most linked
+projects' READMEs aren't claudart-owned).
+
+**Live-caught bug**: the first splice regex stopped at the next `## `
+heading, which silently consumed the `---` separator between `##
+Roadmap` and `## Cross-repo` — running `claudart link` visibly joined
+the two sections in the real README.md. Caught by diffing before
+commit (`git checkout -- README.md` to cleanly re-verify against
+committed state, not layered fixes on top of a corrupted working
+copy), fixed by stopping before the next `---` instead. Re-verified:
+`claudart link` run twice in a row produced a byte-identical
+README.md, `git diff` showed only the Roadmap block changed.
+
+### Test count
+
+1128 passing, 0 failing (`test/readme_sync_test.dart` gained a third
+check: the marker's spliced content must equal `readmeTemplate(...)`
+byte-for-byte). `dart run custom_lint` clean.
+
+### Commits this session
+
+```
+fc71c6b docs: backfill 3 shipped + 2 unbuilt phases from README's Roadmap table, resolve Phase numbering collisions
+98f5238 feat: Phase 8 — README Roadmap generation via marker-splice
+```
+
+---
+
 ## 2026-09-27 — Phase 4: skills keyed-map, render primitives, teardown distillation, `claudart resume`
 
 ### What this session did
