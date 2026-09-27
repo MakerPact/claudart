@@ -4,6 +4,7 @@ import '../git_utils.dart';
 import '../paths.dart';
 import '../registry.dart';
 import '../session/session_state.dart';
+import '../session/skills_lookup.dart';
 import '../session/teardown_utils.dart';
 import '../ui/ansi.dart' as ansi;
 import '../ui/render.dart' as render;
@@ -73,6 +74,19 @@ Future<void> runStatus({
   if (state.status == HandoffStatus.debugInProgress ||
       state.status == HandoffStatus.needsSuggest) {
     print('Unresolved: ${_truncate(unresolved)}');
+  }
+
+  final skillsFile = skillsPathFor(workspace);
+  if (state.bug.isNotEmpty &&
+      !state.bug.startsWith('_Not') &&
+      fileIO.fileExists(skillsFile)) {
+    final patterns = relevantSkillPatterns(fileIO.read(skillsFile), state.bug);
+    if (patterns.isNotEmpty) {
+      print('\nRelevant past patterns:');
+      for (final pattern in patterns) {
+        print('  ${_truncate(pattern, max: 100)}');
+      }
+    }
   }
 
   if (currentBranch != null &&

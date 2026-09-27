@@ -332,8 +332,12 @@ against code and first-commit date, not just copied from README's labels:
   `lib/sensitivity/token_map.dart`/`abstractor.dart` abstract sensitive
   identifiers before they leave the machine; `lib/commands/scan.dart` and
   `RegistryEntry.sensitivityMode` gate it per project.
-- **Skills + cosine retrieval** (`3bcbd91`, 2026-03-16) —
-  `lib/similarity/cosine.dart` powers skills.md similarity lookup.
+- **Skills + cosine retrieval** (`3bcbd91`, 2026-03-16; actually wired to
+  a caller in a later audit session) — `lib/similarity/cosine.dart` +
+  `lib/session/skills_lookup.dart`'s `relevantSkillPatterns` rank
+  skills.md's `## Root Cause Patterns` bullets by similarity to the
+  handoff's Bug text; surfaced in `claudart status`'s "Relevant past
+  patterns" section.
 - **Static analysis scanner** (`3bcbd91`, 2026-03-16) — `lib/commands/scan.dart`.
 
 Corresponds to README Roadmap table rows 2–4. Row 1 (CLI + workspace +

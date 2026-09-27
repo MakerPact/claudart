@@ -1,5 +1,24 @@
 import 'dart:math';
 
+/// Builds an IDF corpus from [documents]: `idf(t) = log(N / df(t))`, where
+/// `df(t)` is the number of documents containing term `t` at least once
+/// and `N` is the document count. Feed the result to [tfidfVector] so
+/// terms common across the whole corpus (low signal) score lower than
+/// terms unique to a few documents (high signal).
+Map<String, double> buildIdfCorpus(List<String> documents) {
+  final documentFrequency = <String, int>{};
+  for (final doc in documents) {
+    for (final term in _tokenize(doc).toSet()) {
+      documentFrequency[term] = (documentFrequency[term] ?? 0) + 1;
+    }
+  }
+  final n = documents.length;
+  return {
+    for (final entry in documentFrequency.entries)
+      entry.key: log(n / entry.value),
+  };
+}
+
 /// Computes a sparse TF-IDF vector for [text] using [idfCorpus].
 /// Terms not in corpus receive IDF weight of 1.0.
 Map<String, double> tfidfVector(String text, Map<String, double> idfCorpus) {

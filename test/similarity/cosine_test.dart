@@ -71,6 +71,35 @@ void main() {
     });
   });
 
+  group('buildIdfCorpus', () {
+    test('term in every document gets zero weight', () {
+      final corpus = buildIdfCorpus(['buster rover', 'buster network']);
+      expect(corpus['buster'], closeTo(0.0, 0.001));
+    });
+
+    test('rarer term gets a higher weight than a more common one', () {
+      final corpus = buildIdfCorpus([
+        'buster rover',
+        'general coding',
+        'general network',
+        'general unrelated',
+      ]);
+      expect(corpus['buster']!, greaterThan(corpus['general']!));
+    });
+
+    test('feeds real ranking through tfidfVector + cosineSimilarity', () {
+      final docs = [
+        'buster rover bloc state management',
+        'network error handling and retries',
+        'general dart coding patterns',
+      ];
+      final corpus = buildIdfCorpus(docs);
+      final query = tfidfVector('buster rover issue', corpus);
+      final scores = docs.map((d) => cosineSimilarity(query, tfidfVector(d, corpus)));
+      expect(scores.first, greaterThan(scores.last));
+    });
+  });
+
   group('topKChunks', () {
     final corpus = <String, double>{
       'buster': 0.8,

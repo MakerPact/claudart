@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:claudart/commands/status.dart';
 import 'package:claudart/registry.dart';
@@ -248,6 +249,77 @@ _Nothing yet.
         () => runStatus(io: io, exitFn: _throwExit),
         throwsA(isA<_ExitException>().having((e) => e.code, 'code', 1)),
       );
+    });
+  });
+
+  group('status — relevant past patterns', () {
+    Future<List<String>> statusOutput(MemoryFileIO io) async {
+      final output = <String>[];
+      await runZoned(
+        () => runStatus(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      return output;
+    }
+
+    MemoryFileIO ioWith({required String bug, String? skills}) {
+      final io = MemoryFileIO();
+      final workspace = workspaceFor(_projectName);
+      Registry.empty()
+          .add(RegistryEntry(
+            name: _projectName,
+            projectRoot: _projectRoot,
+            workspacePath: workspace,
+            createdAt: '2026-03-17',
+            lastSession: '2026-03-17',
+          ))
+          .save(io: io);
+      io.write(handoffPathFor(workspace), '''# Agent Handoff — $_projectName
+
+## Status
+
+suggest-investigating
+
+---
+
+## Bug
+
+$bug
+''');
+      if (skills != null) io.write(skillsPathFor(workspace), skills);
+      return io;
+    }
+
+    test('shows the most relevant pattern when skills.md has a match', () async {
+      final io = ioWith(
+        bug: 'symlink creation crashes when the target already exists as a real directory',
+        skills: '''
+## Root Cause Patterns
+
+- **symlink-management**: CLI registration crashes on an existing directory. → Fix: check before linking.
+- **api-integration**: Sentinel strings reached persistence before null guards. → Fix: keep sentinels null.
+''',
+      );
+      final output = await statusOutput(io);
+      expect(output.join('\n'), contains('Relevant past patterns'));
+      expect(output.join('\n'), contains('symlink-management'));
+    });
+
+    test('omits the section when skills.md does not exist', () async {
+      final io = ioWith(bug: 'some real bug description');
+      final output = await statusOutput(io);
+      expect(output.join('\n'), isNot(contains('Relevant past patterns')));
+    });
+
+    test('omits the section when the bug is still a placeholder', () async {
+      final io = ioWith(
+        bug: '_Not yet determined._',
+        skills: '## Root Cause Patterns\n\n- **general**: some pattern. → Fix: something.\n',
+      );
+      final output = await statusOutput(io);
+      expect(output.join('\n'), isNot(contains('Relevant past patterns')));
     });
   });
 }
