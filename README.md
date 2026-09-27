@@ -1,3 +1,4 @@
+
 # claudart
 
 **A typed, self-hosting session harness for Claude Code.** claudart manages the state between AI coding sessions so the model always starts already knowing the bug, the scope, and what's been tried. Every session state is an enum. Every model routing decision is a total function. The tool debugs its own bugs using its own workflow.
@@ -46,6 +47,16 @@
 ## How it works
 
 A session is a state machine, not a chat log. `claudart setup` writes a `handoff.md` with a typed `Status` field. Every command that touches that file reads the status, decides what's legal next, and writes a new status back. There's no free text driving control flow anywhere in the loop.
+
+```mermaid
+flowchart LR
+  H[(handoff.md<br/>typed Status)]:::session --> Cmd{claudart command}:::engine
+  Cmd -->|status legal| Next[writes new Status]:::session
+  Cmd -->|status illegal| Block[refuses, prints expected status]:::engine
+  Next --> H
+  classDef session fill:#dcfce7,color:#064e3b,stroke:#16a34a
+  classDef engine fill:#fef3c7,color:#78350f,stroke:#d97706
+```
 
 Under the hood, each phase (`suggest`, `debug`, `flow`) runs a small pipeline of typed steps. A step declares its model, its system prompt, and a routing table mapping the tags it might emit to what happens next. The executor spawns the real `claude` CLI as a subprocess for each step, parses the structured output, and follows the route. Nothing about "what happens after this step" lives in prose or in the model's head. It lives in a `Map<RouteTag, StepRoute>` that compiles.
 
@@ -186,6 +197,18 @@ The narrow pane above and this full-width band are two independent widgets rende
 
 </details>
 
+**Step status → glyph → colour.** [`StepStatus`](lib/pipeline/step_status.dart) owns both mappings the captures above use, each an exhaustive switch:
+
+| `StepStatus` | `glyph` | `hue` | meaning |
+|---|---|---|---|
+| `pending` | `○` | `inactive` | not started |
+| `running` | `◉` | `active` | streaming now |
+| `waiting` | `◉` | `paused` | escalated, blocked on you |
+| `done` | `✓` | `success` | completed |
+| `failed` | `✗` | `error` | failed |
+
+`running` and `waiting` deliberately share the `◉` glyph — the TUI tells them apart by `hue`, not shape. `waiting` is the newest variant (2026-09-27): `AgentEscalating`/`AgentResumed` now carry a `stepId` (previously session-level events with no per-step identity), so an escalation drives a real status transition on the step actually blocked, via the [`StepStatusFromEvent`](lib/pipeline/step_status.dart#L57-L74) extension's `fromEvent` — an extension method, not a static on `StepStatus` itself, which is why the call site is `StepStatusFromEvent.fromEvent(event)`, not `StepStatus.fromEvent(event)`. See [`glyph`](lib/pipeline/step_status.dart#L49-L54) and [`hue`](lib/pipeline/step_status.dart#L40-L46) for the exhaustive switches.
+
 ---
 
 ## Full architecture
@@ -258,13 +281,13 @@ stateDiagram-v2
 
 [`HandoffStatus`](lib/session/session_state.dart#L7), eight values, exhaustive switch in [`teardown_utils.dart`](lib/session/teardown_utils.dart) and every dispatch site.
 
-**The planner** routes every input on three orthogonal axes to a model, a total function over sixty cells.
+**The planner** routes every input on three orthogonal axes to a model, a total function over ninety cells.
 
 ```mermaid
 flowchart LR
   In[input prompt] --> P[planner]
-  P --> A[AgentCategory<br/>5 values]:::ax
-  P --> I[IntentClass<br/>4 values]:::ax
+  P --> A[AgentCategory<br/>6 values]:::ax
+  P --> I[IntentClass<br/>5 values]:::ax
   P --> C[ComplexityTier<br/>3 values]:::ax
   A & I & C --> T{{"route(category, intent, complexity) → AgentModel"}}:::fn
   T --> Op[opus]:::m
@@ -275,19 +298,24 @@ flowchart LR
   classDef m fill:#dcfce7,color:#064e3b,stroke:#16a34a
 ```
 
-- **[`AgentCategory`](lib/pipeline/agents/categorization.dart#L25)**, `feature`, `bug`, `refactor`, `research`, `setup`.
-- **[`IntentClass`](lib/pipeline/agents/categorization.dart#L48)**, `explore`, `analyze`, `implement`, `document`. Partition: the four variants cover the whole set.
-- **[`ComplexityTier`](lib/pipeline/agents/categorization.dart#L59)**, `atomic`, `compound`, `systemic`. `atomic` and `systemic` never overlap.
+- **[`AgentCategory`](lib/pipeline/agents/categorization.dart#L115-L121)**, `feature`, `bug`, `refactor`, `research`, `setup`, `gui`.
+- **[`IntentClass`](lib/pipeline/agents/categorization.dart#L141-L146)**, `explore`, `analyze`, `implement`, `document`, `design`. Partition: the five variants cover the whole set.
+- **[`ComplexityTier`](lib/pipeline/agents/categorization.dart#L153-L156)**, `atomic`, `compound`, `systemic`. `atomic` and `systemic` never overlap.
 
-Three concrete routings:
+6 × 5 × 3 = 90 cells, not 60 — `gui` and `design` are real, shipped axis values.
+
+Four concrete routings:
 
 | Input | Classification | Model |
 |---|---|---|
 | "implement gap cross-ref in side panel" | `feature × implement × atomic` | `sonnet` |
 | "explain how this codebase handles state" | `research × explore × systemic` | `opus` |
 | "what does HandoffStatus do" | `research × document × atomic` | `haiku` |
+| "review this widget's visual hierarchy" | `gui × design × atomic` | `opus` |
 
-Rules, in [`routeModel`](lib/pipeline/agents/categorization.dart#L78): systemic explore or analyze goes to `opus` for broad reasoning. Any analyze or implement goes to `sonnet` for balanced generation. Atomic explore or any document goes to `haiku` for fast lookup. The switch is exhaustive over every combination.
+Rules, in [`routeModel`](lib/pipeline/agents/categorization.dart#L179-L204): any `design` intent, or systemic explore/analyze, routes to `opus` for broad reasoning. Any other analyze or implement, or compound explore, routes to `sonnet` for balanced generation. Atomic explore or any document routes to `haiku` for fast lookup. The switch is exhaustive over every one of the 90 combinations.
+
+`AgentModel.fable` (`claude-fable-5-1`) is a real, registered model — `routeModel`'s design branch pointed at it briefly, then reverted to `opus` the same day after comparing output quality directly (`fable` stays available, just isn't the default route for anything today; see PLAN.md's Phase 11 log).
 
 **`StepMode`** is the same discipline applied to how a pipeline step invokes the `claude` CLI. It replaced a raw boolean this session, after live-testing found the boolean flag silently broke OAuth authentication when set. An enum with named variants makes that failure mode a documented case instead of a hidden trap.
 
@@ -339,6 +367,58 @@ claudart teardown --headless  # same, but resolves every decision itself
 ```
 
 <details>
+<summary><strong>The real <code>--help</code> output</strong></summary>
+
+Not retyped by hand — this is `bin/claudart.dart`'s own `_usage` constant (lines 32-74), the literal text printed for `claudart --help` / `claudart -h`:
+
+```
+$ claudart --help
+claudart — Dart CLI for structured project debug and suggestion sessions
+
+Usage:
+  claudart                Run the interactive launcher (list projects, start workflow)
+  claudart <command> [arguments]
+
+Commands:
+  chat                   Open the interactive chat shell: greeting, then dispatch to flow/suggest
+  archives               List session archives for the current project; resume or view snapshots
+  add                    Scaffold a brand-new project: PLAN.md, CLAUDE.md, registry entry, .claude symlink, Claude Code memory registration
+  init                   Initialize the workspace with generic starter knowledge
+  init --project <name>  Add a project knowledge file to the workspace
+  link [project-name]    Symlink workspace into current project (detects name from git if omitted)
+  unlink                 Remove workspace symlinks from current project
+  setup [path]           Start a new session (path defaults to current directory)
+  status [--prompt]      Show current session state; --prompt outputs a compact colored string for shell RPROMPT/PS1
+  teardown [--headless]  Close session: update knowledge, archive handoff, suggest commit; --headless resolves every decision itself and prints a summary instead of prompting
+  suggest                Run suggest pipeline: haiku reads scope files, sonnet writes handoff KT
+  flow                   [experimental] Agent-constructed session: classify intent, plan, approve, build handoff
+  save                   Checkpoint session: snapshot handoff, deposit confirmed facts to skills
+  rotate                 Archive current session, run build gate, seed next handoff from Pending Issues
+  kill                   Abandon session: archive handoff, remove symlink (no skills update)
+  resume                 Pre-populate setup from the most recent archive entry
+  confirm-pending --question <q> --on-confirm <cmd>
+                         Set the pending confirmation for this workspace
+  confirm-pending --clear  Clear the pending confirmation
+  preflight <op>         Sync check before starting an operation (op: debug | save | test)
+  scan [--scope lib|full|handoff] [--full]  Re-scan project for sensitive tokens
+  report [--file-issue]  Show diagnostic report; --file-issue files GitHub issues
+  map                    Generate token_map.md from token_map.json
+  experiment <name> -- <cmd> [args]  Run a command and tee output to experiments/<name>_<ts>.ansi
+  compile                Recompile the claudart binary and install it to ~/bin/claudart
+  version                Print the current claudart version
+
+Options:
+  -h, --help       Show this help message
+  --version        Print the current claudart version
+  --debug          Write per-step trace (system prompt, message, token
+                   counts, cost) to $CLAUDART_DEBUG_PATH (default
+                   /tmp/claudart_debug.log). Same effect as setting
+                   CLAUDART_DEBUG=1.
+```
+
+</details>
+
+<details>
 <summary><strong>Full command table</strong></summary>
 
 | Command | Role | Code |
@@ -381,6 +461,22 @@ score(query, skill) = (q · s) / (‖q‖ · ‖s‖)
 ```
 
 `q` is the term-frequency vector of the task description, `s` is the same for the skill body. Skills scoring above threshold get injected into context. Below threshold, they're ignored at zero token cost.
+
+```mermaid
+flowchart LR
+  Bug[handoff.md<br/>Bug text]:::raw --> V{{TF-IDF vector}}:::fn
+  Skills[(skills.md<br/>Root Cause Patterns)]:::store --> V
+  V --> Cos{{cosine similarity}}:::fn
+  Cos -->|above threshold| Inject[injected into context]:::abs
+  Cos -->|below threshold| Drop[ignored, zero token cost]:::out
+  classDef raw fill:#fee2e2,color:#7f1d1d,stroke:#dc2626
+  classDef fn fill:#fef3c7,color:#78350f,stroke:#d97706
+  classDef store fill:#e5e7eb,color:#374151,stroke:#9ca3af
+  classDef abs fill:#dcfce7,color:#064e3b,stroke:#16a34a
+  classDef out fill:#dbeafe,color:#1e3a8a,stroke:#3b82f6
+```
+
+[`lib/similarity/cosine.dart`](lib/similarity/cosine.dart)'s `tfidfVector` + `buildIdfCorpus` compute both vectors; [`lib/session/skills_lookup.dart`](lib/session/skills_lookup.dart)'s `relevantSkillPatterns` does the ranking and threshold cut, surfaced in `claudart status`'s "Relevant past patterns" section.
 
 Adding a skill is automatic, `teardown` writes it. Pruning is a manual review step in `claudart rotate`.
 
@@ -453,9 +549,9 @@ flowchart LR
   C -.->|drives sessions| Z
   Z -->|chat dispatch| C
   D -.->|proposed rules, hand-ported| C
-  classDef self fill:#c4b5fd,color:#3b0764,stroke:#7c3aed,stroke-width:2px
-  classDef core fill:#a7f3d0,color:#064e3b,stroke:#047857
-  classDef tool fill:#fcd34d,color:#78350f,stroke:#d97706
+  classDef self fill:#dcfce7,color:#064e3b,stroke:#16a34a,stroke-width:2px
+  classDef core fill:#e0f2fe,color:#0c4a6e,stroke:#0284c7
+  classDef tool fill:#fef3c7,color:#78350f,stroke:#d97706
 ```
 
 claudart runs standalone. It has zero runtime dependency on dartrix, verified by grepping every import in `lib/`, dartrix sits in `dev_dependencies` only, used for test-time matrix coverage. Paradigm enforcement lives in claudart's own `custom_lint` rules, which re-derive dartrix's `PARADIGMS.md` prose by hand. The sync is a process, propose a rule to dartrix, then hand-port the lint, not a code dependency. zedup consumes claudart's slash commands and dispatches through it, but claudart doesn't depend on zedup either.
