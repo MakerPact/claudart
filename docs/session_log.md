@@ -5,6 +5,81 @@
 
 ---
 
+## 2026-09-27 — Phase 9: generalize Roadmap generation, extend to dartrix + zedup, `\z` regex bug found live
+
+### What this session did
+
+Follow-on to Phase 8, which shipped the marker-splice mechanism hardcoded
+to claudart's own README. Verifying "what's in place" before extending it
+to dartrix/zedup found the mechanism wasn't actually reusable yet, and a
+design choice made mid-implementation had to be reversed once a real
+problem surfaced.
+
+**Design reversal, caught before landing**: first tried sourcing rows
+from `WorkspaceConfig` (`workspace.json`'s `project.roadmapRows`) — the
+established per-project config pattern in this codebase. Checked via
+`git check-ignore` whether that file was even in the repo, and it isn't:
+`workspace.json` lives entirely outside every project's git tree (under
+`~/.claudart/`), so a test asserting against it could never run in CI or
+on a fresh clone. Reverted the `WorkspaceConfig`/`WorkspaceProject`
+change completely rather than keep two data sources, and redesigned
+around a git-committed `roadmap.json` at each project's root instead —
+`readme_template.dart` gained `RoadmapConfig`/`parseRoadmapConfig` and
+`readmeTemplate` gained optional `summaryText`/`footerLine` params (so a
+project with existing custom copy, like dartrix's deep-dive link, isn't
+silently overwritten with claudart's generic defaults).
+
+**A second real bug, caught live against dartrix, not by any test**:
+the marker regex used `\z` for "end of input" — Dart/JS regex has no
+`\z` metacharacter (that's Perl/Python syntax); in ECMAScript-flavored
+regex it's silently interpreted as a literal lowercase `z`. This worked
+by pure luck against claudart's own roadmap text (no lowercase `z`
+appears anywhere in it) but corrupted dartrix's real README.md on the
+very first live run — its existing content contains "zedup-side," so
+the match stopped there instead of at the real `\n---` boundary,
+duplicating leftover fragments into the file. Restored from a pre-run
+backup, root-caused precisely, fixed to the correct `(?![\s\S])`
+end-of-input idiom, red-before-fix verified with a new regression test
+in `test/commands/link_test.dart` (reverted the fix, confirmed the test
+failed with the exact predicted symptom, restored), then re-verified
+live: idempotent second run, `git diff` showing only the intended
+change. Also found and fixed a smaller instance of the same root
+cause — the regex was copy-pasted into `readme_sync_test.dart` too — by
+exporting the one canonical `roadmapMarker` from `link.dart` instead.
+
+**zedup had no `## Roadmap` section at all.** Per explicit decision,
+created one from scratch rather than deferring it, sourced from zedup's
+own PLAN.md content (Phase 1–5 core binary, 5b nocterm dashboard, 5c
+claudart chat integration — shipped; branch screen matrix wiring and the
+v2 GitHub-state matrix + DartrixSelector pipeline — planned), placed
+before `## Cross-repo` to match claudart/dartrix's layout.
+
+Verified live across all three repos, each idempotent on a second run
+and each `git diff` touching only its own Roadmap content: claudart
+(pure regression, byte-identical), dartrix (retrofit, marker line only),
+zedup (new section only). An unrelated side effect — running
+`claudart link` for the first time on dartrix/zedup also triggered their
+own pre-existing CLAUDE.md tail-regeneration and `.gitignore` update —
+was caught and reverted each time as out of scope for this phase. zedup
+also had unrelated, pre-existing in-progress changes already in its
+working tree (chat/dashboard files, not this session's work); left
+untouched throughout.
+
+### Test count
+
+1130 passing, 0 failing (+2 net: the new `\z`-regression test group in
+`link_test.dart`). `dart analyze` — 22 pre-existing info-level issues
+only (confirmed unchanged before/after). `dart run custom_lint` clean.
+
+### Commits this session
+
+```
+84be0f7 feat: Phase 9 — generalize README Roadmap generation via git-committed roadmap.json
+c3db62a docs: move Phase 9 to What's been built, correct Phase 8's stale claudartRoadmapRows reference
+```
+
+---
+
 ## 2026-09-27 — Phase 8: README Roadmap generation, PLAN.md backfill, two Phase-number collisions found and fixed
 
 ### What this session did
