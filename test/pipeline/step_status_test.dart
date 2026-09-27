@@ -7,6 +7,7 @@
 import 'package:claudart/pipeline/agent_model.dart';
 import 'package:claudart/pipeline/pipeline_context.dart';
 import 'package:claudart/pipeline/pipeline_event.dart';
+import 'package:claudart/pipeline/state_hue.dart';
 import 'package:claudart/pipeline/step_status.dart';
 import 'package:claudart/pipeline/usage.dart';
 import 'package:test/test.dart';
@@ -60,5 +61,37 @@ void main() {
       );
       expect(StepStatusFromEvent.fromEvent(event), isNull);
     });
+  });
+
+  group('StepStatus.hue', () {
+    const expected = {
+      StepStatus.pending: StateHue.inactive,
+      StepStatus.running: StateHue.active,
+      StepStatus.waiting: StateHue.paused,
+      StepStatus.done: StateHue.success,
+      StepStatus.failed: StateHue.error,
+    };
+
+    for (final status in StepStatus.values) {
+      test(status.name, () {
+        expect(status.hue, equals(expected[status]));
+      });
+    }
+  });
+
+  group('StepStatus.glyph', () {
+    const expected = {
+      StepStatus.pending: '○',
+      StepStatus.running: '◉',
+      StepStatus.waiting: '◉',
+      StepStatus.done: '✓',
+      StepStatus.failed: '✗',
+    };
+
+    for (final status in StepStatus.values) {
+      test(status.name, () {
+        expect(status.glyph, equals(expected[status]));
+      });
+    }
   });
 }

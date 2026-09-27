@@ -15,10 +15,44 @@
 // they drive a real status transition instead of leaving the active
 // step's displayed status untouched. Five events identify a single step
 // now, not three.
+//
+// `.hue`/`.glyph` added 2026-09-27: 3 zedup render files each hand-wrote
+// an identical StepStatus → (glyph, colour) switch. `.hue` returns a
+// StateHue (this repo's own — see state_hue.dart), not a raw colour, so
+// this file still never needs nocterm; zedup's StateHueRendering
+// extension turns any StateHue into a concrete Color.
 
 import 'pipeline_event.dart';
+import 'state_hue.dart';
 
-enum StepStatus { pending, running, waiting, done, failed }
+enum StepStatus {
+  pending,
+  running,
+  waiting,
+  done,
+  failed;
+
+  /// Shared state-semantic colour category — see [StateHue] and zedup's
+  /// `StateHueRendering` extension for the concrete rendered colour.
+  /// `waiting` maps to [StateHue.paused] deliberately: that hue's own
+  /// definition ("paused intentionally — waiting on user input") is an
+  /// exact match for what this status means.
+  StateHue get hue => switch (this) {
+        StepStatus.pending => StateHue.inactive,
+        StepStatus.running => StateHue.active,
+        StepStatus.waiting => StateHue.paused,
+        StepStatus.done => StateHue.success,
+        StepStatus.failed => StateHue.error,
+      };
+
+  /// The single-character glyph rendered alongside this status.
+  String get glyph => switch (this) {
+        StepStatus.pending => '○',
+        StepStatus.running || StepStatus.waiting => '◉',
+        StepStatus.done => '✓',
+        StepStatus.failed => '✗',
+      };
+}
 
 extension StepStatusFromEvent on StepStatus {
   /// Projects a [PipelineEvent] onto a [StepStatus], or `null` when the
