@@ -170,18 +170,22 @@ enum ComplexityTier {
 ///            * × design → fable, at every tier.
 ///   Example: "explain how this codebase handles state" =
 ///            research × explore × systemic → opus.
+///
+/// Update (2026-09-27): design now routes to opus, not fable — reconsidered
+/// after comparing output quality directly; opus is the stronger designer.
+/// `AgentModel.fable` stays in the registry (a real, valid model) but isn't
+/// the default route for anything today; use it only when explicitly asked
+/// for by name, not via this routing function.
 AgentModel routeModel(
   AgentCategory category,
   IntentClass intent,
   ComplexityTier complexity,
 ) =>
     switch ((category, intent, complexity)) {
-      // Visual/architectural design routes to the design specialist at
-      // every tier — checked first since design is tier-invariant and
-      // otherwise would need repeating across every branch below.
-      (_, IntentClass.design, _) => AgentModel.fable,
-
-      // Systemic exploration or analysis always warrants maximum capability.
+      // Visual/architectural design routes to opus at every tier (see the
+      // 2026-09-27 update above) — grouped with the systemic explore/
+      // analyze cases below since they now share the same target model.
+      (_, IntentClass.design, _) ||
       (_, IntentClass.explore, ComplexityTier.systemic) ||
       (_, IntentClass.analyze, ComplexityTier.systemic) =>
         AgentModel.opus,

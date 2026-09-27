@@ -24,6 +24,13 @@
 // shares ModelTier.capable with opus (same general capability class) but
 // is a distinct specialization for IntentClass.design work
 // (categorization.dart's routeModel), not a fourth bestFor* task type.
+//
+// Update (2026-09-27): categorization.dart's routeModel now routes
+// IntentClass.design to opus, not fable — reconsidered after comparing
+// design/architecture output quality directly. fable stays registered
+// (a real, valid model) but isn't the default route for anything today;
+// the identity-based bestFor* predicates above remain correct regardless
+// of which model design routes to.
 
 // ── ModelTier ─────────────────────────────────────────────────────────────────
 
@@ -82,11 +89,16 @@ enum AgentModel {
     tier:            ModelTier.capable,
   ),
 
-  /// claude-fable — design specialist. Same general capability class as
-  /// opus (tier: capable) but routed distinctly by `routeModel` for
-  /// `IntentClass.design` work: visual surface review, spec generation,
-  /// architecture/UX design — not a speed/cost tier, a task specialization
-  /// the routing function encodes directly.
+  /// claude-fable — a design-oriented model. Same general capability
+  /// class as opus (tier: capable). Originally routed here by
+  /// `routeModel` for `IntentClass.design` work: visual surface review,
+  /// spec generation, architecture/UX design.
+  ///
+  /// Update (2026-09-27): `routeModel` now routes design work to opus
+  /// instead, after directly comparing output quality — opus is the
+  /// stronger designer. fable remains a real, valid model in this
+  /// registry but is not the default route for anything today; use it
+  /// only when explicitly requested by name.
   fable(
     alias:           'fable',
     slug:            'claude-fable-5-1',
