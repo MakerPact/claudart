@@ -3,7 +3,7 @@
 // Three orthogonal axes form a Cartesian product:
 //
 //   T = AgentCategory × IntentClass × ComplexityTier
-//     = 5 × 4 × 3 = 60 cells
+//     = 6 × 5 × 3 = 90 cells
 //
 // Model routing function:
 //   τ : T → AgentModel  (total — exhaustive switch, Gap = ∅ by construction)
@@ -160,13 +160,14 @@ enum ComplexityTier {
 
 /// τ : AgentCategory × IntentClass × ComplexityTier → AgentModel
 ///
-/// Total function — exhaustive switch over all 60 cells.
+/// Total function — exhaustive switch over all 90 cells.
 /// Three-layer rationale:
 ///   Theory:  opus excels at broad discovery; sonnet at reasoning + generation;
-///            haiku at fast structured lookup.
+///            haiku at fast structured lookup; fable at design specifically.
 ///   Rule:    systemic × {explore,analyze} → opus;
 ///            * × {analyze,implement} → sonnet (unless systemic);
-///            * × {explore,document} on atomic/compound → haiku.
+///            * × {explore,document} on atomic/compound → haiku;
+///            * × design → fable, at every tier.
 ///   Example: "explain how this codebase handles state" =
 ///            research × explore × systemic → opus.
 AgentModel routeModel(
@@ -175,6 +176,11 @@ AgentModel routeModel(
   ComplexityTier complexity,
 ) =>
     switch ((category, intent, complexity)) {
+      // Visual/architectural design routes to the design specialist at
+      // every tier — checked first since design is tier-invariant and
+      // otherwise would need repeating across every branch below.
+      (_, IntentClass.design, _) => AgentModel.fable,
+
       // Systemic exploration or analysis always warrants maximum capability.
       (_, IntentClass.explore, ComplexityTier.systemic) ||
       (_, IntentClass.analyze, ComplexityTier.systemic) =>
@@ -182,11 +188,9 @@ AgentModel routeModel(
 
       // Any analysis or implementation at compound/atomic tier → balanced.
       // Compound exploration still benefits from balanced reasoning.
-      // Visual design — balanced reasoning for spec generation at any tier.
       (_, IntentClass.analyze,   _) ||
       (_, IntentClass.implement, _) ||
-      (_, IntentClass.explore,   ComplexityTier.compound) ||
-      (_, IntentClass.design,    _) =>
+      (_, IntentClass.explore,   ComplexityTier.compound) =>
         AgentModel.sonnet,
 
       // Atomic exploration and all documentation → fast lookup tier.

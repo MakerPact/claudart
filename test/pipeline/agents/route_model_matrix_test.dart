@@ -16,7 +16,7 @@
 //      `ComplexityTier.values`. Without this, the tier wire could
 //      regress to constant and every other test would still pass.
 //   3. Range invariant: the image of τ is exactly the set of
-//      AgentModel variants currently in use ({haiku, sonnet, opus}).
+//      AgentModel variants currently in use ({haiku, sonnet, opus, fable}).
 //      Adding an AgentModel variant without wiring it into τ is
 //      flagged.
 
@@ -49,8 +49,8 @@ AgentModel _expectedFor(
   if (intent == IntentClass.explore || intent == IntentClass.document) {
     return AgentModel.haiku;
   }
-  // Visual design → sonnet at every tier.
-  return AgentModel.sonnet;
+  // Visual/architectural design → the design specialist, at every tier.
+  return AgentModel.fable;
 }
 
 void main() {
@@ -152,7 +152,7 @@ void main() {
       // the type level, but the assertion documents the intent and
       // pins the rendered set for future readers.
       expect(image.difference(AgentModel.values.toSet()), isEmpty);
-      // Currently the τ matrix uses haiku/sonnet/opus. If a new
+      // Currently the τ matrix uses haiku/sonnet/opus/fable. If a new
       // AgentModel variant is added without wiring, this stays equal
       // — that's fine; the load-bearing claim is the subset above.
       expect(image, isNotEmpty);

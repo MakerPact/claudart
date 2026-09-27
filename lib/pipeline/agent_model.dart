@@ -18,9 +18,12 @@
 // reader/reasoner/planner/lookup/applier, etc.) pick their own model per
 // step to control cost across the whole pipeline — they are not bound by
 // this table, and mostly stay at fast/balanced even where the flow-level
-// preferredModel above is capable. See ModelTier.bestForLookup /
-// bestForAnalysis / bestForExplore for the tier→model bijection this
-// table and every step's literal currently resolve to identically.
+// preferredModel above is capable. See AgentModel.bestForLookup /
+// bestForAnalysis / bestForExplore for the canonical model each of those
+// three task types resolves to. Identity-based, not tier-derived: fable
+// shares ModelTier.capable with opus (same general capability class) but
+// is a distinct specialization for IntentClass.design work
+// (categorization.dart's routeModel), not a fourth bestFor* task type.
 
 // ── ModelTier ─────────────────────────────────────────────────────────────────
 
@@ -61,8 +64,8 @@ enum AgentModel {
   /// Pipeline roles: reasoner (analysis), planner (change planning), debug.
   sonnet(
     alias:           'sonnet',
-    slug:            'claude-sonnet-4-6',
-    shortName:       'sonnet-4.6',
+    slug:            'claude-sonnet-5',
+    shortName:       'sonnet-5',
     contextWindow:   200000,
     maxOutputTokens: 16000,
     tier:            ModelTier.balanced,
@@ -72,8 +75,22 @@ enum AgentModel {
   /// Pipeline roles: suggest (deep root cause), complex multi-file reasoning.
   opus(
     alias:           'opus',
-    slug:            'claude-opus-4-7',
-    shortName:       'opus-4.7',
+    slug:            'claude-opus-5-5',
+    shortName:       'opus-5.5',
+    contextWindow:   200000,
+    maxOutputTokens: 32000,
+    tier:            ModelTier.capable,
+  ),
+
+  /// claude-fable — design specialist. Same general capability class as
+  /// opus (tier: capable) but routed distinctly by `routeModel` for
+  /// `IntentClass.design` work: visual surface review, spec generation,
+  /// architecture/UX design — not a speed/cost tier, a task specialization
+  /// the routing function encodes directly.
+  fable(
+    alias:           'fable',
+    slug:            'claude-fable-5-1',
+    shortName:       'fable-5.1',
     contextWindow:   200000,
     maxOutputTokens: 32000,
     tier:            ModelTier.capable,
@@ -108,9 +125,15 @@ enum AgentModel {
 
   // ── Predicates ───────────────────────────────────────────────────────────────
 
-  bool get bestForLookup    => tier == ModelTier.fast;
-  bool get bestForAnalysis  => tier == ModelTier.balanced;
-  bool get bestForExplore   => tier == ModelTier.capable;
+  // Identity-based, not tier-derived: fable also sits at ModelTier.capable
+  // (same general capability class as opus) but isn't the explore/analysis
+  // choice — it's a distinct specialization routed via `routeModel`'s
+  // design branch instead. Deriving these from tier would make fable
+  // falsely bestForExplore alongside opus, breaking the "exactly one
+  // model per task" invariant these predicates exist to guarantee.
+  bool get bestForLookup    => this == AgentModel.haiku;
+  bool get bestForAnalysis  => this == AgentModel.sonnet;
+  bool get bestForExplore   => this == AgentModel.opus;
 
   // ── Parsing ──────────────────────────────────────────────────────────────────
 
