@@ -5,6 +5,100 @@
 
 ---
 
+## 2026-09-27 — Phase 6 closed (planner.dart not built), Phase 7 shipped (metadata + loop-back signal), one style regression caught mid-fix
+
+### Phase 6 — closed, not built
+
+Scoped via a `claudart flow` session, per instruction, rather than
+decided unilaterally: does consolidating routing/model-selection logic
+(currently split across `categorization.dart`, `route_tag.dart`,
+`step_route.dart`) into a standalone `planner.dart` fix a real bug or
+duplication, or would it be premature abstraction? Verified the flow's
+citations against the actual files (line numbers, function names) before
+trusting the recommendation. Finding: no shared bug or duplication
+exists across the three files — consolidating them would be pure
+file-organization renaming with no behavior change, exactly what this
+project's "Simplicity first" discipline forbids. Closed PLAN.md's Phase
+6 entry with the reasoning and a restart criterion (a third call site or
+real duplication), rather than leaving it open-ended.
+
+### Phase 7 — thinking/cost metadata + routing loop-back signal (partial scope, by design)
+
+The PLAN.md entry's "TUI dependency graph" label overstated what's
+actually buildable: `agents_workflow_pane.dart`'s own header comment
+says it's a fixed 36-char-wide column — no literal node-and-edge graph
+layout fits. Delivered the honest version instead, across two repos:
+
+- **claudart**: `AgentStarted` gained `isRevisit` — `PipelineExecutor`
+  tracks a `Set<String> visited` across its routing loop, set uniformly
+  for every route type (`GoTo`/`QuestionBranch`/`FeedBackTo`/
+  `EscalateUser`/`ApprovalGate`-refine) since they all funnel through the
+  same `current = ...; continue;` loop. This is the graph-*cycle* signal
+  a subscriber needs — previously nothing in the event stream could tell
+  a loop-back from ordinary forward advance.
+- **zedup**: `AgentSlot`/`handleEvent` now forward `numTurns` and
+  `isRevisit` — `AgentCompleted`'s `thinking`/`stopReason`/`durationMs`/
+  `numTurns` have existed since `56cf9ab` (2026-09-21) but only `usage`
+  was ever read out of the event. The pane renders a revisited step with
+  `↻` instead of its sequence number, and appends a compact
+  thinking-token count to the cost badge.
+
+**A real style regression, caught mid-fix by the user, not by any
+test**: writing the `isRevisit` regression test, two synthetic steps
+needed distinguishable runner calls; both used the same `AgentModel`, so
+comparing `model` couldn't tell them apart. Instead of the correct fix
+(give the two steps distinct models), swapped the whole comparison to a
+bare string literal (`message == 'plan-msg'`) — introducing exactly the
+`bare_string_for_enum`-class violation this project's paradigm
+discipline exists to catch. The user asked directly why an enum
+comparison had been swapped for a bare string; fixed properly by giving
+the test steps distinct `AgentModel` values, restoring the typed
+comparison. Recorded as feedback: never swap a typed comparison for a
+string literal to route around a test-fixture collision — fix the
+fixture instead.
+
+**A second mistake, format-tooling drift, caught before commit**: ran a
+blanket `dart format` across the touched claudart files as a matter of
+habit; it reformatted ~330 unrelated lines because the installed SDK's
+formatter doesn't reproduce this codebase's hand-aligned field/parameter
+style — the same drift already found once this session in
+`workspace_config.dart`. Reverted both files via `git checkout --` and
+reapplied the actual edits by hand instead; final diff was 92 lines
+across 3 files, not ~330. Lesson applied going forward: don't run
+whole-file `dart format` in this repo; format only touched lines by
+hand, matching the existing alignment.
+
+Also fixed, incidentally: my own earlier commits in dartrix and zedup
+(the Phase 9 Roadmap work, prior session segment) violated those repos'
+own `scaffold.md` git-authorship rule — commit messages referencing
+"claudart"/"generated" are explicitly forbidden there. Caught by reading
+`scaffold.md` before starting Phase 7's zedup work (I hadn't read it
+before the earlier commits), amended both messages (unpushed, safe) to
+remove the references.
+
+### Test count
+
+claudart: 1131 passing, 0 failing (+1 net: the `isRevisit` regression
+test). zedup: same 3 pre-existing, unrelated failures before and after
+(confirmed via `git stash`/re-run — not introduced by this work); 203/203
+passing in the chat feature suite specifically. `dart analyze`/
+`custom_lint` clean in both (zedup's known 428-issue lint backlog and 2
+pre-existing `ungrouped_identical_switch_cases` warnings in this same
+file are unchanged, confirmed via stash/re-run).
+
+### Commits this session
+
+```
+957afc9 docs: close Phase 6 — planner.dart intentionally not built
+9bfec87 feat: AgentStarted.isRevisit — surface routing loop-backs in the pipeline event stream
+f5ffd7f docs: move Phase 7 to What's been built (complete, partial scope)
+```
+zedup: `ec4deef feat: surface thinking tokens, turn count, and routing loop-backs in the agent pipeline pane`
+(and, from the prior session segment, amended: `909c07b feat: add a Roadmap section to README`)
+dartrix (prior session segment, amended): `40bab11 feat: opt into the generated README Roadmap table`
+
+---
+
 ## 2026-09-27 — Phase 9: generalize Roadmap generation, extend to dartrix + zedup, `\z` regex bug found live
 
 ### What this session did
