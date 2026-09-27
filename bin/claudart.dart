@@ -3,6 +3,7 @@ import 'package:claudart/git_utils.dart';
 import 'package:claudart/pipeline/debug_mode.dart';
 import 'package:claudart/version.dart';
 import 'package:claudart/registry.dart';
+import 'package:claudart/commands/add.dart';
 import 'package:claudart/commands/archives.dart';
 import 'package:claudart/commands/chat_shell.dart';
 import 'package:claudart/commands/claudart_command.dart';
@@ -37,6 +38,7 @@ Usage:
 Commands:
   chat                   Open the interactive chat shell: greeting, then dispatch to flow/suggest
   archives               List session archives for the current project; resume or view snapshots
+  add                    Scaffold a brand-new project: PLAN.md, CLAUDE.md, registry entry, .claude symlink, Claude Code memory registration
   init                   Initialize the workspace with generic starter knowledge
   init --project <name>  Add a project knowledge file to the workspace
   link [project-name]    Symlink workspace into current project (detects name from git if omitted)
@@ -112,6 +114,8 @@ Future<void> main(List<String> rawArgs) async {
       await runChatShell();
     case ClaudartCommand.archives:
       await runArchives();
+    case ClaudartCommand.add:
+      await runAdd();
     case ClaudartCommand.init:
       await runInit(rest);
     case ClaudartCommand.link:

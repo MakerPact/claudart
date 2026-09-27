@@ -11,6 +11,7 @@
 enum ClaudartCommand {
   chat,
   archives,
+  add,
   init,
   link,
   unlink,
@@ -35,6 +36,7 @@ enum ClaudartCommand {
   String get wireName => switch (this) {
         chat           => 'chat',
         archives       => 'archives',
+        add            => 'add',
         init           => 'init',
         link           => 'link',
         unlink         => 'unlink',
@@ -62,6 +64,7 @@ enum ClaudartCommand {
   static ClaudartCommand? fromString(String s) => switch (s) {
         'chat'           => chat,
         'archives'       => archives,
+        'add'            => add,
         'init'           => init,
         'link'           => link,
         'unlink'         => unlink,

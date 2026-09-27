@@ -4,6 +4,11 @@ import 'dart:io';
 /// Both are null when the working directory is not inside a git repository.
 typedef GitContext = ({String root, String branch});
 
+/// Git author name/email, read from `git config` in [projectRoot]. Either
+/// field is null when unset — a fresh clone with no user-level git config
+/// has neither, and this must not throw for that case.
+typedef GitAuthor = ({String? name, String? email});
+
 /// Detects the git project root and current branch in one process spawn.
 ///
 /// Uses `git rev-parse --show-toplevel --abbrev-ref HEAD` so both values
@@ -28,4 +33,26 @@ GitContext? detectGitContext() {
   } on ProcessException catch (_) {
     return null;
   }
+}
+
+/// Reads `git config user.name` / `user.email` from [projectRoot]. Never
+/// throws — a fresh repo with no configured author returns both fields
+/// null rather than failing the caller's wizard flow.
+GitAuthor readGitAuthor(String projectRoot) {
+  String? read(String key) {
+    try {
+      final result = Process.runSync(
+        'git',
+        ['config', key],
+        workingDirectory: projectRoot,
+      );
+      if (result.exitCode != 0) return null;
+      final value = (result.stdout as String).trim();
+      return value.isEmpty ? null : value;
+    } on ProcessException catch (_) {
+      return null;
+    }
+  }
+
+  return (name: read('user.name'), email: read('user.email'));
 }
