@@ -17,16 +17,22 @@ String claudeTemplate({
   String? sdkConstraint,
   String? flutterConstraint,
 }) {
-  final genericRefs = genericFiles
-      .map((f) => '- $workspacePath/knowledge/generic/$f')
-      .join('\n');
+  final genericSection = genericFiles.isEmpty
+      ? ''
+      : '''### Generic practices
+${genericFiles.map((f) => '- $workspacePath/knowledge/generic/$f').join('\n')}
+
+''';
 
   final envLines = StringBuffer();
   if (sdkConstraint != null || flutterConstraint != null) {
     envLines.writeln('\n## Environment\n');
     if (sdkConstraint != null) envLines.writeln('- Dart SDK: `$sdkConstraint`');
-    if (flutterConstraint != null) envLines.writeln('- Flutter: `$flutterConstraint`');
-    envLines.writeln('\nDo not suggest APIs or syntax unavailable within these constraints.');
+    if (flutterConstraint != null) {
+      envLines.writeln('- Flutter: `$flutterConstraint`');
+    }
+    envLines.writeln(
+        '\nDo not suggest APIs or syntax unavailable within these constraints.');
     envLines.writeln('\n---');
   }
 
@@ -38,9 +44,10 @@ String claudeTemplate({
 
 Always follow this order — no exceptions:
 1. **Verify** — read the relevant files, understand current state
-2. **Test** — run safely
-3. **Confirm** — present result, wait for user confirmation
-4. **Commit** — only after confirmed
+2. **Plan** — state what you intend to do before writing code. If multiple approaches exist, surface them. If uncertain, ask.
+3. **Test** — run safely
+4. **Confirm** — present result, wait for user confirmation
+5. **Commit** — only after confirmed
 
 Never commit before testing. Never skip confirmation.
 
@@ -50,10 +57,7 @@ $envLines
 
 Read the following files at the start of every session before doing anything else.
 
-### Generic practices
-$genericRefs
-
-### Project context
+$genericSection### Project context
 - $workspacePath/knowledge/projects/$projectName.md
 
 ### Session state
@@ -64,7 +68,7 @@ $genericRefs
 
 ## Git rules
 
-- **Never push to remote** under any circumstances
+- **Never push to remote** under any circumstances without explicit confirmation
 - Local commits only, and only when explicitly requested
 ''';
 }

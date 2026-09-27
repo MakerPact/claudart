@@ -22,6 +22,16 @@ void main() {
       expect(base, contains('/workspace/knowledge/generic/testing.md'));
     });
 
+    test('omits the Generic practices heading entirely when no files given', () {
+      final t = claudeTemplate(
+        workspacePath: '/workspace',
+        projectName: 'my-app',
+        genericFiles: [],
+      );
+      expect(t, isNot(contains('### Generic practices')));
+      expect(t, contains('### Project context'));
+    });
+
     test('includes project knowledge path', () {
       expect(base, contains('/workspace/knowledge/projects/my-app.md'));
     });
@@ -34,6 +44,10 @@ void main() {
     test('workflow protocol enforces verify before commit', () {
       expect(base, contains('Verify'));
       expect(base, contains('Never commit before testing'));
+    });
+
+    test('workflow protocol includes a plan step between verify and test', () {
+      expect(base, contains('**Plan** — state what you intend to do before writing code'));
     });
 
     test('git rules forbid pushing to remote', () {
