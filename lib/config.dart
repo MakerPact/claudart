@@ -14,7 +14,7 @@ abstract final class ScanScope {
 }
 
 /// Project-level persistent config stored as config.json in the workspace.
-class WorkspaceConfig {
+class ProjectConfig {
   final bool sensitivityMode;
   final String scanScope;
   final String scanTrigger;
@@ -27,7 +27,7 @@ class WorkspaceConfig {
   /// Defaults to `make rebuild` for self-hosted projects.
   final String afterFixCommand;
 
-  const WorkspaceConfig({
+  const ProjectConfig({
     this.sensitivityMode = false,
     this.scanScope = ScanScope.lib,
     this.scanTrigger = 'on_setup',
@@ -37,8 +37,8 @@ class WorkspaceConfig {
     this.afterFixCommand = 'make rebuild',
   });
 
-  factory WorkspaceConfig.fromJson(Map<String, dynamic> json) {
-    return WorkspaceConfig(
+  factory ProjectConfig.fromJson(Map<String, dynamic> json) {
+    return ProjectConfig(
       sensitivityMode: json['sensitivityMode'] as bool? ?? false,
       scanScope: json['scanScope'] as String? ?? ScanScope.lib,
       scanTrigger: json['scanTrigger'] as String? ?? 'on_setup',
@@ -59,7 +59,7 @@ class WorkspaceConfig {
         'afterFixCommand': afterFixCommand,
       };
 
-  WorkspaceConfig copyWith({
+  ProjectConfig copyWith({
     bool? sensitivityMode,
     String? scanScope,
     String? scanTrigger,
@@ -68,7 +68,7 @@ class WorkspaceConfig {
     String? projectRoot,
     String? afterFixCommand,
   }) {
-    return WorkspaceConfig(
+    return ProjectConfig(
       sensitivityMode: sensitivityMode ?? this.sensitivityMode,
       scanScope: scanScope ?? this.scanScope,
       scanTrigger: scanTrigger ?? this.scanTrigger,
@@ -82,19 +82,19 @@ class WorkspaceConfig {
 
 String get configPath => p.join(claudeDir, 'config.json');
 
-WorkspaceConfig loadConfig({FileIO? io}) {
+ProjectConfig loadConfig({FileIO? io}) {
   final fileIO = io ?? const RealFileIO();
   final raw = fileIO.read(configPath);
-  if (raw.isEmpty) return const WorkspaceConfig();
+  if (raw.isEmpty) return const ProjectConfig();
   try {
     final json = jsonDecode(raw) as Map<String, dynamic>;
-    return WorkspaceConfig.fromJson(json);
+    return ProjectConfig.fromJson(json);
   } on FormatException {
-    return const WorkspaceConfig();
+    return const ProjectConfig();
   }
 }
 
-void saveConfig(WorkspaceConfig config, {FileIO? io}) {
+void saveConfig(ProjectConfig config, {FileIO? io}) {
   final fileIO = io ?? const RealFileIO();
   const encoder = JsonEncoder.withIndent('  ');
   fileIO.write(configPath, encoder.convert(config.toJson()));

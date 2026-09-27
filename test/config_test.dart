@@ -3,7 +3,7 @@ import 'package:claudart/config.dart';
 import 'helpers/mocks.dart';
 
 void main() {
-  group('WorkspaceConfig', () {
+  group('ProjectConfig', () {
     test('load returns defaults when file missing', () {
       final io = MemoryFileIO();
       final cfg = loadConfig(io: io);
@@ -33,7 +33,7 @@ void main() {
 
     test('save writes valid json', () {
       final io = MemoryFileIO();
-      const cfg = WorkspaceConfig(
+      const cfg = ProjectConfig(
         sensitivityMode: true,
         scanScope: 'full',
         scanTrigger: 'on_demand',
@@ -50,7 +50,7 @@ void main() {
 
     test('round-trip load/save preserves values', () {
       final io = MemoryFileIO();
-      const original = WorkspaceConfig(
+      const original = ProjectConfig(
         sensitivityMode: true,
         scanScope: 'full',
         scanTrigger: 'on_demand',
@@ -75,7 +75,7 @@ void main() {
     });
 
     test('copyWith produces updated config', () {
-      const cfg = WorkspaceConfig();
+      const cfg = ProjectConfig();
       final updated = cfg.copyWith(sensitivityMode: true, scanScope: 'full');
       expect(updated.sensitivityMode, isTrue);
       expect(updated.scanScope, equals('full'));

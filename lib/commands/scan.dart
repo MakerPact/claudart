@@ -24,7 +24,7 @@ Future<void> runScan({
 }) async {
   final fileIO = io ?? const RealFileIO();
   final config = projectRootOverride != null
-      ? WorkspaceConfig(projectRoot: projectRootOverride)
+      ? ProjectConfig(projectRoot: projectRootOverride)
       : loadConfig(io: fileIO);
 
   if (config.projectRoot == null) {

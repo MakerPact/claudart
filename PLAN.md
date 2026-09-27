@@ -36,7 +36,7 @@ claudart works on branches. zedup manages them. They share the same registry.
 
 ```mermaid
 graph TD
-    A[claudart add] -->|wizard → WorkspaceConfig| B[Template System]
+    A[claudart add] -->|wizard → AddAnswers| B[Template System]
     B -->|plan_template| C[PLAN.md]
     B -->|claude_template| D[CLAUDE.md]
     B -->|diagram_template| E[Mermaid diagrams]
@@ -698,7 +698,7 @@ graph LR
 | Per-project workspaces (v2) | Single global workspace had string-matching fragility and no project isolation |
 | Templates are source of truth | No information lives only in a rendered document; README is always derivable, never the origin |
 | Diagrams live in PLAN.md, not a diagrams/ folder | Diagram travels with the feature it describes; GitHub renders Mermaid as SVG |
-| claudart add wizard drives generation | Config questions → WorkspaceConfig → templates → markdown triple; DRY across all projects |
+| claudart add wizard drives generation | Config questions → AddAnswers → templates → markdown triple; DRY across all projects |
 | MEMORY.md auto-registration on add | Claude immediately knows the workspace exists; no manual MEMORY.md editing per project |
 | dartrix is a pure Dart package, not a markdown generator | claudart generates the dartrix-aware sections; dartrix's responsibility is compile-time coverage |
 | README is the last stop | Public README is curated from PLAN.md content — migrating it never loses integral concepts |

@@ -145,14 +145,14 @@ Future<RotateResult>  runRotate({
   return RotateResult.rotated;
 }
 
-WorkspaceConfig _loadConfig(FileIO fileIO, String workspace) {
+ProjectConfig _loadConfig(FileIO fileIO, String workspace) {
   final configFile = configPathFor(workspace);
-  if (!fileIO.fileExists(configFile)) return const WorkspaceConfig();
+  if (!fileIO.fileExists(configFile)) return const ProjectConfig();
   try {
     final json = jsonDecode(fileIO.read(configFile)) as Map<String, dynamic>;
-    return WorkspaceConfig.fromJson(json);
+    return ProjectConfig.fromJson(json);
   } on FormatException {
-    return const WorkspaceConfig();
+    return const ProjectConfig();
   }
 }
 

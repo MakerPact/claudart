@@ -25,9 +25,10 @@ import '../ui/render.dart' as render;
 import 'link.dart' show createProjectLinks;
 
 /// Project shape — drives `claudeTemplate`'s optional Flutter constraint
-/// line. Not named alongside `WorkspaceConfig`, since that name is already
-/// taken by two unrelated types in this codebase (`lib/config.dart`,
-/// `lib/workspace/workspace_config.dart`).
+/// line. Not named `WorkspaceConfig` — that name belongs to
+/// `lib/workspace/workspace_config.dart`'s v2 per-project metadata class;
+/// the former naming collision with `lib/config.dart`'s scan/sensitivity
+/// settings was resolved by renaming the latter to `ProjectConfig`.
 enum ProjectType {
   cli,
   library,
