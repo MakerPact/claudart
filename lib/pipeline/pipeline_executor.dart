@@ -180,6 +180,7 @@ class PipelineExecutor {
           final expected =
               current.routes.keys.map((t) => '<${t.wireTag}>').join(', ');
           yield AgentEscalating(
+            stepId: current.id,
             question:
                 'Step "${current.id}" produced no recognised tag.\n'
                 '  Expected one of: $expected\n'
@@ -190,7 +191,7 @@ class PipelineExecutor {
             yield PipelineCompleted(ctx: ctx);
             return;
           }
-          yield const AgentResumed();
+          yield AgentResumed(stepId: current.id);
         }
         final idx = steps.indexOf(current);
         if (idx < steps.length - 1) {
@@ -219,6 +220,7 @@ class PipelineExecutor {
           final unknown  = tagOrNull(stored, matchedTag!.wireTag);
           final question = ctx[PipelineSlot.question] ?? '';
           yield AgentEscalating(
+            stepId:         current.id,
             question:       question,
             unknownContext: (unknown != null && unknown.isNotEmpty) ? unknown : null,
           );
@@ -226,7 +228,7 @@ class PipelineExecutor {
           if (answer.isNotEmpty) {
             ctx = ctx.appendClarification('Clarification: $answer');
           }
-          yield const AgentResumed();
+          yield AgentResumed(stepId: current.id);
           current = stepMap[returnToStepId]!;
 
         case ApprovalGate(:final planTag, :final nextStepId):
@@ -252,7 +254,7 @@ class PipelineExecutor {
             if (feedback.isNotEmpty) {
               ctx = ctx.appendClarification('Refinement: $feedback');
             }
-            yield const AgentResumed();
+            yield AgentResumed(stepId: current.id);
             // loop back to plan step; fall through to approve if plan not in this run
             final planStep = stepMap['plan'];
             if (planStep != null) {

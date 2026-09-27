@@ -9,25 +9,29 @@
 // mapping. (Called via the extension's own name, not `StepStatus.fromEvent`
 // — a static extension member is namespaced under the extension, not the
 // extended type.)
+//
+// `waiting` added 2026-09-27: AgentEscalating/AgentResumed now carry a
+// stepId (previously session-level events with no per-step identity), so
+// they drive a real status transition instead of leaving the active
+// step's displayed status untouched. Five events identify a single step
+// now, not three.
 
 import 'pipeline_event.dart';
 
-enum StepStatus { pending, running, done, failed }
+enum StepStatus { pending, running, waiting, done, failed }
 
 extension StepStatusFromEvent on StepStatus {
   /// Projects a [PipelineEvent] onto a [StepStatus], or `null` when the
   /// event carries no per-step status change of its own — the caller
-  /// should keep whatever status it already had. Only the three events
-  /// that identify a single step (`stepId`) drive a status transition;
-  /// every other event is session-level (escalation pause/resume, the
-  /// flow-command approval gate, pipeline completion) and leaves the
-  /// active step's displayed status untouched.
+  /// should keep whatever status it already had. Only events that
+  /// identify a single step (`stepId`) drive a status transition; the
+  /// flow-command approval gate and pipeline completion are session-level
+  /// and leave the active step's displayed status untouched.
   static StepStatus? fromEvent(PipelineEvent event) => switch (event) {
-        AgentStarted() => StepStatus.running,
+        AgentStarted() || AgentResumed() => StepStatus.running,
         AgentCompleted() => StepStatus.done,
         AgentFailed() => StepStatus.failed,
-        AgentEscalating() ||
-        AgentResumed() ||
+        AgentEscalating() => StepStatus.waiting,
         PlanDraft() ||
         AwaitingApproval() ||
         PipelineCompleted() =>

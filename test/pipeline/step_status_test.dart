@@ -34,14 +34,14 @@ void main() {
       expect(StepStatusFromEvent.fromEvent(event), equals(StepStatus.failed));
     });
 
-    test('AgentEscalating carries no per-step status change', () {
-      const event = AgentEscalating(question: 'which file?');
-      expect(StepStatusFromEvent.fromEvent(event), isNull);
+    test('AgentEscalating maps to waiting', () {
+      const event = AgentEscalating(stepId: 'a', question: 'which file?');
+      expect(StepStatusFromEvent.fromEvent(event), equals(StepStatus.waiting));
     });
 
-    test('AgentResumed carries no per-step status change', () {
-      const event = AgentResumed();
-      expect(StepStatusFromEvent.fromEvent(event), isNull);
+    test('AgentResumed maps to running', () {
+      const event = AgentResumed(stepId: 'a');
+      expect(StepStatusFromEvent.fromEvent(event), equals(StepStatus.running));
     });
 
     test('PlanDraft carries no per-step status change', () {

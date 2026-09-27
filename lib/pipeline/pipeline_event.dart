@@ -109,15 +109,22 @@ final class AgentFailed extends PipelineEvent {
 /// [unknownContext] is set when a lookup step could not find the answer in
 /// scope files — surfaced so the UI can show "Not in files: …" context.
 final class AgentEscalating extends PipelineEvent {
+  final String stepId;
   final String question;
   final String? unknownContext;
 
-  const AgentEscalating({required this.question, this.unknownContext});
+  const AgentEscalating({
+    required this.stepId,
+    required this.question,
+    this.unknownContext,
+  });
 }
 
 /// User input was received; the pipeline is resuming.
 final class AgentResumed extends PipelineEvent {
-  const AgentResumed();
+  final String stepId;
+
+  const AgentResumed({required this.stepId});
 }
 
 // ── Flow-command approval gate ────────────────────────────────────────────────

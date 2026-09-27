@@ -46,6 +46,7 @@ void main() {
 
     test('AgentEscalating → Question carrying the question', () {
       const event = AgentEscalating(
+        stepId:         'plan',
         question:       'which file holds the label?',
         unknownContext: 'foo',
       );
@@ -57,7 +58,10 @@ void main() {
     });
 
     test('AgentResumed → null', () {
-      expect(toResponse(const AgentResumed(), speaker: speaker, workspace: ws), isNull);
+      expect(
+        toResponse(const AgentResumed(stepId: 'plan'), speaker: speaker, workspace: ws),
+        isNull,
+      );
     });
 
     test('AwaitingApproval → null', () {
