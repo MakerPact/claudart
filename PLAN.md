@@ -343,15 +343,36 @@ Verified live against this repo's own CLAUDE.md before shipping — found
 and fixed real drift between the template and this file's own hand-grown
 content (see `docs/session_log.md`'s 2026-09-26 entry for the full story).
 
+### Phase 3 — `claudart add` wizard (complete)
+Scaffolds a brand-new project workspace end to end. `lib/commands/add.dart`:
+- Pre-fills git author (`readGitAuthor`, new in `lib/git_utils.dart`),
+  project name, Dart SDK constraint and dartrix usage (plain regex reads
+  of `pubspec.yaml`, no yaml package dependency)
+- Injectable questionnaire (SDK constraint, uses dartrix?, GitHub
+  tracking?, Mermaid diagrams?, CHANGELOG.md?, project type)
+- Generates PLAN.md (`planStub`) and CLAUDE.md (`claudeTemplate`) from
+  Phase 2's templates, writes a registry entry
+- Symlinks `.claude`/`.cursor` via `createProjectLinks` — extracted out
+  of `runLink` so `runAdd` reuses the same mechanism without triggering
+  `runLink`'s own CLAUDE.md tail-regeneration step, which would clobber
+  the constraint content a fresh scaffold writes
+- Registers the project in Claude Code's own auto-memory
+  (`~/.claude/projects/<hash>/memory/`, hash = `projectRoot` with `/`
+  replaced by `-`) so a session started there already knows it exists
+
+Verified live: a real scratch git repo, `claudart add` run against it,
+then `claudart setup` against the same scaffolded workspace — confirms
+the self-hosting law holds for a project this command created from
+nothing, not just in tests.
+
+Deliberately out of scope this phase: CHANGELOG.md file generation,
+Mermaid diagram generation (both answers recorded on the wizard's
+answer set, not acted on), README.md advertising `add` until it's
+shipped and used for a while.
+
 ---
 
 ## What's next
-
-### Phase 3 — `claudart add` wizard
-- Configuration questions flow (injectable for tests)
-- Generates markdown triple from templates → writes to workspace
-- Registers workspace in Claude Code's MEMORY.md
-- Detects dartrix in `pubspec.yaml` → sets `usesDartrix: true` automatically
 
 ### Phase 4 — UX improvements
 - `skills.md` Pending: keyed map structure (slug → root cause/status)
