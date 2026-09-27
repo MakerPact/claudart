@@ -61,6 +61,15 @@ String tokenMapPathFor(String ws) => p.join(ws, 'token_map.json');
 String logsDirFor(String ws) => p.join(ws, 'logs');
 String experimentsDirFor(String ws) => p.join(ws, 'experiments');
 
+// ── Per-project-root path functions ─────────────────────────────────────────
+// CLAUDE.md lives at the project root, not the workspace — it is a real,
+// hand-maintained file since v2 retired the CLAUDE.md symlink (see
+// unlink.dart, which correctly refuses to delete a non-symlink CLAUDE.md).
+
+/// [projectRoot]/CLAUDE.md — not to be confused with the deprecated,
+/// legacy-global-workspace `claudeMdPath` getter below.
+String claudeMdPathFor(String projectRoot) => p.join(projectRoot, 'CLAUDE.md');
+
 // ── Legacy single-workspace paths ──────────────────────────────────────────
 // Kept for backward compatibility while commands migrate to workspaceFor().
 // TODO: remove once all callers use the per-workspace functions above.
