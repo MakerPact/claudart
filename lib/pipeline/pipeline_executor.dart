@@ -126,16 +126,22 @@ class PipelineExecutor {
         isRevisit:    isRevisit,
       );
 
-      final result = await _runner(
-        model:        stepModel,
-        systemPrompt: current.systemPrompt,
-        message:      current.buildPrompt(ctx),
-        workingDir:   ctx.projectRoot,
-        mode:         current.mode,
-      );
+      String? failureReason;
+      StepResult? result;
+      try {
+        result = await _runner(
+          model:        stepModel,
+          systemPrompt: current.systemPrompt,
+          message:      current.buildPrompt(ctx),
+          workingDir:   ctx.projectRoot,
+          mode:         current.mode,
+        );
+      } on Exception catch (e) {
+        failureReason = e.toString();
+      }
 
       if (result == null) {
-        yield AgentFailed(stepId: current.id);
+        yield AgentFailed(stepId: current.id, reason: failureReason);
         yield PipelineCompleted(ctx: ctx);
         return;
       }
@@ -624,14 +630,18 @@ Future<StepResult?> defaultClaudeRunner({
 
     if (code != 0) {
       if (err.trim().isNotEmpty) stderr.writeln(err.trim());
-      return null;
+      throw Exception(
+        'claude exited $code${err.trim().isEmpty ? '' : ': ${err.trim()}'}',
+      );
     }
 
     final resultLine = lines.lastWhere(
       (l) => l.contains('"type":"result"'),
       orElse: () => '',
     );
-    if (resultLine.isEmpty) return null;
+    if (resultLine.isEmpty) {
+      throw Exception('claude produced no result line');
+    }
 
     final result = parseClaudeResultLine(
       resultLine,
@@ -653,7 +663,7 @@ Future<StepResult?> defaultClaudeRunner({
   } on Exception catch (e) {
     trace.writeException(e);
     stderr.writeln('claude call failed: $e');
-    return null;
+    rethrow;
   }
 }
 

@@ -96,10 +96,15 @@ final class AgentCompleted extends PipelineEvent {
 }
 
 /// A pipeline step failed (runner returned null).
+///
+/// [reason] is the runner's own diagnostic message when available (exit
+/// code + stderr, a missing/empty result line, a caught exception) — null
+/// only when a test-injected runner returns null with no reason to give.
 final class AgentFailed extends PipelineEvent {
   final String stepId;
+  final String? reason;
 
-  const AgentFailed({required this.stepId});
+  const AgentFailed({required this.stepId, this.reason});
 }
 
 // ── Escalation ────────────────────────────────────────────────────────────────

@@ -44,6 +44,18 @@ void main() {
       expect((r! as Blocker).step, equals('plan'));
     });
 
+    test('AgentFailed with a reason forwards it as errorType', () {
+      const event = AgentFailed(stepId: 'plan', reason: 'claude exited 1: boom');
+      final r = toResponse(event, speaker: speaker, workspace: ws);
+      expect((r! as Blocker).errorType, equals('claude exited 1: boom'));
+    });
+
+    test('AgentFailed with no reason falls back to the generic literal', () {
+      const event = AgentFailed(stepId: 'plan');
+      final r = toResponse(event, speaker: speaker, workspace: ws);
+      expect((r! as Blocker).errorType, equals('step failed'));
+    });
+
     test('AgentEscalating → Question carrying the question', () {
       const event = AgentEscalating(
         stepId:         'plan',

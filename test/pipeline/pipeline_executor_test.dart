@@ -230,6 +230,58 @@ void main() {
     });
   });
 
+  group('PipelineExecutor — AgentFailed.reason', () {
+    final step = AgentStep(
+      id: 'a',
+      label: 'Step A',
+      model: AgentModel.haiku,
+      systemPrompt: 'sys',
+      buildPrompt: (_) => 'msg',
+    );
+
+    test('a thrown Exception from the runner surfaces as AgentFailed.reason',
+        () async {
+      final exec = PipelineExecutor(
+        runner: ({
+          required model,
+          required systemPrompt,
+          required message,
+          required workingDir,
+          StepMode mode = StepMode.project,
+        }) async =>
+            throw Exception('claude exited 1: boom'),
+      );
+
+      final events = await exec
+          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
+          .toList();
+
+      final failed = events.whereType<AgentFailed>().single;
+      expect(failed.reason, contains('claude exited 1: boom'));
+    });
+
+    test('a runner returning null with no thrown exception leaves reason '
+        'null, not a synthesized message', () async {
+      final exec = PipelineExecutor(
+        runner: ({
+          required model,
+          required systemPrompt,
+          required message,
+          required workingDir,
+          StepMode mode = StepMode.project,
+        }) async =>
+            null,
+      );
+
+      final events = await exec
+          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
+          .toList();
+
+      final failed = events.whereType<AgentFailed>().single;
+      expect(failed.reason, isNull);
+    });
+  });
+
   group('PipelineExecutor — AgentStarted.isRevisit', () {
     test('false the first time a step runs, true when a route loops back to it', () async {
       // 'plan' routes to 'clarify' via QuestionBranch; 'clarify' routes
