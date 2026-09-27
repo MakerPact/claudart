@@ -3,6 +3,9 @@ import 'package:claudart/commands/status.dart';
 import 'package:claudart/registry.dart';
 import 'package:claudart/paths.dart';
 import '../helpers/mocks.dart';
+import '../matrix/handoff_expectation.dart';
+import '../matrix/handoff_status_matrix.dart' as handoff_matrix;
+import '../matrix/handoff_status_type.dart';
 
 const _projectRoot = '/projects/my-app';
 const _projectName = 'my-app';
@@ -15,6 +18,8 @@ class _ExitException implements Exception {
 Never _throwExit(int code) => throw _ExitException(code);
 
 void main() {
+  handoff_matrix.assertNoGaps();
+
   group('status — branch display', () {
     test('displays live git branch when handoff has unknown', () async {
       final io = MemoryFileIO();
@@ -118,6 +123,7 @@ _Nothing yet.
       );
       // Handoff must be unchanged — status is read-only.
       expect(io.read(handoffPathFor(workspace)), equals(handoffBefore));
+      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
 
     test('displays handoff branch when git detection unavailable', () async {
@@ -217,6 +223,7 @@ _Nothing yet.
       );
       // Status is read-only — handoff must not be mutated.
       expect(io.read(handoffPathFor(workspace)), equals(handoffBefore));
+      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
   });
 

@@ -7,6 +7,9 @@ import 'package:claudart/git_utils.dart';
 import 'package:claudart/registry.dart';
 import 'package:claudart/paths.dart';
 import '../helpers/mocks.dart';
+import '../matrix/handoff_expectation.dart';
+import '../matrix/handoff_status_matrix.dart' as handoff_matrix;
+import '../matrix/handoff_status_type.dart';
 
 // ── File finder fakes ─────────────────────────────────────────────────────────
 
@@ -166,6 +169,7 @@ List<String?> get _freshPrompts => [
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 void main() {
+  handoff_matrix.assertNoGaps();
 
   // ── Error paths ─────────────────────────────────────────────────────────────
 
@@ -293,6 +297,7 @@ void main() {
         ),
         throwsA(isA<_ExitException>().having((e) => e.code, 'code', 0)),
       );
+      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
 
     test('handoff unchanged', () async {

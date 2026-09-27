@@ -6,6 +6,9 @@ import 'package:claudart/git_utils.dart';
 import 'package:claudart/registry.dart';
 import 'package:claudart/paths.dart';
 import '../helpers/mocks.dart';
+import '../matrix/handoff_expectation.dart';
+import '../matrix/handoff_status_matrix.dart' as handoff_matrix;
+import '../matrix/handoff_status_type.dart';
 
 const _projectRoot = '/projects/my-app';
 const _workspace = '/workspaces/my-app';
@@ -261,6 +264,8 @@ List<String> _checkpoints(MemoryFileIO io) => io.files.keys
     .toList();
 
 void main() {
+  handoff_matrix.assertNoGaps();
+
   group('save — branch display', () {
     test('prefers live git branch over stale handoff branch', () async {
       final realGit = detectGitContext();
@@ -301,6 +306,7 @@ void main() {
       final io = _io();
       await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io), hasLength(1));
+      handoff_matrix.cover(HandoffStatusType.readyForDebug, HandoffExpectation.debug);
     });
 
     test('checkpoint filename has checkpoint_ prefix', () async {
@@ -348,6 +354,7 @@ void main() {
       final io = _io(handoff: _unconfirmedHandoff);
       await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io), hasLength(1));
+      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
   });
 

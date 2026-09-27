@@ -7,6 +7,9 @@ import 'package:claudart/registry.dart';
 import 'package:claudart/paths.dart';
 import 'package:claudart/session/workspace_guard.dart';
 import '../helpers/mocks.dart';
+import '../matrix/handoff_expectation.dart';
+import '../matrix/handoff_status_matrix.dart' as handoff_matrix;
+import '../matrix/handoff_status_type.dart';
 
 const _projectRoot = '/projects/my-app';
 const _workspace = '/workspaces/my-app';
@@ -123,6 +126,8 @@ MemoryFileIO _io({
 }
 
 void main() {
+  handoff_matrix.assertNoGaps();
+
   group('launch — empty registry', () {
     test('exits when no projects registered', () async {
       final io = MemoryFileIO();
@@ -154,6 +159,7 @@ void main() {
         exitFn: _throwExit,
       );
       expect(pickCall, equals(2));
+      handoff_matrix.cover(HandoffStatusType.readyForDebug, HandoffExpectation.debug);
     });
 
     test('a real .claude/ directory (symlink was never possible) shows as '
