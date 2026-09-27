@@ -520,19 +520,36 @@ left untouched.
 
 ## What's next
 
-### Phase 6 — Agent flow registry + planner.dart
-Corresponds to README Roadmap table row 6 ("planned"), backfilled here
-2026-09-27 for the same reason as the v2-adjacent backfill above. Verified
-against code, not copied from README's label: the "agent flow registry"
-half is already shipped — `lib/pipeline/agent_flow.dart`'s `AgentFlow` enum
-is the canonical registry of pipeline variants across claudart and zedup,
-per its own header comment. What's genuinely unbuilt is a standalone
-`planner.dart` — routing/model-selection logic today lives split across
-`lib/pipeline/agents/categorization.dart` (the τ classification taxonomy)
-and `lib/pipeline/route_tag.dart`/`step_route.dart` (route dispatch), not
-consolidated into one planner module. `lib/logging/planner_log.dart`
-exists (records routing decisions) but is not itself the planner.
-**Status:** registry — shipped; consolidated `planner.dart` — not started.
+### Phase 6 — Agent flow registry + planner.dart (closed, not built)
+Corresponds to README Roadmap table row 6 ("planned"), backfilled
+2026-09-27, closed 2026-09-27 after evaluating whether to actually build
+the unshipped half.
+
+Agent flow registry: shipped — `lib/pipeline/agent_flow.dart`'s
+`AgentFlow` enum is the canonical registry of pipeline variants across
+claudart and zedup, per its own header comment.
+
+`planner.dart`: **intentionally not built.** Routing/model-selection
+logic today lives split across three independently-justified pieces —
+`lib/pipeline/agents/categorization.dart` (the τ classification
+taxonomy, plus `routeModel()`/`modelForCategorizeOutput()`, the actual
+model-routing function every step's `modelSelector` consults),
+`lib/pipeline/route_tag.dart` (the `RouteTag` enum), and
+`lib/pipeline/step_route.dart` (the `StepRoute` sealed hierarchy —
+`GoTo`/`QuestionBranch`/`FeedBackTo`/`EscalateUser`/`ApprovalGate`/
+`Complete` — dispatched by `PipelineExecutor`). `lib/logging/
+planner_log.dart` is a passive audit logger, not a planner, and was
+never in scope for consolidation.
+
+No shared bug or duplicated logic was found across those three files
+that a consolidated `planner.dart` would fix — this would be purely
+file-organization renaming with no behavior change, exactly the
+premature abstraction "Simplicity first" forbids. One minor 2-site
+tag-pattern duplication was observed between call sites but sits below
+this project's extraction threshold; noted, not acted on.
+
+**Restart criteria:** revisit only if a third call site appears or real
+duplication emerges — not on stylistic preference alone.
 
 ### Phase 7 — Per-step thinking/cost metadata in a TUI dependency graph
 Corresponds to README Roadmap table row 7 ("planned"), backfilled
