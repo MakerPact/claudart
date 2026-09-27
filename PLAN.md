@@ -372,13 +372,35 @@ shipped and used for a while.
 
 ---
 
-## What's next
+### Phase 4 — UX improvements (complete)
+- `skills.md` Pending is now a keyed map: `upsertPendingEntry`/
+  `removePendingEntry`/`pendingHasBranch` in `lib/teardown_utils.dart`
+  replace `/save`'s append-only writes, so repeated saves on the same
+  branch upsert one entry instead of accumulating duplicates, and a
+  resolved-and-archived teardown removes the entry instead of leaving it
+  stale forever
+- `lib/ui/render.dart` gained `divider()` and `statusBar()`; the
+  hand-rolled `───` blocks and status-line formatting in `setup.dart`/
+  `teardown.dart`/`status.dart` now go through them
+- Teardown's default-prompt hints condensed from a 2-line
+  `"Question\n  (press enter to use: X)"` format to one line
+  (`"Question [X]"`) via a shared `lib/util/prompt_with_default.dart`,
+  also adopted by `setup.dart`
+- `claudart resume` (new, `lib/commands/resume.dart`): loads the newest
+  archive entry for the registered project, reads its handoff snapshot,
+  and pre-fills `runSetup`'s bug/expected/files/entry-point prompts from
+  it (`runSetup` gained matching optional `default*` params)
 
-### Phase 4 — UX improvements
-- `skills.md` Pending: keyed map structure (slug → root cause/status)
-- Premium interactive CLI: arrow-key menus, spinner, status bar
-- Teardown prompts: distill to one-liners
-- `claudart resume` — pre-populate setup from most recent archive
+Found and fixed live: `resume`'s first draft passed its own *resolved*
+project root to `runSetup` as `projectRootOverride`, which every command
+in this codebase treats as "skip live git detection" — silently breaking
+branch detection on a real invocation. Fixed by passing resume's own
+original nullable override through unchanged; caught via live smoke
+testing, then locked in with a regression test.
+
+---
+
+## What's next
 
 ### Phase 5 — README migration
 Once templates are built: migrate all three READMEs (claudart, dartrix, zedup) to be

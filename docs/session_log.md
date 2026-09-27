@@ -5,6 +5,74 @@
 
 ---
 
+## 2026-09-27 — Phase 4: skills keyed-map, render primitives, teardown distillation, `claudart resume`
+
+### What this session did
+
+Implemented all 4 items of PLAN.md's Phase 4 in dependency order, through
+the full self-hosting workflow (`flow`-scoped plan → `setup`/confirmed KT →
+`save` → implement → `dart analyze`/`custom_lint`/`test` → real headless
+`teardown`):
+
+1. **skills.md keyed-map** — `upsertPendingEntry`/`removePendingEntry`/
+   `pendingHasBranch` (`lib/teardown_utils.dart`) replace `/save`'s
+   append-only writes to the Pending section. Repeated saves on one branch
+   now upsert a single entry instead of accumulating duplicate bullets;
+   `teardown.dart` removes the entry once a session archives as resolved,
+   instead of leaving it stale forever. Caught and fixed a test that had
+   been asserting the old buggy accumulation behavior as correct.
+2. **Render-primitive migration** — `render.divider()`/`render.statusBar()`
+   added to `lib/ui/render.dart`; replaced ~12 hand-rolled `───` blocks
+   across `setup.dart`/`teardown.dart` and `status.dart`'s prompt-mode
+   status line.
+3. **Teardown prompt distillation** — the real bloat was
+   `_promptWithDefault`'s own 2-line hint format
+   (`"Question\n  (press enter to use: X)"`), not question wording.
+   Hoisted to `lib/util/prompt_with_default.dart`, reformatted to one line
+   (`"Question [X]"`), adopted by both `setup.dart` and `teardown.dart`.
+4. **`claudart resume`** (new, `lib/commands/resume.dart`) — loads the
+   newest `ArchiveEntry` for the registered project, reads its archived
+   handoff snapshot, and pre-fills `runSetup`'s bug/expected/files/entry-
+   point prompts from it (filtering out `_Not yet determined._`-style
+   placeholders). `runSetup` gained matching optional `default*` params.
+
+### A real bug, caught live not by any test
+
+`resume`'s first draft passed its own *resolved* `projectRoot` to
+`runSetup` as `projectRootOverride`. Every command in this codebase treats
+a non-null override as "skip live git detection" (the established
+test-bypass convention) — so a real, live `claudart resume` invocation
+with no override of its own silently got its own branch detection
+disabled, falling through to a manual "enter branch name" prompt that
+consumed the next piped answer as a literal branch name. Found via a live
+smoke test (branch printed as the confirmation keystroke, not `main`), not
+by any of the unit tests, all of which were green. Fixed by passing the
+*original* nullable override through unchanged. Red-before-fix verified:
+reverted the one-line fix, confirmed a new regression test failed with
+exactly the predicted symptom, restored it.
+
+**Full self-hosting loop closed live**, not just in tests: built this
+session's own KT through `claudart flow` → `setup` → confirmed root cause
+→ `save` → implemented all 4 items → `dart analyze`/`custom_lint`/`test`
+clean → real `claudart teardown --headless` against this repo, which
+correctly detected `HandoffStatus.debugComplete`, ran the teardown
+analyzer, archived the session, and removed its own Pending entry from
+skills.md — proving item 1's fix against the exact workflow that motivated
+it.
+
+### Test count
+
+1127 passing, 0 failing (custom_lint clean, `dart analyze` — 22
+pre-existing info-level issues only, unrelated to this session).
+
+### Commits this session
+
+```
+edd5e15 feat: Phase 4 — skills keyed-map, render primitives, teardown distillation, claudart resume
+```
+
+---
+
 ## 2026-09-26 — Phase 2: template system built, PLAN.md's first shipped roadmap phase
 
 ### What this session did
