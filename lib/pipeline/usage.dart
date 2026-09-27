@@ -47,6 +47,10 @@ class Usage {
     thinkingTokens: thinkingTokens + o.thinkingTokens,
   );
 
+  /// The `$X.XXXX` cost fragment shared by [format] and per-step cost
+  /// badges (e.g. zedup's workflow pane) — one source for the format.
+  String get costDisplay => '\$${cost.toStringAsFixed(4)}';
+
   /// Human-readable summary for terminal display.
   /// Example: 'in 3.2k · cached 1.1k · out 412 · $0.0008'
   String format() {
@@ -55,7 +59,7 @@ class Usage {
     if (cacheCreation > 0) buf.write(' · cache-wr ${_fmtN(cacheCreation)}');
     buf.write(' · out ${_fmtN(output)}');
     if (thinkingTokens > 0) buf.write(' (${_fmtN(thinkingTokens)} thinking)');
-    if (cost > 0) buf.write(' · \$${cost.toStringAsFixed(4)}');
+    if (cost > 0) buf.write(' · $costDisplay');
     return buf.toString();
   }
 

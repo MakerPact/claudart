@@ -125,6 +125,18 @@ void main() {
     });
   });
 
+  group('Usage.costDisplay', () {
+    test('formats to 4 decimal places with a leading dollar sign', () {
+      const usage = Usage(cost: 0.0008);
+      expect(usage.costDisplay, equals(r'$0.0008'));
+    });
+
+    test('format() uses costDisplay for its cost fragment', () {
+      const usage = Usage(input: 5, output: 5, cost: 1.5);
+      expect(usage.format(), contains(usage.costDisplay));
+    });
+  });
+
   test('Usage.toString includes every field name', () {
     const usage = Usage(
       input: 1,
