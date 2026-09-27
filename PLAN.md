@@ -311,6 +311,25 @@ isolation, manual `claudart link` required, CLAUDE.md bleeds into project root.
   configuration struct Phase 2 needed — already exists and is consumed by
   `scan.dart`, `flow.dart`, `debug.dart`, `suggest.dart`, `rotate.dart`.
 
+### Backfill — sensitivity mode, skills retrieval, static analysis scanner (complete, predates phase-tracking)
+Reconciling PLAN.md against README.md's Roadmap table (2026-09-27) found three
+shipped features tracked only in README, never given a PLAN.md entry —
+violating this file's own "no information exists only in README" rule
+(see Template system → Feature lifecycle, above). Backfilled here, verified
+against code and first-commit date, not just copied from README's labels:
+
+- **Sensitivity mode + token map** (`3bcbd91`, 2026-03-16) —
+  `lib/sensitivity/token_map.dart`/`abstractor.dart` abstract sensitive
+  identifiers before they leave the machine; `lib/commands/scan.dart` and
+  `RegistryEntry.sensitivityMode` gate it per project.
+- **Skills + cosine retrieval** (`3bcbd91`, 2026-03-16) —
+  `lib/similarity/cosine.dart` powers skills.md similarity lookup.
+- **Static analysis scanner** (`3bcbd91`, 2026-03-16) — `lib/commands/scan.dart`.
+
+Corresponds to README Roadmap table rows 2–4. Row 1 (CLI + workspace +
+scaffold) is v1/v2 above; row 5 (design subagent) is already tracked at
+PLAN.md:11.
+
 ### Phase 2 — Template system (complete)
 Built as 3 dependency-ordered slices, each self-hosted through claudart's
 own workflow. **Deviates from this document's own original sketch on
@@ -402,10 +421,49 @@ testing, then locked in with a regression test.
 
 ## What's next
 
-### Phase 5 — README migration
+### Phase 6 — Agent flow registry + planner.dart
+Corresponds to README Roadmap table row 6 ("planned"), backfilled here
+2026-09-27 for the same reason as the v2-adjacent backfill above. Verified
+against code, not copied from README's label: the "agent flow registry"
+half is already shipped — `lib/pipeline/agent_flow.dart`'s `AgentFlow` enum
+is the canonical registry of pipeline variants across claudart and zedup,
+per its own header comment. What's genuinely unbuilt is a standalone
+`planner.dart` — routing/model-selection logic today lives split across
+`lib/pipeline/agents/categorization.dart` (the τ classification taxonomy)
+and `lib/pipeline/route_tag.dart`/`step_route.dart` (route dispatch), not
+consolidated into one planner module. `lib/logging/planner_log.dart`
+exists (records routing decisions) but is not itself the planner.
+**Status:** registry — shipped; consolidated `planner.dart` — not started.
+
+### Phase 7 — Per-step thinking/cost metadata in a TUI dependency graph
+Corresponds to README Roadmap table row 7 ("planned"), backfilled
+2026-09-27. The metadata half is already shipped, claudart-side:
+`lib/pipeline/step_result.dart`'s `StepResult` (added `56cf9ab`,
+2026-09-21, "capture thinking, stop_reason, duration, num_turns per
+step") already carries per-step thinking/cost/duration data. What's
+unbuilt is the zedup-side TUI surface — a live dependency-graph rendering
+of that data; no such view exists in zedup today (verified: no
+dependency-graph rendering code found in zedup's `lib/`).
+**Status:** metadata capture — shipped; TUI dependency graph — not started.
+
+### Phase 8 — README migration
+> Renumbered twice (2026-09-27): first from "Phase 5" — that number
+> already names the unrelated, deferred design-subagent item at the top
+> of this file (PLAN.md:11) — then from "Phase 6," which collided with
+> README's own pre-existing Roadmap row 6 ("Agent flow registry +
+> planner.dart," backfilled above). This is the README-generation work —
+> the one that's still active.
+
 Once templates are built: migrate all three READMEs (claudart, dartrix, zedup) to be
 generated from their PLAN.md content. README becomes a curated render — no information loss,
 cleaner public surface.
+
+Supersedes the May 2026 README rewrite's "hand-curated, not generated"
+decision (`9f9b942`, `test/readme_sync_test.dart`'s docstring) — that
+sync test currently checks only command-routing and file-references, not
+content parity, and will need its own scope update once generation lands,
+or it will pass while silently drifting from a generated README's actual
+content guarantees.
 
 ---
 
