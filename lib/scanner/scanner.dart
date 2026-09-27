@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import '../config.dart';
 import '../file_io.dart';
 import '../ignore_rules.dart';
 import 'scan_threshold_exception.dart';
@@ -102,7 +103,7 @@ final _classPattern = RegExp(r'class\s+(\w+)\b');
 /// Scans [projectPath] for Dart entities.
 ScanResult scanProject(
   String projectPath, {
-  String scope = 'lib',
+  String scope = ScanScope.lib,
   IgnoreRules? ignoreRules,
   FileIO? io,
   int threshold = _defaultThreshold,
@@ -111,7 +112,8 @@ ScanResult scanProject(
   final fileIO = io ?? const RealFileIO();
   final ignore = ignoreRules ?? loadIgnoreRules(projectPath, io: io);
 
-  final scanRoot = scope == 'full' ? projectPath : p.join(projectPath, scope);
+  final scanRoot =
+      scope == ScanScope.full ? projectPath : p.join(projectPath, scope);
 
   final dartFiles = _collectDartFiles(scanRoot, fileIO);
 

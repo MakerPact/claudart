@@ -9,8 +9,9 @@ import '../logging/logger.dart';
 import '../ui/render.dart' as render;
 
 /// Runs an explicit on-demand scan of the project.
-/// [scope] overrides config.scanScope ('lib', 'full', or 'handoff').
-/// [full] is a convenience flag that sets scope to 'full'.
+/// [scope] overrides config.scanScope (`ScanScope.lib`, `ScanScope.full`,
+/// or any subdirectory name, e.g. 'handoff').
+/// [full] is a convenience flag that sets scope to `ScanScope.full`.
 /// [projectRootOverride] bypasses the legacy config lookup — used when the
 /// caller already knows the project root (e.g. setup.dart via registry).
 /// [workspacePath] routes token_map.json and logs to the per-project workspace.
@@ -32,7 +33,7 @@ Future<void> runScan({
   }
 
   final effectiveScope =
-      full ? 'full' : (scope ?? config.scanScope);
+      full ? ScanScope.full : (scope ?? config.scanScope);
   final projectRoot = config.projectRoot!;
 
   print(render.header('SENSITIVITY SCAN'));

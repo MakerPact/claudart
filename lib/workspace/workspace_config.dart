@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../file_io.dart';
 import '../pipeline/agent_flow.dart';
+import '../util/enum_util.dart';
 
 // ---------------------------------------------------------------------------
 // Enums — every variant concept in workspace.json is typed here.
@@ -21,8 +22,7 @@ enum StackType {
   swift,
   kotlin;
 
-  static StackType? fromString(String s) =>
-      StackType.values.where((v) => v.name == s).firstOrNull;
+  static StackType? fromString(String s) => enumByName(StackType.values, s);
 
   String get value => name;
 }

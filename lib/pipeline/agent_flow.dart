@@ -19,6 +19,7 @@ import '../commands/save_template.dart';
 import '../commands/setup_template.dart';
 import '../commands/suggest_template.dart';
 import '../commands/teardown_template.dart';
+import '../util/enum_util.dart';
 import 'agent_model.dart';
 import 'agent_step.dart';
 import 'flows/debug_steps.dart';
@@ -163,8 +164,7 @@ enum AgentFlow {
 
   String get value => name;
 
-  static AgentFlow? fromString(String s) =>
-      AgentFlow.values.where((v) => v.name == s).firstOrNull;
+  static AgentFlow? fromString(String s) => enumByName(AgentFlow.values, s);
 
   // ── Slash command → AgentFlow mapping ────────────────────────────────────────
 

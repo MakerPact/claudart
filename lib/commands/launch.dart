@@ -142,15 +142,17 @@ Future<void> runLauncher({
       '${ansi.c(ansi.red, 'Kill')}    archive handoff · discard session',
       'Back',
     ]);
-    if (action == ActiveMenu.resume) {
-      _printResumeInstructions(state.status);
-    } else if (action == ActiveMenu.kill) {
-      await runKill(
-        io: fileIO,
-        projectRootOverride: selected.projectRoot,
-        confirmFn: confirmFn,
-        exitFn: exitFn,
-      );
+    switch (action) {
+      case ActiveMenu.resume:
+        _printResumeInstructions(state.status);
+      case ActiveMenu.kill:
+        await runKill(
+          io: fileIO,
+          projectRootOverride: selected.projectRoot,
+          confirmFn: confirmFn,
+          exitFn: exitFn,
+        );
+      default: // ActiveMenu.back — no-op
     }
   } else {
     action = pick_([

@@ -3,6 +3,16 @@ import 'package:path/path.dart' as p;
 import 'file_io.dart';
 import 'paths.dart';
 
+/// The two named scan-scope values with special meaning. `scanScope` itself
+/// stays a plain `String`, not an enum — `scanner.dart` also accepts an
+/// arbitrary subdirectory name (e.g. `--scope=test`) as a valid scope, so
+/// the domain is open, not closed. These are the only two literals repeated
+/// across call sites; a bare custom scope stays inline at its one call site.
+abstract final class ScanScope {
+  static const lib = 'lib';
+  static const full = 'full';
+}
+
 /// Project-level persistent config stored as config.json in the workspace.
 class WorkspaceConfig {
   final bool sensitivityMode;
@@ -19,7 +29,7 @@ class WorkspaceConfig {
 
   const WorkspaceConfig({
     this.sensitivityMode = false,
-    this.scanScope = 'lib',
+    this.scanScope = ScanScope.lib,
     this.scanTrigger = 'on_setup',
     this.diagnosticReporting = false,
     this.lastScan,
@@ -30,7 +40,7 @@ class WorkspaceConfig {
   factory WorkspaceConfig.fromJson(Map<String, dynamic> json) {
     return WorkspaceConfig(
       sensitivityMode: json['sensitivityMode'] as bool? ?? false,
-      scanScope: json['scanScope'] as String? ?? 'lib',
+      scanScope: json['scanScope'] as String? ?? ScanScope.lib,
       scanTrigger: json['scanTrigger'] as String? ?? 'on_setup',
       diagnosticReporting: json['diagnosticReporting'] as bool? ?? false,
       lastScan: json['lastScan'] as String?,

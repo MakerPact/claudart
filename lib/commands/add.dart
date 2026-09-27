@@ -15,6 +15,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import '../file_io.dart';
 import '../git_utils.dart';
+import '../md_io.dart' show confirm;
 import '../paths.dart';
 import '../registry.dart';
 import '../templates/claude_template.dart';
@@ -66,7 +67,7 @@ Future<void> runAdd({
 }) async {
   final fileIO = io ?? const RealFileIO();
   final prompt_ = promptFn ?? _defaultPrompt;
-  final confirm_ = confirmFn ?? _defaultConfirm;
+  final confirm_ = confirmFn ?? confirm;
   final exit_ = exitFn ?? exit;
 
   print(render.header('CLAUDART ADD'));
@@ -249,8 +250,3 @@ String? _defaultPrompt(String question, {String? defaultValue}) {
   return (input == null || input.isEmpty) ? defaultValue : input;
 }
 
-bool _defaultConfirm(String question) {
-  stdout.write('\n$question [y/n]\n');
-  final input = editor.readLine(optional: true);
-  return input?.toLowerCase() == 'y' || input?.toLowerCase() == 'yes';
-}
