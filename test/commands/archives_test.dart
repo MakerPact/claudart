@@ -86,6 +86,25 @@ void main() {
         throwsA(isA<_ExitException>().having((e) => e.code, 'code', equals(0))),
       );
     });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      await expectLater(
+        runZoned(
+          () => runArchives(
+            io: io,
+            projectRootOverride: _projectRoot,
+            exitFn: _throwExit,
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        ),
+        throwsA(isA<_ExitException>()),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
+    });
   });
 
   group('runArchives — selection menu', () {

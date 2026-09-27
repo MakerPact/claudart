@@ -36,6 +36,7 @@ Future<void> runConfirmPending(
     print('  Run `claudart link` first.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
 

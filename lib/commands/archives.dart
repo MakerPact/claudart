@@ -40,6 +40,7 @@ Future<void> runArchives({
     print('✗ Project not registered. Run `claudart link` first.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
   final entries   = loadIndex(workspace, io: fileIO);

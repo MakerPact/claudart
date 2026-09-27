@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:claudart/commands/confirm_pending.dart';
 import 'package:claudart/registry.dart';
@@ -43,6 +44,23 @@ void main() {
       expect(loaded, isNotNull);
       expect(loaded!.question, equals('Save this?'));
       expect(loaded.onConfirmCommand, equals('claudart save'));
+    });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      await runZoned(
+        () => runConfirmPending(
+          ['--question', 'Save this?', '--on-confirm', 'claudart save'],
+          io: io,
+          projectRootOverride: _projectRoot,
+          exitFn: _throwExit,
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
     });
 
     test('exits 1 when --question is missing', () async {

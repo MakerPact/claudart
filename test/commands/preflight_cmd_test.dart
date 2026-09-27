@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:claudart/commands/preflight_cmd.dart';
 import 'package:claudart/registry.dart';
@@ -257,6 +258,27 @@ void main() {
       }
       // Blank handoff means no root cause to sync — clean.
       expect(caught?.code ?? 0, equals(0));
+    });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io(withHandoff: true, withSkills: false);
+      final output = <String>[];
+      try {
+        await runZoned(
+          () => runPreflightCmd(
+            'test',
+            io: io,
+            projectRootOverride: _projectRoot,
+            exitFn: _throwExit,
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        );
+      } on _ExitException {
+        // expected — exits 0 once preflight completes
+      }
+      expect(output.join('\n'), contains('Project  : my-app'));
     });
 
     test('exits 0 when root cause confirmed and pending entry exists',

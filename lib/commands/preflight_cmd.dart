@@ -38,6 +38,7 @@ Future<void> runPreflightCmd(
     print('  Run `claudart setup` to start one.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
 
