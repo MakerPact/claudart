@@ -230,6 +230,81 @@ void main() {
     });
   });
 
+  group('PipelineExecutor — AgentStarted.isRevisit', () {
+    test('false the first time a step runs, true when a route loops back to it', () async {
+      // 'plan' routes to 'clarify' via QuestionBranch; 'clarify' routes
+      // back to 'plan' via FeedBackTo; plan's second call emits HANDOFF,
+      // routed to Complete() so the pipeline terminates cleanly instead of
+      // falling through to "advance to next step" (which would bounce
+      // plan/clarify forever with only two steps in the list). The exact
+      // plan → clarify → plan loop shape flow_steps.dart uses for real.
+      //
+      // Distinct models (not distinct message strings) distinguish which
+      // step is calling in the shared runner below — comparing `model`
+      // keeps the check a typed AgentModel comparison, not a bare string.
+      var planCalls = 0;
+      final plan = AgentStep(
+        id:    'plan',
+        label: 'Plan',
+        model: AgentModel.sonnet,
+        systemPrompt: 'sys',
+        buildPrompt:  (_) => 'msg',
+        routes: {
+          RouteTag.question: const QuestionBranch('clarify'),
+          RouteTag.handoff:  const Complete(),
+        },
+      );
+      final clarify = AgentStep(
+        id:    'clarify',
+        label: 'Clarify',
+        model: AgentModel.haiku,
+        systemPrompt: 'sys',
+        buildPrompt:  (_) => 'msg',
+        routes: {
+          RouteTag.answer: const FeedBackTo('plan'),
+        },
+      );
+
+      final exec = PipelineExecutor(
+        runner: ({
+          required model,
+          required systemPrompt,
+          required message,
+          required workingDir,
+          StepMode mode = StepMode.project,
+        }) async {
+          if (model == plan.model) {
+            planCalls++;
+            if (planCalls == 1) {
+              return StepResult(
+                text:  '<${RouteTag.question.wireTag}>what?</${RouteTag.question.wireTag}>',
+                usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
+              );
+            }
+            return StepResult(
+              text:  '<${RouteTag.handoff.wireTag}>done</${RouteTag.handoff.wireTag}>',
+              usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
+            );
+          }
+          return StepResult(
+            text:  '<${RouteTag.answer.wireTag}>ok</${RouteTag.answer.wireTag}>',
+            usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
+          );
+        },
+      );
+
+      final events = await exec
+          .run(steps: [plan, clarify], ctx: _ctx(), displayStep: 1, displayTotal: 2)
+          .toList();
+
+      final started = events.whereType<AgentStarted>().toList();
+      expect(started.map((e) => e.stepId).toList(), equals(['plan', 'clarify', 'plan']));
+      expect(started[0].isRevisit, isFalse, reason: 'plan\'s first run');
+      expect(started[1].isRevisit, isFalse, reason: 'clarify\'s first run');
+      expect(started[2].isRevisit, isTrue, reason: 'plan, looped back to via clarify\'s FeedBackTo');
+    });
+  });
+
   group('PipelineExecutor — mode', () {
     test('AgentStep.mode reaches the runner call', () async {
       StepMode? capturedMode;

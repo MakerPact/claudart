@@ -98,6 +98,12 @@ class PipelineExecutor {
 
     final stepMap = {for (final s in steps) s.id: s};
     var current   = steps.first;
+    // Tracks which step ids have already run this pipeline call, so a
+    // routing loop-back (FeedBackTo, EscalateUser returning to the step
+    // that asked) is distinguishable from ordinary forward advance —
+    // AgentStarted.isRevisit is the graph-cycle signal a subscriber needs
+    // to render the step sequence as a graph, not just a flat list.
+    final visited = <String>{};
 
     while (true) {
       // Local position within `steps` so the same `run` call advances
@@ -109,12 +115,15 @@ class PipelineExecutor {
       // call agree on which model fired. modelSelector can read ctx
       // (e.g. plan step reads categorize output for ComplexityTier).
       final stepModel = current.effectiveModel(ctx);
+      final isRevisit = visited.contains(current.id);
+      visited.add(current.id);
       yield AgentStarted(
         stepId:       current.id,
         label:        current.label,
         model:        stepModel,
         displayStep:  displayStep + localIndex,
         displayTotal: displayTotal,
+        isRevisit:    isRevisit,
       );
 
       final result = await _runner(

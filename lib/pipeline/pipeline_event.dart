@@ -41,12 +41,20 @@ final class AgentStarted extends PipelineEvent {
   final int displayStep;
   final int displayTotal;
 
+  /// True when [stepId] has already run earlier in this same pipeline run —
+  /// the executor's routing graph looped back to it (e.g. `flow`'s clarify
+  /// step's `FeedBackTo`/`EscalateUser` routes returning to `plan`). A
+  /// subscriber rendering the step sequence as a graph uses this to draw a
+  /// cycle rather than assuming every step is a straight-line advance.
+  final bool isRevisit;
+
   const AgentStarted({
     required this.stepId,
     required this.label,
     required this.model,
     required this.displayStep,
     required this.displayTotal,
+    this.isRevisit = false,
   });
 }
 
