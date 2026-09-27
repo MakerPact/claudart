@@ -7,9 +7,9 @@ import '../registry.dart';
 import '../sensitivity/abstractor.dart';
 import '../sensitivity/detector.dart';
 import '../sensitivity/token_map.dart';
-import '../handoff_template.dart' show stampHandoffUpdated;
+import '../templates/handoff_template.dart' show stampHandoffUpdated;
 import '../session/session_state.dart';
-import '../teardown_utils.dart';
+import '../session/teardown_utils.dart';
 import '../ui/render.dart' as render;
 
 /// Result of the skills.md pending update — used in reports and tests.

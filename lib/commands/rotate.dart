@@ -4,11 +4,11 @@ import 'package:path/path.dart' as p;
 import '../config.dart';
 import '../file_io.dart';
 import '../git_utils.dart';
-import '../handoff_template.dart';
+import '../templates/handoff_template.dart';
 import '../paths.dart';
 import '../registry.dart';
 import '../session/session_state.dart';
-import '../teardown_utils.dart';
+import '../session/teardown_utils.dart';
 import '../md_io.dart' show confirm;
 import '../ui/render.dart' as render;
 

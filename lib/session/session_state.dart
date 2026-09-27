@@ -1,4 +1,4 @@
-import '../teardown_utils.dart';
+import 'teardown_utils.dart';
 
 /// Typed representation of the handoff status field.
 ///

@@ -13,12 +13,12 @@
 //   zedup    — consumer; adds AgentFlowZed extension for TUI-layer behaviour (label, isCli)
 //              cli variant covers slash commands that shell out with no API call
 
-import '../commands/debug_template.dart';
-import '../commands/flow_template.dart';
-import '../commands/save_template.dart';
-import '../commands/setup_template.dart';
-import '../commands/suggest_template.dart';
-import '../commands/teardown_template.dart';
+import '../templates/debug_template.dart';
+import '../templates/flow_template.dart';
+import '../templates/save_template.dart';
+import '../templates/setup_template.dart';
+import '../templates/suggest_template.dart';
+import '../templates/teardown_template.dart';
 import '../util/enum_util.dart';
 import 'agent_model.dart';
 import 'agent_step.dart';

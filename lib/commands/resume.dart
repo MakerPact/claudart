@@ -12,7 +12,7 @@ import '../git_utils.dart';
 import '../md_io.dart';
 import '../paths.dart';
 import '../registry.dart';
-import '../teardown_utils.dart' show readSubSection;
+import '../session/teardown_utils.dart' show readSubSection;
 import '../workspace/workspace_index.dart';
 import 'setup.dart';
 

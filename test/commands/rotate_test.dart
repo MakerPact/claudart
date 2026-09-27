@@ -3,9 +3,9 @@ import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
 import 'package:claudart/commands/rotate.dart';
 import 'package:claudart/git_utils.dart';
-import 'package:claudart/handoff_template.dart';
+import 'package:claudart/templates/handoff_template.dart';
 import 'package:claudart/paths.dart';
-import 'package:claudart/teardown_utils.dart';
+import 'package:claudart/session/teardown_utils.dart';
 import '../helpers/mocks.dart';
 
 const _projectRoot = '/projects/my-app';

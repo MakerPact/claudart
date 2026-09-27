@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import '../file_io.dart';
 import '../git_utils.dart';
-import '../handoff_template.dart';
+import '../templates/handoff_template.dart';
 import '../md_io.dart';
 import '../paths.dart';
 import '../registry.dart';

@@ -4,7 +4,7 @@ import '../git_utils.dart';
 import '../paths.dart';
 import '../registry.dart';
 import '../session/session_state.dart';
-import '../teardown_utils.dart';
+import '../session/teardown_utils.dart';
 import '../ui/ansi.dart' as ansi;
 import '../ui/render.dart' as render;
 

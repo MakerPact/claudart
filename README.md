@@ -200,7 +200,7 @@ stateDiagram-v2
   debugComplete --> [*]: /teardown
 ```
 
-[`HandoffStatus`](lib/session/session_state.dart#L7), eight values, exhaustive switch in [`teardown_utils.dart`](lib/teardown_utils.dart) and every dispatch site.
+[`HandoffStatus`](lib/session/session_state.dart#L7), eight values, exhaustive switch in [`teardown_utils.dart`](lib/session/teardown_utils.dart) and every dispatch site.
 
 **The planner** routes every input on three orthogonal axes to a model, a total function over sixty cells.
 

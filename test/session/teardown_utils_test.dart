@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:claudart/teardown_utils.dart';
+import 'package:claudart/session/teardown_utils.dart';
 import 'package:claudart/commands/teardown.dart' show TeardownCategory;
 
 void main() {

@@ -1,5 +1,5 @@
 import 'session_state.dart';
-import '../teardown_utils.dart';
+import 'teardown_utils.dart';
 
 /// Severity of a sync issue found during preflight.
 enum IssueSeverity { warning, error }

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import '../file_io.dart';
-import '../handoff_template.dart';
+import '../templates/handoff_template.dart';
 import '../paths.dart';
-import '../teardown_utils.dart';
+import 'teardown_utils.dart';
 import '../workspace/workspace_index.dart';
 import 'archive_entry.dart';
 import 'session_state.dart';

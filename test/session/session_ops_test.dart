@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:claudart/session/session_ops.dart';
 import 'package:claudart/file_io.dart';
 import 'package:claudart/paths.dart';
-import 'package:claudart/handoff_template.dart';
+import 'package:claudart/templates/handoff_template.dart';
 import '../helpers/mocks.dart';
 
 const _workspace = '/workspace/my-app';

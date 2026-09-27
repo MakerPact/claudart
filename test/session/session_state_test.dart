@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:claudart/session/session_state.dart';
-import 'package:claudart/handoff_template.dart';
+import 'package:claudart/templates/handoff_template.dart';
 
 // A fully-filled handoff as setup would produce it.
 const _activeHandoff = '''# Agent Handoff — my-app

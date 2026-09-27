@@ -141,7 +141,7 @@ graph TD
 ```
 
 > When `g1` and `g2` exist, `Gap ≠ ∅` and the session is not complete.
-> Both are now covered — see `test/teardown_utils_test.dart` and `test/commands/rotate_test.dart`.
+> Both are now covered — see `test/session/teardown_utils_test.dart` and `test/commands/rotate_test.dart`.
 
 ---
 
@@ -183,7 +183,7 @@ For any `(vᵢ, gⱼ) ∈ M(E)`, the assertion `expect(vᵢ.gⱼ, expectedValue)
 | `general` | `'general'` | `'fix'` | `'general'` |
 | `other` | `'other'` | `'fix'` | `'other (type manually)'` ← distinct |
 
-All 24 cells are asserted in `test/teardown_utils_test.dart`.
+All 24 cells are asserted in `test/session/teardown_utils_test.dart`.
 
 **Matrix growth rule:**
 - New variant added → new row → `m` new assertions required

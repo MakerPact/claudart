@@ -403,7 +403,7 @@ shipped and used for a while.
 
 ### Phase 4 — UX improvements (complete)
 - `skills.md` Pending is now a keyed map: `upsertPendingEntry`/
-  `removePendingEntry`/`pendingHasBranch` in `lib/teardown_utils.dart`
+  `removePendingEntry`/`pendingHasBranch` in `lib/session/teardown_utils.dart`
   replace `/save`'s append-only writes, so repeated saves on the same
   branch upsert one entry instead of accumulating duplicates, and a
   resolved-and-archived teardown removes the entry instead of leaving it

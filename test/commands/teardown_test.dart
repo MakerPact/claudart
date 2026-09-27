@@ -6,7 +6,7 @@ import 'package:claudart/commands/teardown.dart' show runTeardown, TeardownCateg
 import 'package:claudart/md_io.dart' show readSection;
 import 'package:claudart/paths.dart';
 import 'package:claudart/registry.dart';
-import 'package:claudart/handoff_template.dart' show blankHandoff;
+import 'package:claudart/templates/handoff_template.dart' show blankHandoff;
 import 'package:claudart/session/run_mode.dart';
 import '../helpers/mocks.dart';
 
