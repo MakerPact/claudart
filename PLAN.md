@@ -417,6 +417,51 @@ branch detection on a real invocation. Fixed by passing resume's own
 original nullable override through unchanged; caught via live smoke
 testing, then locked in with a regression test.
 
+### Phase 8 — README Roadmap generation (complete)
+Delivered narrower than originally scoped: a marker-splice mechanism for
+claudart's own README.md's Roadmap table, not full-document generation of
+all three READMEs. Investigating the original scope found generating the
+*entire* README from PLAN.md would regress it — sections like Proof,
+Token efficiency, Authentication, and the styled architecture diagram
+exist only in the hand-curated `9f9b942` rewrite with no PLAN.md source.
+
+- `lib/templates/readme_template.dart` (new) — `readmeTemplate` (explicit
+  named params, no config struct, same style as `claudeTemplate`/
+  `planStub`) renders the `<!-- claudart:link:roadmap -->`-prefixed
+  Roadmap block from a caller-supplied `List<RoadmapRow>`.
+- `lib/commands/link.dart` — `claudartRoadmapRows`, a hand-maintained
+  list (one entry per README Roadmap row); `runLink` splices it into
+  README.md at the marker, stopping before the next `---` separator
+  (not the next `## ` heading — the first attempt at this ate the
+  separator between Roadmap and Cross-repo, caught via live diffing
+  before commit). Opt-in: a README.md without the marker is left
+  untouched, unlike CLAUDE.md's always-on splice.
+- `test/readme_sync_test.dart` gained a third check: the marker's spliced
+  content in README.md must equal `readmeTemplate(roadmapRows:
+  claudartRoadmapRows)` byte-for-byte — catches both a missed `claudart
+  link` re-run and a manual edit that bypasses the generator.
+
+**Backfill and renumbering, before implementation started:** reconciling
+against README's Roadmap table found 6 of its 7 rows had no PLAN.md
+source at all (see the Backfill entry and Phase 6/7 above) — a real,
+pre-existing violation of this file's own "no information exists only
+in README" rule. Fixed first, since generating from an incomplete
+PLAN.md would have silently dropped real roadmap history. This is also
+why the phase number moved twice (Phase 5 → 6 → 8) before landing —
+each number collided with something already using it.
+
+**Verified live, self-hosting law**: recompiled, ran `claudart link`
+against this repo twice in a row — second run produced a byte-identical
+README.md (idempotent), `git diff README.md` showed only the Roadmap
+block changed, nothing else touched.
+
+Deliberately out of scope: dartrix/zedup README migration (separate
+repos/registries — opened as its own follow-on, not started); generating
+any README section besides the Roadmap table; PLAN.md phase-heading
+standardization (would let a future phase auto-extract rows instead of
+hand-maintaining `claudartRoadmapRows` — opened as its own future phase,
+not decided here).
+
 ---
 
 ## What's next
@@ -446,24 +491,24 @@ of that data; no such view exists in zedup today (verified: no
 dependency-graph rendering code found in zedup's `lib/`).
 **Status:** metadata capture — shipped; TUI dependency graph — not started.
 
-### Phase 8 — README migration
-> Renumbered twice (2026-09-27): first from "Phase 5" — that number
-> already names the unrelated, deferred design-subagent item at the top
-> of this file (PLAN.md:11) — then from "Phase 6," which collided with
-> README's own pre-existing Roadmap row 6 ("Agent flow registry +
-> planner.dart," backfilled above). This is the README-generation work —
-> the one that's still active.
+### Phase 9 — dartrix/zedup README Roadmap generation
+Follow-on to Phase 8 (complete, see What's been built) — extend the same
+`readme_template.dart`/marker-splice mechanism to dartrix and zedup's own
+READMEs. Separate repos/registries: each needs its own
+`claudartRoadmapRows` list and its own `<!-- claudart:link:roadmap -->`
+retrofit before `claudart link` will touch it. Not started.
 
-Once templates are built: migrate all three READMEs (claudart, dartrix, zedup) to be
-generated from their PLAN.md content. README becomes a curated render — no information loss,
-cleaner public surface.
-
-Supersedes the May 2026 README rewrite's "hand-curated, not generated"
-decision (`9f9b942`, `test/readme_sync_test.dart`'s docstring) — that
-sync test currently checks only command-routing and file-references, not
-content parity, and will need its own scope update once generation lands,
-or it will pass while silently drifting from a generated README's actual
-content guarantees.
+### Phase 10 — PLAN.md phase-heading standardization
+Opened, not started. Phase 8 found PLAN.md's phase headers use three
+different shapes for marking status (inline in the heading, a separate
+`**Status:**` line, or both) and chose a hand-maintained row list over
+parsing them (see Phase 8's "deliberately out of scope"). If a future
+need justifies automating `claudartRoadmapRows` generation, standardize
+every phase heading to one format first — e.g. always
+`### Phase N — Title (status)` — then a small regex extractor becomes
+safe to write. Restart criteria: only if hand-maintaining the row list
+becomes a real, recurring pain point; the marker-splice mechanism itself
+does not require this.
 
 ---
 

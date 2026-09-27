@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:claudart/commands/claudart_command.dart';
+import 'package:claudart/commands/link.dart';
+import 'package:claudart/templates/readme_template.dart';
 import 'package:test/test.dart';
 
 /// Verifies README.md stays 1:1 with the codebase.
@@ -9,13 +11,19 @@ import 'package:test/test.dart';
 /// PLAN"). It documents shipped surface only and intentionally carries **no**
 /// per-enum glossary — the HandoffStatus / AgentFlow variant taxonomy lives in
 /// PLAN.md, and deferred flows (e.g. guiDesign) are deliberately not advertised
-/// here. The two sync guarantees that actually matter for that form:
+/// here. The three sync guarantees that actually matter for that form:
 ///
 /// 1. Command routing — every `claudart X` in the README dispatches in
 ///    bin/claudart.dart.
 /// 2. File references — every .dart file the prose names exists on disk. The
 ///    Roadmap section is excluded: it legitimately names planned, not-yet-built
 ///    files (e.g. `planner.dart`).
+/// 3. Roadmap content parity — the generated block (`link.dart`'s
+///    `claudartRoadmapRows` fed through `readmeTemplate`) matches what's
+///    actually spliced into README.md at the `<!-- claudart:link:roadmap -->`
+///    marker. Catches the two ways this could drift: `claudart link` not run
+///    after `claudartRoadmapRows` changes, or a manual edit to README.md's
+///    Roadmap table that bypasses the generator.
 ///
 /// Run: CLAUDART_WORKSPACE=/tmp/claudart_test dart test test/readme_sync_test.dart
 void main() {
@@ -37,11 +45,13 @@ void main() {
         .toSet();
 
     for (final cmd in readmeCmds) {
-      test('`claudart $cmd` dispatches (ClaudartCommand or the version '
+      test(
+          '`claudart $cmd` dispatches (ClaudartCommand or the version '
           'early-exit)', () {
         // `version` is handled and exits before dispatch ever runs — not a
         // ClaudartCommand variant, see claudart_command.dart's own doc.
-        final dispatches = cmd == 'version' || ClaudartCommand.fromString(cmd) != null;
+        final dispatches =
+            cmd == 'version' || ClaudartCommand.fromString(cmd) != null;
         expect(
           dispatches,
           isTrue,
@@ -53,7 +63,8 @@ void main() {
   });
 
   group('File reference sync', () {
-    test('every .dart file referenced in the prose exists under lib/, bin/, or tool/ '
+    test(
+        'every .dart file referenced in the prose exists under lib/, bin/, or tool/ '
         '(Roadmap excluded)', () {
       // The Roadmap names planned files that intentionally do not exist yet.
       final prose = readme.replaceAll(
@@ -80,6 +91,35 @@ void main() {
               'exist under lib/, bin/, or tool/. Fix or remove the reference.',
         );
       }
+    });
+  });
+
+  group('Roadmap content parity', () {
+    test(
+        'README.md\'s spliced Roadmap block matches readmeTemplate(roadmapRows: '
+        'claudartRoadmapRows)', () {
+      final marker = RegExp(
+        r'^<!-- claudart:link:roadmap -->.*?(?=\n---|\z)',
+        multiLine: true,
+        dotAll: true,
+      );
+      final match = marker.firstMatch(readme);
+      expect(
+        match,
+        isNotNull,
+        reason: 'README.md is missing the `<!-- claudart:link:roadmap -->` '
+            'marker — `claudart link` will silently skip regenerating the '
+            'Roadmap table.',
+      );
+      final actual = match!.group(0);
+      final expected = readmeTemplate(roadmapRows: claudartRoadmapRows);
+      expect(
+        actual,
+        equals(expected),
+        reason: 'README.md\'s Roadmap table has drifted from '
+            '`claudartRoadmapRows` in lib/commands/link.dart — run '
+            '`claudart link` to regenerate, or the table was hand-edited.',
+      );
     });
   });
 }
