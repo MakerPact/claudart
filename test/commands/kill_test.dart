@@ -128,6 +128,23 @@ void main() {
       expect(archived, hasLength(1));
     });
 
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      await runZoned(
+        () => runKill(
+          io: io,
+          projectRootOverride: _projectRoot,
+          confirmFn: (_) => true,
+          exitFn: (code) => throw _ExitException(code),
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
+    });
+
     test('resets handoff to blank', () async {
       final io = _io();
       await runKill(

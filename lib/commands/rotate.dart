@@ -64,6 +64,7 @@ Future<RotateResult>  runRotate({
     print('  Run `claudart link` to register it.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
   final handoffFile = handoffPathFor(workspace);

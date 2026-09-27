@@ -61,6 +61,7 @@ Future<void> runSetup({
     print('  Run `claudart link` to register it first.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
   final handoffFile = handoffPathFor(workspace);

@@ -46,6 +46,7 @@ Future<SkillsUpdateResult> runSave({
     print('  Run `claudart setup` to start one.\n');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
   final handoffFile = handoffPathFor(workspace);

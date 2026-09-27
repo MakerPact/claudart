@@ -478,6 +478,18 @@ void main() {
       final today = DateTime.now().toIso8601String().substring(0, 10);
       expect(entry.lastSession, equals(today));
     });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      await runZoned(
+        () => runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
+    });
   });
 
   // ── Error cases ───────────────────────────────────────────────────────────

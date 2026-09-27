@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:claudart/commands/flow.dart';
 import 'package:claudart/logging/planner_log.dart';
@@ -107,6 +108,30 @@ void main() {
         ),
         throwsA(isA<_ExitException>()),
       );
+    });
+  });
+
+  group('runFlow — project resolution', () {
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      try {
+        await runZoned(
+          () => runFlow(
+            io: io,
+            projectRootOverride: _projectRoot,
+            exitFn: _throwExit,
+            plannerLog: _silentPlannerLog(),
+            promptFn: (question, {optional = false}) => null,
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        );
+      } on _ExitException {
+        // expected — empty prompt aborts, print already happened before that
+      }
+      expect(output.join('\n'), contains('Project  : my-app'));
     });
   });
 }

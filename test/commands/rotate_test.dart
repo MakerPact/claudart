@@ -252,6 +252,24 @@ void main() {
       expect(printed, contains('Branch : ${realGit.branch}'));
       expect(printed, isNot(contains('Branch : fix/pr-bugs')));
     });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      await runZoned(
+        () => runRotate(
+          io: io,
+          projectRootOverride: _projectRoot,
+          exitFn: _noExit,
+          confirmFn: _confirmYes,
+          buildFn: _buildOk,
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
+    });
   });
 
   group('runRotate — no handoff', () {

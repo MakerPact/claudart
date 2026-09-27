@@ -282,6 +282,28 @@ void main() {
         throwsA(isA<_ExitException>().having((e) => e.code, 'code', 1)),
       );
     });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io(); // no handoff seeded
+      final output = <String>[];
+      await expectLater(
+        runZoned(
+          () => runTeardown(
+            io: io,
+            projectRootOverride: _projectRoot,
+            confirmFn: (_) => true,
+            promptFn: _prompts([]),
+            pickFn: _pick(TeardownCategory.general),
+            exitFn: _throwExit,
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        ),
+        throwsA(isA<_ExitException>()),
+      );
+      expect(output.join('\n'), contains('Project  : my-app'));
+    });
   });
 
   // ── User cancels ──────────────────────────────────────────────────────────

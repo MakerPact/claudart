@@ -346,6 +346,27 @@ void main() {
       } on _ExitException {/*expected*/}
       expect(io.read(handoffPathFor(_workspace)), equals(_activeHandoff));
     });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io(handoff: _activeHandoff);
+      final output = <String>[];
+      try {
+        await runZoned(
+          () => runSetup(
+            io: io,
+            projectRootOverride: _projectRoot,
+            confirmFn: (_) => true,
+            promptFn: _prompts([]),
+            pickFn: (_) => _menuBack,
+            exitFn: _throwExit,
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        );
+      } on _ExitException {/*expected*/}
+      expect(output.join('\n'), contains('Project  : $_projectName'));
+    });
   });
 
   group('setup — active handoff → Start fresh', () {

@@ -41,6 +41,7 @@ Future<void> runDebug({
     print('✗ Project not registered. Run `claudart link` first.');
     exit_(1);
   }
+  print('Project  : ${entry.name}');
 
   final workspace   = entry.workspacePath;
   final wsConfig    = WorkspaceConfig.load(workspace, io: fileIO);

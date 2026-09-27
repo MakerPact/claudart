@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:claudart/commands/debug.dart';
 import 'package:claudart/registry.dart';
@@ -222,6 +223,27 @@ void main() {
         // expected
       }
       expect(io.read(handoffPathFor(_workspace)), equals(_handoffReadyWithScope));
+    });
+
+    test('prints which project it resolved before doing anything', () async {
+      final io = _io();
+      final output = <String>[];
+      try {
+        await runZoned(
+          () => runDebug(
+            io: io,
+            projectRootOverride: _projectRoot,
+            exitFn: _throwExit,
+            executor: _executorWithNoOutput(),
+          ),
+          zoneSpecification: ZoneSpecification(
+            print: (_, __, ___, line) => output.add(line),
+          ),
+        );
+      } on _ExitException {
+        // expected
+      }
+      expect(output.join('\n'), contains('Project  : my-app'));
     });
   });
 }
