@@ -704,6 +704,15 @@ Swept for stale-slug fallout across zedup: an exhaustive fixture switch,
 a test that only passed against the old shortName by lucky substring
 match, and 3 user-visible command-picker labels.
 
+**Update (2026-09-27):** design routing reconsidered same-day — `opus`
+compared directly against `fable` on design/architecture output quality,
+opus won. `routeModel`'s design branch now returns `opus` (`484417f`
+[claudart], `926dc35` [zedup]); `fable` stays registered as a real, valid
+model but isn't the default route for anything today. The Phase 12
+review below already ran once under the fable routing, before this
+reversal — its findings stand on their own merit regardless of which
+model produced them.
+
 **Deliberately deferred, not dropped**: Batch 4 (splitting zedup's
 2156-line `zedup_dashboard.dart` — the panel *widgets* are already split
 into `lib/src/features/dashboard/panels/`, 11 files; what remains is the
@@ -748,6 +757,18 @@ and surface concerns as a structured report — not code changes.
 System prompt: see the design-review brief this phase's own kickoff
 produced (composed alongside this PLAN.md entry, run once as a live
 Fable inspection pass rather than filed away unused).
+
+**Status:** the first pass ran and delivered a real findings report
+(package-dependency-direction issue, a non-exhaustive sealed switch,
+escalation-as-bool, a bare-string error sentinel, a tri-bool pane API,
+triplicated presentation tables, plus lower-priority folder-structure
+and doc-drift findings) — not yet acted on.
+
+**Update (2026-09-27):** design routing reconsidered same-day —
+`routeModel`'s design branch now targets `opus`, not `fable` (see Phase
+11's own Update). This phase's name and its one completed run both
+still accurately describe what happened; a future design-review pass
+would route to `opus` instead.
 
 Restart criteria for promoting this into Phase 5's permanent
 `gui_design_agent.dart` role: once ad hoc Fable-design-review sessions

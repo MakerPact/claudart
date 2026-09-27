@@ -4,6 +4,11 @@
 > away. Model: `AgentModel.fable` (`claude-fable-5-1`) — routed here because
 > `IntentClass.design` maps to it in `categorization.dart`'s `routeModel`;
 > this is exactly the specialization it's for.
+>
+> Update (2026-09-27): `routeModel`'s design branch now routes to `opus`
+> instead, after comparing output quality directly. The review this prompt
+> produced already ran under the `fable` routing above and its findings
+> stand — a future re-run of this same prompt would use `opus`.
 
 ---
 
