@@ -99,8 +99,12 @@ enum AgentFlow {
 
   /// Visual design review + spec generation. Routed by the planner when
   /// the scoped paths classify as design surfaces (widgets/painters/theme).
+  ///
+  /// Update (2026-09-27): preferredModel changed from sonnet to opus, to
+  /// match categorization.dart's routeModel — design work routes to opus
+  /// there too, after comparing output quality directly.
   guiDesign(
-    preferredModel:  AgentModel.sonnet,
+    preferredModel:  AgentModel.opus,
     steps:           [],
     hasCommandFile:  false,
   );
