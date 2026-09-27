@@ -39,6 +39,7 @@ component. Nothing prints in an undefined format.
 | **Plan** | goal, subtasks[], ordered by priority | priority list + relationship tree |
 | **Progress** | workspace, subtask, AgentFlow state, blocked/unblocked | status table + state icon |
 | **Question** | origin, workspace, blockedSubtask, question, options[] | pinned callout |
+| **Action** | workspace, subtask, verb, target, summary | glyph + verb + target line |
 | **Result** | workspace, subtask, filesTouched[], summary | collapsed card |
 | **Blocker** | workspace, step, errorType | red row |
 | **Handoff** | from, to, resolvedInfo | dim one-liner |
@@ -96,6 +97,7 @@ Read path is always: what is it → gist → detail → so-what → what's block
 | Plan | Header, Overview, Body(priority list + tree), Concerns, CallToAction |
 | Progress | Header, Overview, Body(status table) |
 | Question | Header, Overview, Body(question + options), CallToAction |
+| Action | Header, Body(glyph + verb + target line) |
 | Result | Header, Overview, Body(collapsed card), Implications, Concerns |
 | Blocker | Header, Overview, Body(error row), CallToAction |
 | Handoff | Header, Body(one-liner) |
