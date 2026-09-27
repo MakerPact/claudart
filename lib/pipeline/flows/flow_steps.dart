@@ -154,7 +154,13 @@ abstract final class FlowSteps {
   static final AgentStep construct = AgentStep(
     id:    'construct',
     label: 'Constructing handoff',
-    model: AgentModel.sonnet,
+    model: _planFallbackModel,
+    // Reuses the same modelSelector as [plan] — same categorize slot,
+    // same τ classification, same reasoning: a gui × design task should
+    // get opus writing the handoff too, not just planning it. Closes
+    // the identical silent-skip gap suggest/debug's reasoner/implementer
+    // steps had before this session's fix.
+    modelSelector: _planModelSelector,
     systemPrompt: _constructSystem,
     buildPrompt: (PipelineContext ctx) {
       final plan  = ctx[PipelineSlot.plan] ?? '';

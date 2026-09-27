@@ -62,4 +62,22 @@ void main() {
     final ctx = _ctxWithCategorize('garbage with no xml tags');
     expect(FlowSteps.plan.effectiveModel(ctx), equals(AgentModel.sonnet));
   });
+
+  // construct shares plan's modelSelector — a gui × design task should get
+  // opus writing the handoff too, not just planning it. Same silent-skip
+  // gap suggest/debug's reasoner/implementer had before this session's fix,
+  // closed here for flow's construct step.
+  test('construct step routes gui × design to opus, same as plan', () {
+    final ctx = _ctxWithCategorize(_categorize(
+      category: AgentCategory.gui,
+      intent: IntentClass.design,
+      complexity: ComplexityTier.systemic,
+    ));
+    expect(FlowSteps.construct.effectiveModel(ctx), equals(AgentModel.opus));
+  });
+
+  test('construct step degrades to sonnet when categorize slot is empty', () {
+    expect(FlowSteps.construct.effectiveModel(_baseCtx()),
+        equals(AgentModel.sonnet));
+  });
 }

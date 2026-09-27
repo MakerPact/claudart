@@ -830,6 +830,21 @@ A manual round-trip script confirmed `updateSection` → `readSection` →
 `modelForCategorizeOutput` preserves the XML tags byte-for-byte and
 resolves to opus.
 
+**Update (2026-09-27):** the identical gap existed one step further —
+`FlowSteps.construct` (writes the actual handoff.md from the approved
+plan) was still hardcoded to sonnet, no `modelSelector`, even though its
+sibling `plan` step in the same file already routed correctly. Wired
+`construct` to reuse `plan`'s own `_planModelSelector` — same categorize
+slot, same τ classification, so a `gui × design` flow session now gets
+opus writing the handoff, not just planning it. Also empirically verified
+(not assumed) that haiku's categorize output rarely null-parses: replayed
+all 24 calls from an earlier benchmarking pass through the real
+`modelForCategorizeOutput` — 0/12 haiku calls hit the fallback, 1/12
+sonnet calls did (a hallucinated `<CATEGORY>document</CATEGORY>`, not a
+real `AgentCategory` value) — confirming the fallback path is rare, not
+"always," and that the earlier design-not-opus incident was a wiring
+gap, not a classification-accuracy problem.
+
 ---
 
 ## GitHub archive convention
