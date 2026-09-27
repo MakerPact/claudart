@@ -437,9 +437,12 @@ exist only in the hand-curated `9f9b942` rewrite with no PLAN.md source.
   before commit). Opt-in: a README.md without the marker is left
   untouched, unlike CLAUDE.md's always-on splice.
 - `test/readme_sync_test.dart` gained a third check: the marker's spliced
-  content in README.md must equal `readmeTemplate(roadmapRows:
-  claudartRoadmapRows)` byte-for-byte — catches both a missed `claudart
-  link` re-run and a manual edit that bypasses the generator.
+  content in README.md must equal `readmeTemplate(...)` fed by
+  `roadmap.json` byte-for-byte — catches both a missed `claudart link`
+  re-run and a manual edit that bypasses the generator. (Originally
+  sourced rows from a hardcoded `claudartRoadmapRows` constant in
+  `link.dart`; Phase 9 replaced that with per-project `roadmap.json`
+  files — see below.)
 
 **Backfill and renumbering, before implementation started:** reconciling
 against README's Roadmap table found 6 of its 7 rows had no PLAN.md
@@ -455,12 +458,63 @@ against this repo twice in a row — second run produced a byte-identical
 README.md (idempotent), `git diff README.md` showed only the Roadmap
 block changed, nothing else touched.
 
-Deliberately out of scope: dartrix/zedup README migration (separate
-repos/registries — opened as its own follow-on, not started); generating
-any README section besides the Roadmap table; PLAN.md phase-heading
-standardization (would let a future phase auto-extract rows instead of
-hand-maintaining `claudartRoadmapRows` — opened as its own future phase,
-not decided here).
+Deliberately out of scope: dartrix/zedup README migration (see Phase 9,
+below — done as a follow-on); generating any README section besides the
+Roadmap table; PLAN.md phase-heading standardization (opened as Phase
+10, not decided here).
+
+### Phase 9 — Generalize Roadmap generation + extend to dartrix/zedup (complete)
+`link.dart`'s hardcoded `claudartRoadmapRows` only worked for claudart's
+own README. Generalizing it needed a real per-project data source, and
+the first design tried — `roadmapRows` on `WorkspaceConfig`'s
+`WorkspaceProject`, sourced from `workspace.json` — was reverted before
+landing: `workspace.json` lives entirely outside every project's git
+repo (`git check-ignore` errors "outside repository" trying to even
+check it), so it can never be a source a fresh clone or CI could verify
+the content-parity test against. That would have silently turned a real
+test into a no-op everywhere except a machine that already had
+`claudart link` run locally.
+
+Redesigned around a git-committed `roadmap.json` at each project's root
+instead:
+- `readme_template.dart` gained `RoadmapConfig` (`rows` +
+  optional `summaryText`/`footerLine`) and `parseRoadmapConfig`;
+  `readmeTemplate` gained matching optional params so a project with
+  existing custom copy (dartrix's own summary text and "Deep dive" link
+  line) isn't silently overwritten with claudart's generic defaults.
+- `link.dart` reads `<projectRoot>/roadmap.json` directly via `FileIO`;
+  the hardcoded `claudartRoadmapRows` constant is gone.
+- claudart's own migration verified as a pure regression: byte-identical
+  README.md before and after moving its 8 rows into `roadmap.json`.
+
+**A second real bug, caught live against dartrix**: the marker regex
+used `\z` for "end of input" — Dart/JS regex has no `\z` metacharacter
+(Perl/Python syntax only); in ECMAScript-flavored regex it's silently a
+literal lowercase `z`. Worked by luck against claudart's own roadmap
+text (no lowercase `z` in it), corrupted dartrix's README on the very
+first live run — its existing content contains "zedup-side," so the
+match stopped there instead of at the real `\n---` boundary, leaving
+duplicated leftover fragments. Restored from a pre-run backup, fixed to
+the correct `(?![\s\S])` idiom, red-before-fix verified with a new
+regression test, then re-verified live (idempotent, `git diff` showing
+only the intended change). Also de-duplicated the regex itself — it was
+copy-pasted into both `link.dart` and its test — by exporting it as
+`roadmapMarker`.
+
+**zedup** had no `## Roadmap` section at all. Per explicit decision,
+created one from scratch, sourced from zedup's own `PLAN.md` (Phase 1–5
+core binary, 5b nocterm dashboard, 5c claudart chat integration —
+shipped; branch screen matrix wiring and the v2 GitHub-state matrix +
+DartrixSelector pipeline — planned), placed before `## Cross-repo`
+matching claudart/dartrix's layout.
+
+Verified live across all three repos: claudart (regression, byte-
+identical), dartrix (retrofit, only the marker line added), zedup (new
+section, only that section added) — each idempotent on a second run,
+each `git diff` touching nothing outside its own Roadmap block.
+zedup's own pre-existing, unrelated in-progress work (chat/dashboard
+files already modified in its working tree before this session) was
+left untouched.
 
 ---
 
@@ -491,19 +545,12 @@ of that data; no such view exists in zedup today (verified: no
 dependency-graph rendering code found in zedup's `lib/`).
 **Status:** metadata capture — shipped; TUI dependency graph — not started.
 
-### Phase 9 — dartrix/zedup README Roadmap generation
-Follow-on to Phase 8 (complete, see What's been built) — extend the same
-`readme_template.dart`/marker-splice mechanism to dartrix and zedup's own
-READMEs. Separate repos/registries: each needs its own
-`claudartRoadmapRows` list and its own `<!-- claudart:link:roadmap -->`
-retrofit before `claudart link` will touch it. Not started.
-
 ### Phase 10 — PLAN.md phase-heading standardization
 Opened, not started. Phase 8 found PLAN.md's phase headers use three
 different shapes for marking status (inline in the heading, a separate
 `**Status:**` line, or both) and chose a hand-maintained row list over
 parsing them (see Phase 8's "deliberately out of scope"). If a future
-need justifies automating `claudartRoadmapRows` generation, standardize
+need justifies automating `roadmap.json` generation, standardize
 every phase heading to one format first — e.g. always
 `### Phase N — Title (status)` — then a small regex extractor becomes
 safe to write. Restart criteria: only if hand-maintaining the row list
