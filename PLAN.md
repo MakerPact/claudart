@@ -8,18 +8,32 @@ docs/design.md = formal session state machine (FSA). docs/session_log.md = desig
 
 ---
 
-## Phase 5 — design subagent (deferred)
+## Phase 5 — design subagent (partially built, agent role itself still deferred)
 
 A specialized agent role for visual design work. The planner would route requests with `category=feature × intent=design` (a new `IntentClass` variant) to a `gui_design_agent`. Planned deliverables:
 
-- `lib/pipeline/agents/gui_design_agent.dart` (new)
-- `lib/pipeline/flows/gui_design_flow.dart` (new)
-- `lib/pipeline/agents/planner.dart` (extension; `IntentClass.design` variant)
-- `lib/logging/planner_log.dart` (new)
+- `lib/pipeline/agents/gui_design_agent.dart` (new) — **not built**
+- `lib/pipeline/flows/gui_design_flow.dart` (new) — **not built**
+- `lib/pipeline/agents/planner.dart` (extension; `IntentClass.design` variant) — **not built** (Phase 6 confirmed `planner.dart` itself doesn't exist)
+- `lib/logging/planner_log.dart` (new) — **exists**, but as a passive audit logger, not a planner (see Phase 6)
 
-**Status:** none of the above exist in code. `IntentClass` currently has only `explore`, `analyze`, `implement`, `document` ([categorization.dart:48](lib/pipeline/agents/categorization.dart#L48)). Public README scrubbed of this section to keep it honest.
+**Status, corrected:** the axis this phase needed is already real —
+`IntentClass.design` exists (`categorization.dart`) and `AgentFlow.guiDesign`
+exists (`agent_flow.dart`). A later session (the cross-repo consolidation
+pass — see "What's been built" below) added `AgentModel.fable`
+(`claude-fable-5-1`) and wired `routeModel`'s design branch to it instead
+of `sonnet`, so design-intent classification now resolves to a real,
+distinct, design-specialized model at the routing-function layer. What's
+still missing is the dedicated agent *role* itself — `gui_design_agent.dart`/
+`gui_design_flow.dart` — the actual pipeline step that would consume
+that routing decision. Public README stays scrubbed of this section
+until that exists.
 
-**Restart criteria:** when a real design task surfaces that warrants a dedicated agent role, lift this section back into the public roadmap.
+**Restart criteria:** when a real design task surfaces that warrants a
+dedicated agent role, lift this section back into the public roadmap.
+Arguably met now — see "What's next" below for the Fable-orchestrated
+agentFlow architecture review, an ad hoc use of the same `fable` routing
+without yet building the permanent agent role this phase describes.
 
 ---
 
@@ -600,6 +614,106 @@ reproduce this codebase's hand-aligned style (same drift as the earlier
 `workspace_config.dart` incident) — reverted and reapplied by hand,
 final diff 92 lines across 3 files.
 
+### Phase 11 — Cross-repo paradigm audit & consolidation (complete)
+User-requested audit spanning claudart, zedup, and dartrix — "audit
+every package... enhanced enums, exhaustive switches, pattern guards,
+extensions, no bare literals... consolidate duplicated logic between
+TUI and CLI... fix folder structures... run tests throughout, cannot
+break." Executed as read-only research first (3 parallel audit agents,
+one per repo, checked against `dartrix/PARADIGMS.md`'s actual
+dimensions), then a confirmed, dependency-ordered plan, then
+implementation in small, independently-verified, independently-committed
+slices — never one giant cross-repo commit.
+
+**Batch 1 — mechanical, zero product decisions** (dartrix `8982029`,
+claudart `507fc0b`, zedup `0f57257`): `CellState.symbol` getter replaces
+a bare-string switch; deduped two identical enum-name extensions
+(keeping both declarations — `AppType`/`FeatureType` are
+`abstract interface class`, not real enums, so a single `on Enum`
+extension would silently not apply, caught before committing a broken
+fix); `ShoelaceSchema.fromString` now derives from `wireValue` instead
+of repeating 3 wire strings; consolidated 4 duplicate `confirm()`
+helpers in claudart into one; routed 2 hand-rolled `fromString`
+implementations through the existing `enumByName` util; introduced
+`ScanScope` as an `abstract final class` (deliberately not an enum —
+`scanner.dart` accepts arbitrary scan-path strings, not a closed set);
+grouped 6 ungrouped identical switch cases across zedup (`dashboard_panel.dart`
+×3, `agent_context.dart`, `chat_screen.dart`, `agents_workflow_pane.dart`,
+`failure_type.dart`); deduped zedup's hand-rolled `## Status` line-scan
+against claudart's existing `readStatus()`.
+
+**Batch 2 — file/folder moves** (dartrix `eb4ed1a`, claudart `5325616`):
+moved `shoelace_layout.dart` into `lib/src/shoelace/` (its own docstring
+said it ships pure data, no rendering — `renderer/` was never the right
+home); moved `handoff_template.dart` + 6 command-file template
+generators into `lib/templates/`; moved `teardown_utils.dart` into
+`lib/session/`. Pure moves — every import site updated, `dart analyze`
+catches any miss immediately, zero logic changes.
+
+**Batch 3 — cross-repo consolidation** (claudart `5e4200f`, zedup
+`c1bc034`): promoted `Usage.costDisplay`, a getter both `Usage.format()`
+and zedup's `AgentSlot.costDisplay` now share instead of each
+reformatting the same `'\$X.XXXX'` literal independently.
+
+**3 confirmed-decision items** (each needed a real choice, not a
+mechanical fix — user confirmed all 3 the "wire it in for real" way):
+- **`lib/similarity/cosine.dart` wiring** (claudart `2391901`) — had zero
+  callers despite `PLAN.md` claiming it "powers skills.md similarity
+  lookup." Added `buildIdfCorpus` (the missing piece needed to use
+  `tfidfVector`'s corpus param for real) and
+  `lib/session/skills_lookup.dart`'s `relevantSkillPatterns`, surfaced as
+  a new "Relevant past patterns" section in `claudart status`, keyed off
+  the handoff's Bug text against skills.md's `## Root Cause Patterns`.
+  Live-smoke-tested, not just unit-tested.
+- **`claudart_link_resolver.dart` wiring** (claudart `78d19d8`, zedup
+  `5644a57`) — `ClaudartLinkResolver` existed, tested, correct, but
+  wasn't exported from claudart's barrel, and zedup's 5 `LinkResolver`-
+  injecting classes (`ConfigStore`/`EventEmitter`/3 codegen emitters)
+  all defaulted to the bare `LinkResolver.profileDir()`. Investigated
+  first and found these 5 classes have zero real call sites anywhere in
+  zedup's live app — deliberately did NOT invent call sites for that
+  separate, much larger gap; narrowly fixed exactly what was asked
+  (the default), smoke-tested for real from zedup's own repo (correctly
+  resolved to the real linked workspace path).
+- **`WorkspaceConfig` naming collision** (claudart `8c01c9a`) — two
+  unrelated classes shared the name (`lib/config.dart`'s scan/sensitivity
+  settings vs. `lib/workspace/workspace_config.dart`'s real v2 per-project
+  metadata). Renamed the former to `ProjectConfig`, matching its own doc
+  comment.
+
+**New paradigm law** (dartrix `d1eccc2`, v0.3.0 → v0.4.0): a `comments`
+dimension — a status/plan comment's original line stays when the
+described work ships; a dated `Update (YYYY-MM-DD): ...` line records
+what changed, never a silent rewrite. Prompted by a real correction
+mid-session (a comment update that rewrote history instead of appending
+to it) and promoted directly per explicit user instruction, not staged
+as a candidate.
+
+**Model registry: added Fable** (claudart `484417f`, zedup `3e49707`) —
+`AgentModel.fable` (`claude-fable-5-1`) is now a real, routable model.
+`IntentClass.design` already existed as a `routeModel` axis and mapped
+to `sonnet`; now maps to `fable`, since design is a specialization, not
+general reasoning capability. Also fixed stale `sonnet`/`opus` slugs
+(`claude-sonnet-4-6`/`claude-opus-4-7` → `claude-sonnet-5`/
+`claude-opus-5-5`) and a real design flaw caught before commit:
+`bestForLookup`/`bestForAnalysis`/`bestForExplore` were tier-derived,
+which would have made `fable` falsely `bestForExplore` alongside `opus`
+(both share `ModelTier.capable`) — made identity-based instead, since
+they were only ever meant to name one canonical model per task type.
+Swept for stale-slug fallout across zedup: an exhaustive fixture switch,
+a test that only passed against the old shortName by lucky substring
+match, and 3 user-visible command-picker labels.
+
+**Deliberately deferred, not dropped**: Batch 4 (splitting zedup's
+2156-line `zedup_dashboard.dart` — the panel *widgets* are already split
+into `lib/src/features/dashboard/panels/`, 11 files; what remains is the
+`_ZedupDashboardState` orchestration layer). Paused rather than executed
+because the file is marked `PROTOTYPE` in multiple places (column-tiling,
+pane-collapsing) and the TUI is about to get mouse-click interactivity —
+splitting now risks real regression in an interactive surface for a
+structural win a redesign might partially undo. Revisit once the
+interactivity direction is settled.
+
 ---
 
 ## What's next
@@ -615,6 +729,30 @@ every phase heading to one format first — e.g. always
 safe to write. Restart criteria: only if hand-maintaining the row list
 becomes a real, recurring pain point; the marker-splice mechanism itself
 does not require this.
+
+### Phase 12 — Fable-orchestrated agentFlow architecture review
+Opened, not started as a permanent capability — the first real pass is
+an ad hoc inspection, not yet Phase 5's dedicated `gui_design_agent.dart`
+pipeline role. Uses `AgentModel.fable` (Phase 11) for exactly the kind
+of work it's routed for: design/architecture review, not general
+reasoning. Scope: the full "agentFlow" surface — claudart's `AgentFlow`
+enum + pipeline event model (`AgentResponse`, `event_response_map.dart`,
+`toResponse()`, `floatQuestions()`) and zedup's TUI consumption of it
+(`AgentFlowSession`, `AgentFlowDiagram`, `AgentFlowBand`,
+`AgentFlowPoller`, `agents_workflow_pane.dart`) — asked to read this
+project's own knowledge base first (this file, `dartrix/PARADIGMS.md`,
+`skills.md`, `docs/design.md`, `docs/agent_response_and_output.md`),
+apply best-practice Dart (enhanced enums, exhaustive switches, folder
+structure), stay token-conscious (targeted reads, not blanket dumps),
+and surface concerns as a structured report — not code changes.
+System prompt: see the design-review brief this phase's own kickoff
+produced (composed alongside this PLAN.md entry, run once as a live
+Fable inspection pass rather than filed away unused).
+
+Restart criteria for promoting this into Phase 5's permanent
+`gui_design_agent.dart` role: once ad hoc Fable-design-review sessions
+like this one prove out the pattern across more than one real use — same
+promotion bar dartrix's own paradigm Growth section applies to itself.
 
 ---
 
