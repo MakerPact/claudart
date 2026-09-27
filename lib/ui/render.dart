@@ -4,20 +4,23 @@
 //
 // Each `AgentResponse` renders as a block with a continuous coloured gutter
 // (`│`) and a coloured header; the body stays plain. The colour is the
-// response's state `hue` (a zedup `StateHue`), translated to ANSI here — claudart
-// prints ANSI, zedup's StateHue.color is a nocterm Color, so this layer owns the
-// `StateHue → ANSI` bridge. Colour carries meaning on the header + gutter only,
+// response's state `hue` (`StateHue`), translated to ANSI here — zedup
+// renders the same enum as a nocterm Color instead, so this layer owns the
+// `StateHue → ANSI` bridge, the CLI-medium counterpart to zedup's own
+// rendering. Colour carries meaning on the header + gutter only,
 // so the body stays readable and greppable, and ANSI strips cleanly when piped.
 //
 // No other module should format agent output.
-
-import 'package:zedup/zedup.dart' show StateHue;
+//
+// Update (2026-09-27): StateHue relocated from zedup into claudart's own
+// pipeline/state_hue.dart — claudart owns the enum now, zedup re-exports it.
 
 import '../pipeline/agent_response.dart';
+import '../pipeline/state_hue.dart';
 import 'ansi.dart' as ansi;
 
-/// The `StateHue → ANSI` bridge. zedup owns the hue *semantics*; claudart owns
-/// the mapping to its output medium (ANSI escape codes).
+/// The `StateHue → ANSI` bridge — claudart's own mapping to its output
+/// medium (ANSI escape codes), independent of zedup's nocterm mapping.
 String hueCode(StateHue hue) => switch (hue) {
       StateHue.inactive => ansi.grey,
       StateHue.loading  => ansi.cyan,

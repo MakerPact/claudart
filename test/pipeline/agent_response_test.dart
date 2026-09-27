@@ -5,7 +5,7 @@
 
 import 'package:claudart/pipeline/agent_flow.dart';
 import 'package:claudart/pipeline/agent_response.dart';
-import 'package:zedup/zedup.dart' show StateHue;
+import 'package:claudart/pipeline/state_hue.dart';
 import 'package:test/test.dart';
 
 extension on ResponseKind {

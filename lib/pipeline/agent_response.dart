@@ -5,7 +5,7 @@
 // `AgentResponse` is a sealed hierarchy (mirrors `StepRoute` in step_route.dart):
 // one final class per emission kind, each carrying a `Speaker`, a `kind`, and a
 // `hue`. `ResponseKind` owns the kind's label + glyph; the COLOUR comes from the
-// `hue` — a zedup `StateHue`, the single cross-package source of state colour
+// `hue` — a `StateHue`, the single cross-package source of state colour
 // semantics ("shape stays constant, colour shifts"). The render layer
 // (lib/ui/render.dart) maps the hue to ANSI and colours the block's header +
 // gutter, never the body.
@@ -13,10 +13,14 @@
 // Additive and separate from `PipelineEvent` (pipeline_event.dart): that is the
 // executor's internal lifecycle stream; AgentResponse is the user-facing typed
 // output the render layer formats.
-
-import 'package:zedup/zedup.dart' show StateHue;
+//
+// Update (2026-09-27): StateHue relocated here from zedup — this field was
+// claudart's only reason to depend on zedup as a real runtime dependency.
+// zedup still owns the nocterm-rendering half (a StateHueRendering
+// extension with .color/.tickDuration) and re-exports this enum.
 
 import 'agent_flow.dart';
+import 'state_hue.dart';
 
 /// Who is speaking. Rendered as a lane label; colour comes from the response's
 /// [AgentResponse.hue] (state), not the speaker — identity is the label axis,
@@ -43,8 +47,9 @@ enum SubtaskState {
   done,
   failed;
 
-  /// The shared state colour for this subtask, sourced from zedup's [StateHue]
-  /// so the Plan's colour-coded titles match every other state surface.
+  /// The shared state colour for this subtask, via [StateHue] so the Plan's
+  /// colour-coded titles match every other state surface (zedup's rendering
+  /// of this same enum, via its own StateHueRendering extension).
   StateHue get hue => switch (this) {
         SubtaskState.ready          => StateHue.ready,
         SubtaskState.blocked        => StateHue.inactive,
