@@ -5,6 +5,115 @@
 
 ---
 
+## 2026-09-26 — Branch-display in launch.dart, StepStatus.fromEvent, ModelTier audit, HandoffStatus matrix, zedup dedup
+
+### What this session did
+
+Follow-up hardening session, continuing the 2026-09-22 audit line. Every fix
+ran through claudart's own self-hosting workflow (`setup`/confirmed-KT →
+`save` → implement → `dart analyze`/`custom_lint`/`test` → real `teardown`),
+plus two real `claudart flow` sessions used to scope work before
+implementing, per the project's own agent-constructed-session pattern.
+
+1. **`launch.dart` branch-display bug** — the 2026-09-22 log entry's
+   "already fixed once in status.dart/launch.dart" phrasing for launch.dart
+   was inaccurate: `launch.dart` still printed `state.branch` with no live-git
+   fallback. Fixed, scoped to only the currently-open project (other
+   registered projects still show their own stored branch). 2 new regression
+   tests.
+2. **`StepStatus.fromEvent`** — `step_status.dart`'s doc comment claimed
+   "produced by PipelineExecutor as each step transitions"; the executor's
+   real lifecycle model is the sealed `PipelineEvent` hierarchy, and
+   `StepStatus` was never produced or consumed anywhere in claudart's own
+   `lib/`/`bin/` despite being public API zedup depends on (deriving it via
+   its own ad hoc switch). Added `StepStatusFromEvent.fromEvent(PipelineEvent)`
+   as the one canonical, exhaustive, tested projection. 8 new tests (one per
+   `PipelineEvent` subtype).
+3. **`ModelTier`/`AgentModel` delegation audit** — ran a `claudart flow`
+   session to audit whether `bestForLookup`/`bestForAnalysis`/`bestForExplore`
+   should be wired into the 20 hardcoded `AgentModel` literals across
+   `AgentFlow.preferredModel` and the 4 pipeline flow files. Verdict: the
+   tier system is a 3-model bijection today, so wiring it in would be a pure
+   rename with zero behavior change and zero real duplication removed — left
+   as-is. Also corrected the earlier (2026-09-22) premise that zedup
+   "duplicates" model routing: it doesn't — `claudart_runner.dart` reads
+   `context.mode.preferredModel` at the call site; the routing-table comments
+   are documentation, not a second switch. Fixed `agent_model.dart`'s
+   top-of-file "Delegation profile" comment, which conflated flow-level
+   routing (`AgentFlow.preferredModel`) with per-step routing inside batched
+   pipelines and read as contradicted by `suggest_steps.dart`.
+4. **`HandoffStatus` compile-enforced coverage matrix** — `status.dart`/
+   `save.dart`/`launch.dart`/`setup.dart` each hand-derive
+   `expectsSuggest`/`expectsDebug` independently with no guarantee all four
+   handle every variant. Ran a `claudart flow` session to scope this; its
+   plan proposed making `HandoffStatus` itself `implements AppType` directly
+   in `lib/session/session_state.dart` — caught before implementing, since
+   that would force `dartrix` out of `dev_dependencies` and into
+   `dependencies`, reversing the 2026-09-22 zero-dartrix-in-`lib/` verdict.
+   Followed the precedent `test/matrix/pipeline_flow_type.dart` already set
+   instead: a test-only mirror enum (`HandoffStatusType` implementing
+   `AppType`), so `lib/` and `pubspec.yaml` stay untouched. New
+   `test/matrix/handoff_expectation.dart`, `handoff_status_type.dart`,
+   `handoff_status_matrix.dart`; coverage registered in the four command
+   test files.
+5. **zedup: `PipelineEvent → StepStatus` dedup** — `agents_workflow_pane.dart`'s
+   `handleEvent()` hand-mapped the same three events `StepStatusFromEvent`
+   now covers canonically. Direct precedent in zedup's own
+   `retired/claudart_model_and_handoff_status_retired.md` ("a local copy of
+   an upstream type is a maintenance liability — delete, not alias, not
+   shim"). Replaced the 4 literal assignments with
+   `StepStatusFromEvent.fromEvent(event)!`; added the first test coverage
+   `handleEvent()` has ever had (8 tests). Smoke-tested the real,
+   unmodified `handleEvent()` end-to-end with a realistic event sequence
+   (start→complete, start→fail, start→escalate→resume→complete) to confirm
+   the rendered glyphs (`◉`/`✓`/`✗`) still match. A pre-existing, unrelated
+   in-progress zedup session (right-click context-menu dismiss-catcher bug)
+   was archived as a reminder first, not lost — resumable via
+   `claudart archives`.
+
+### Corrected from 2026-09-22's audit
+
+- Item "dead `ModelTier` methods, skipped" — confirmed accurate, restated
+  with the full picture (see #3 above): not dead, tested in zedup, and the
+  "wire it in" alternative was evaluated and rejected on its own merits, not
+  just left alone by default.
+- "already fixed once in status.dart/launch.dart" (2026-09-22, re: branch
+  display) — launch.dart was not actually fixed at that point; see #1.
+
+### Not done, explicitly deferred
+
+- dartrix's compile-enforced matrix still covers only
+  `PipelineFlowType × PipelineFeature` — `HandoffStatus` is now a second,
+  separate matrix (item #4), but expanding further requires picking new
+  axes case by case, not a blanket "cover everything" pass.
+- zedup has no `custom_lint`/dartrix-lint wiring at all (plain
+  `lints/recommended.yaml` only) — flagged, not acted on; separate decision.
+- `tool/claudart_lints`'s own missing `analysis_options.yaml` was already
+  fixed 2026-09-22 (see that entry) — re-verified still in place, not
+  re-touched.
+
+### Test counts
+
+Claudart: 1047 passing (unchanged net count vs 2026-09-22 — new coverage
+was registered inside existing tests for the matrix work, plus 8 new
+`step_status_test.dart` tests), same 11 pre-existing unrelated ANSI-render
+failures. Zedup: 1744 passing, 3 pre-existing unrelated failures (shoelace
+launcher env var, README ZedProfile sync, secrets loader env priority) —
+confirmed present before this session's changes via stash-and-rerun.
+
+### Commits this session
+
+```
+5d1f895 fix: launcher shows live git branch, not stale handoff value
+f8d241c fix: address PR #46 Copilot findings — hot-files sentinel, stream test seam
+251c46a fix: StepStatus.fromEvent replaces false doc-comment claim with a real mapping
+42c4cb3 docs: fix agent_model.dart's delegation-profile comment to match reality
+8681f53 test: give HandoffStatus a compile-enforced coverage matrix
+```
+(zedup) `aaeb6d2 fix: delegate handleEvent's status mapping to claudart's StepStatusFromEvent`
+
+---
+
 ## 2026-09-22 — PR #46 merged: StepResult metadata, headless teardown, README rewrite, plus 5 audit follow-ups
 
 ### What this session did
