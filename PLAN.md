@@ -417,6 +417,37 @@ branch detection on a real invocation. Fixed by passing resume's own
 original nullable override through unchanged; caught via live smoke
 testing, then locked in with a regression test.
 
+### Phase 6 — Agent flow registry + planner.dart (closed, not built)
+Corresponds to README Roadmap table row 6 ("planned"), backfilled
+2026-09-27, closed 2026-09-27 after evaluating whether to actually build
+the unshipped half.
+
+Agent flow registry: shipped — `lib/pipeline/agent_flow.dart`'s
+`AgentFlow` enum is the canonical registry of pipeline variants across
+claudart and zedup, per its own header comment.
+
+`planner.dart`: **intentionally not built.** Routing/model-selection
+logic today lives split across three independently-justified pieces —
+`lib/pipeline/agents/categorization.dart` (the τ classification
+taxonomy, plus `routeModel()`/`modelForCategorizeOutput()`, the actual
+model-routing function every step's `modelSelector` consults),
+`lib/pipeline/route_tag.dart` (the `RouteTag` enum), and
+`lib/pipeline/step_route.dart` (the `StepRoute` sealed hierarchy —
+`GoTo`/`QuestionBranch`/`FeedBackTo`/`EscalateUser`/`ApprovalGate`/
+`Complete` — dispatched by `PipelineExecutor`). `lib/logging/
+planner_log.dart` is a passive audit logger, not a planner, and was
+never in scope for consolidation.
+
+No shared bug or duplicated logic was found across those three files
+that a consolidated `planner.dart` would fix — this would be purely
+file-organization renaming with no behavior change, exactly the
+premature abstraction "Simplicity first" forbids. One minor 2-site
+tag-pattern duplication was observed between call sites but sits below
+this project's extraction threshold; noted, not acted on.
+
+**Restart criteria:** revisit only if a third call site appears or real
+duplication emerges — not on stylistic preference alone.
+
 ### Phase 8 — README Roadmap generation (complete)
 Delivered narrower than originally scoped: a marker-splice mechanism for
 claudart's own README.md's Roadmap table, not full-document generation of
@@ -558,37 +589,6 @@ final diff 92 lines across 3 files.
 ---
 
 ## What's next
-
-### Phase 6 — Agent flow registry + planner.dart (closed, not built)
-Corresponds to README Roadmap table row 6 ("planned"), backfilled
-2026-09-27, closed 2026-09-27 after evaluating whether to actually build
-the unshipped half.
-
-Agent flow registry: shipped — `lib/pipeline/agent_flow.dart`'s
-`AgentFlow` enum is the canonical registry of pipeline variants across
-claudart and zedup, per its own header comment.
-
-`planner.dart`: **intentionally not built.** Routing/model-selection
-logic today lives split across three independently-justified pieces —
-`lib/pipeline/agents/categorization.dart` (the τ classification
-taxonomy, plus `routeModel()`/`modelForCategorizeOutput()`, the actual
-model-routing function every step's `modelSelector` consults),
-`lib/pipeline/route_tag.dart` (the `RouteTag` enum), and
-`lib/pipeline/step_route.dart` (the `StepRoute` sealed hierarchy —
-`GoTo`/`QuestionBranch`/`FeedBackTo`/`EscalateUser`/`ApprovalGate`/
-`Complete` — dispatched by `PipelineExecutor`). `lib/logging/
-planner_log.dart` is a passive audit logger, not a planner, and was
-never in scope for consolidation.
-
-No shared bug or duplicated logic was found across those three files
-that a consolidated `planner.dart` would fix — this would be purely
-file-organization renaming with no behavior change, exactly the
-premature abstraction "Simplicity first" forbids. One minor 2-site
-tag-pattern duplication was observed between call sites but sits below
-this project's extraction threshold; noted, not acted on.
-
-**Restart criteria:** revisit only if a third call site appears or real
-duplication emerges — not on stylistic preference alone.
 
 ### Phase 10 — PLAN.md phase-heading standardization
 Opened, not started. Phase 8 found PLAN.md's phase headers use three
