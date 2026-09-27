@@ -13,6 +13,7 @@
 - [What it is](#what-it-is)
 - [How it works](#how-it-works)
 - [Proof](#proof), real transcripts, not claims
+- [TUI vs CLI](#tui-vs-cli)
 - [Full architecture](#full-architecture)
 - [Why the typed state matters](#why-the-typed-state-matters)
 - [Token efficiency](#token-efficiency)
@@ -127,6 +128,61 @@ lib/pipeline/pipeline_executor.dart:429:3 •
 ```
 
 That specific violation was in a stream-event parser being added the same session, caught before it shipped, fixed by introducing a typed `_StreamEventType` enum instead of switching on raw JSON strings.
+
+</details>
+
+---
+
+## TUI vs CLI
+
+The same session state renders two ways. `claudart` itself is CLI-only, the transcript in [Proof](#proof) above is its actual terminal output. [zedup](https://github.com/liitx/zedup) hosts a TUI dashboard on top of the same typed `AgentModel`/`StepStatus` claudart ships, no separate model of "what a step is."
+
+Both captures below are real, not mockups. The CLI transcript is a literal `claudart` run, piped verbatim. The TUI panes are captured with [nocterm](https://github.com/liitx/nocterm)'s own headless test renderer (`tester.terminalState.renderToString()`), the same harness zedup's test suite asserts against, run against a literal `AgentsWorkflowState`, not hand-drawn boxes. The capture script lives in zedup's own `tool/` directory (it depends on `package:zedup`, so it can't live here without reintroducing the reverse dependency this repo just removed) — re-run it there after any visual change.
+
+<details>
+<summary><strong>zedup's agent pipeline pane — same pipeline, one step waiting on user input</strong></summary>
+
+```
+┌──────────────────────────────────────┐
+│╭─  agents  ─────────────────────────╮│
+││                                    ││
+││ [1] Pipeline                       ││
+││                                    ││
+││  ① reader                hku ✓ --- ││
+││  ② reasoner          ops ◉ waiting ││
+││  ③ writer                snt ○ --- ││
+││                                    ││
+││ [2] Context                        ││
+││                                    ││
+││  status debug-in-progress          ││
+││  bug    flaky teardown arch…       ││
+││  root   race on handoff.md …       ││
+││  scope  teardown_utils.dart        ││
+││                                    ││
+││ [4] Actions                        ││
+││                                    ││
+││  running…                          ││
+││                                    ││
+│╰────────────────────────────────────╯│
+└──────────────────────────────────────┘
+```
+
+`hku`/`ops`/`snt` are `AgentModel.shortAlias`, `✓`/`◉`/`○` are `StepStatus.glyph`, both owned once by claudart's enums (see [Why the typed state matters](#why-the-typed-state-matters)), not redrawn per-screen.
+
+</details>
+
+<details>
+<summary><strong>zedup's dashboard strip — full-width, same three steps</strong></summary>
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│────────────────────────────────────────────────────────────────────────────────│
+│  ① reader · hku ✓  │ ② reasoner · ops ◉  │ ③ writer · snt ○                    │
+│                                                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+The narrow pane above and this full-width band are two independent widgets rendering the same `AgentsWorkflowState`, split intentionally, the narrow pane fits a fixed 36-char editor column, the band spans the terminal's full width in the standalone dashboard. Both derive glyph and colour from the same `StepStatus` getter, they can't disagree.
 
 </details>
 
