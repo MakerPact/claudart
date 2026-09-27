@@ -2,10 +2,14 @@
 // omission, distinct speaker lanes, questions-float, and no ANSI in non-TTY.
 //
 // Tests run without a TTY, so `ansi.c` strips colour codes — assertions match
-// plain text and verify no escape sequences leak.
+// plain text and verify no escape sequences leak. Forced deterministic via
+// colorEnabledOverride, since a `FORCE_COLOR`/`CLAUDART_FORCE_COLOR` env var
+// in the ambient shell would otherwise make `ansi.c` emit escape codes here
+// regardless of the real (non-TTY) terminal state.
 
 import 'package:claudart/pipeline/agent_flow.dart';
 import 'package:claudart/pipeline/agent_response.dart';
+import 'package:claudart/ui/ansi.dart' as ansi;
 import 'package:claudart/ui/render.dart' as render;
 import 'package:test/test.dart';
 
@@ -65,6 +69,9 @@ AgentResponse _sample(ResponseKind kind) => switch (kind) {
     };
 
 void main() {
+  setUpAll(() => ansi.colorEnabledOverride = false);
+  tearDownAll(() => ansi.colorEnabledOverride = null);
+
   group('render — header first, no ANSI in non-TTY', () {
     for (final kind in ResponseKind.values) {
       test(kind.name, () {

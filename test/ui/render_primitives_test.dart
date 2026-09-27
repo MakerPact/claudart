@@ -2,12 +2,19 @@
 // status badge, field) that command output migrates onto.
 //
 // Runs without a TTY, so `ansi.c` strips colour — assertions match plain text
-// and verify no escape sequences leak.
+// and verify no escape sequences leak. Forced deterministic via
+// colorEnabledOverride, since a `FORCE_COLOR`/`CLAUDART_FORCE_COLOR` env var
+// in the ambient shell would otherwise make `ansi.c` emit escape codes here
+// regardless of the real (non-TTY) terminal state.
 
+import 'package:claudart/ui/ansi.dart' as ansi;
 import 'package:claudart/ui/render.dart' as render;
 import 'package:test/test.dart';
 
 void main() {
+  setUpAll(() => ansi.colorEnabledOverride = false);
+  tearDownAll(() => ansi.colorEnabledOverride = null);
+
   group('StatusBadge — glyph + colour per variant', () {
     for (final badge in render.StatusBadge.values) {
       test(badge.name, () {

@@ -31,10 +31,17 @@ const String clearLine = '\r\x1b[K';
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
 
+/// Test-only override — when non-null, short-circuits every other check
+/// (env vars, `stdout.hasTerminal`) so tests get deterministic output
+/// regardless of the ambient shell environment. Set back to `null` to
+/// restore normal detection.
+bool? colorEnabledOverride;
+
 /// Whether colour codes should be emitted. `NO_COLOR` forces off,
 /// `FORCE_COLOR` / `CLAUDART_FORCE_COLOR` force on (e.g. for panels that read
 /// ANSI but aren't a TTY); otherwise follow the terminal.
 bool get colorEnabled {
+  if (colorEnabledOverride != null) return colorEnabledOverride!;
   final env = Platform.environment;
   if (env.containsKey('NO_COLOR')) return false;
   if (env.containsKey('FORCE_COLOR') ||
