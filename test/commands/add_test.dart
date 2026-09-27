@@ -111,6 +111,22 @@ void main() {
       expect(entry.workspacePath, equals(workspaceFor('my-app')));
     });
 
+    test('scaffolds an empty archive/ delta record with a .gitkeep and README',
+        () async {
+      final io = _emptyIO();
+      await runAdd(
+        io: io,
+        projectRootOverride: _projectRoot,
+        claudeMemoryRootOverride: _memoryRoot,
+        promptFn: _prompts(['my-app', null, 'cli']),
+        confirmFn: _confirms([false, false, false, false]),
+        exitFn: _throwExit,
+      );
+      expect(io.fileExists(p.join(_projectRoot, 'archive', '.gitkeep')), isTrue);
+      final readme = io.read(p.join(_projectRoot, 'archive', 'README.md'));
+      expect(readme, contains('delta record'));
+    });
+
     test('creates the .claude symlink', () async {
       final io = _emptyIO();
       await runAdd(

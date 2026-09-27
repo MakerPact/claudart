@@ -167,7 +167,13 @@ Future<void> runAdd({
   );
   fileIO.write(claudeMdPath, '# CLAUDE.md\n\n$claudeMdBody');
 
-  // 8 — Register in Claude Code's own auto-memory so a session started
+  // 8 — Archive scaffold: an empty `archive/` delta record, per PLAN.md's
+  // "GitHub archive convention" — holds only content later removed from
+  // main documents, never anything currently live.
+  fileIO.write(p.join(projectRoot, 'archive', '.gitkeep'), '');
+  fileIO.write(p.join(projectRoot, 'archive', 'README.md'), _archiveReadme);
+
+  // 9 — Register in Claude Code's own auto-memory so a session started
   // here already knows the project exists.
   final memoryRoot = claudeMemoryRootOverride ??
       p.join(Platform.environment['HOME'] ?? '', '.claude', 'projects');
@@ -206,6 +212,20 @@ String? _detectDartSdkConstraint(String pubspecContent) =>
 
 bool _detectsDartrixDependency(String pubspecContent) =>
     RegExp(r'^\s{2}dartrix:', multiLine: true).hasMatch(pubspecContent);
+
+// ── Archive scaffold content ──────────────────────────────────────────────────
+
+const String _archiveReadme = '''# archive/
+
+This directory is a **delta record only** — it contains exclusively content
+that has been removed from main documents. It never duplicates anything
+currently in main.
+
+> If the content still exists anywhere in any current document on main, it
+> does not belong here. This directory only holds what main dropped.
+
+See `PLAN.md`'s "GitHub archive convention" for the full entry format.
+''';
 
 // ── Memory file content ──────────────────────────────────────────────────────
 
