@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:claudart/commands/claudart_command.dart';
-import 'package:claudart/commands/link.dart';
+import 'package:claudart/commands/link.dart' show roadmapMarker;
 import 'package:claudart/templates/readme_template.dart';
 import 'package:test/test.dart';
 
@@ -18,12 +18,14 @@ import 'package:test/test.dart';
 /// 2. File references — every .dart file the prose names exists on disk. The
 ///    Roadmap section is excluded: it legitimately names planned, not-yet-built
 ///    files (e.g. `planner.dart`).
-/// 3. Roadmap content parity — the generated block (`link.dart`'s
-///    `claudartRoadmapRows` fed through `readmeTemplate`) matches what's
-///    actually spliced into README.md at the `<!-- claudart:link:roadmap -->`
-///    marker. Catches the two ways this could drift: `claudart link` not run
-///    after `claudartRoadmapRows` changes, or a manual edit to README.md's
-///    Roadmap table that bypasses the generator.
+/// 3. Roadmap content parity — the generated block (`roadmap.json`'s rows
+///    fed through `readmeTemplate`) matches what's actually spliced into
+///    README.md at the `<!-- claudart:link:roadmap -->` marker. Catches the
+///    two ways this could drift: `claudart link` not run after
+///    `roadmap.json` changes, or a manual edit to README.md's Roadmap table
+///    that bypasses the generator. `roadmap.json` is git-committed
+///    (unlike workspace.json, which lives outside the repo entirely) so
+///    this check is portable to CI and a fresh clone.
 ///
 /// Run: CLAUDART_WORKSPACE=/tmp/claudart_test dart test test/readme_sync_test.dart
 void main() {
@@ -96,14 +98,18 @@ void main() {
 
   group('Roadmap content parity', () {
     test(
-        'README.md\'s spliced Roadmap block matches readmeTemplate(roadmapRows: '
-        'claudartRoadmapRows)', () {
-      final marker = RegExp(
-        r'^<!-- claudart:link:roadmap -->.*?(?=\n---|\z)',
-        multiLine: true,
-        dotAll: true,
+        'README.md\'s spliced Roadmap block matches readmeTemplate(...) fed '
+        'roadmap.json', () {
+      final roadmapJson = File('roadmap.json').readAsStringSync();
+      final config = parseRoadmapConfig(roadmapJson);
+      expect(
+        config,
+        isNotNull,
+        reason: 'roadmap.json is missing or malformed — could not parse '
+            'a RoadmapConfig from it.',
       );
-      final match = marker.firstMatch(readme);
+
+      final match = roadmapMarker.firstMatch(readme);
       expect(
         match,
         isNotNull,
@@ -112,13 +118,16 @@ void main() {
             'Roadmap table.',
       );
       final actual = match!.group(0);
-      final expected = readmeTemplate(roadmapRows: claudartRoadmapRows);
+      final expected = readmeTemplate(
+        roadmapRows: config!.rows,
+        summaryText: config.summaryText ?? "What's coming",
+        footerLine: config.footerLine,
+      );
       expect(
         actual,
         equals(expected),
-        reason: 'README.md\'s Roadmap table has drifted from '
-            '`claudartRoadmapRows` in lib/commands/link.dart — run '
-            '`claudart link` to regenerate, or the table was hand-edited.',
+        reason: 'README.md\'s Roadmap table has drifted from roadmap.json — '
+            'run `claudart link` to regenerate, or the table was hand-edited.',
       );
     });
   });

@@ -375,7 +375,7 @@ If you run claudart with `ANTHROPIC_API_KEY` set instead of an OAuth login, both
 | 5 | Design subagent | deferred, see PLAN.md |
 | 6 | Agent flow registry + planner.dart | registry shipped, planner.dart not started |
 | 7 | Per-step thinking/cost metadata surfaced live in a TUI dependency graph | metadata shipped, TUI not started |
-| 8 | README migration (this generation mechanism) | in progress |
+| 8 | README migration (this generation mechanism) | shipped |
 
 </details>
 

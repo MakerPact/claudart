@@ -1,0 +1,12 @@
+{
+  "rows": [
+    { "phase": "1", "scope": "CLI + workspace + scaffold", "status": "shipped" },
+    { "phase": "2", "scope": "Sensitivity mode + token map", "status": "shipped" },
+    { "phase": "3", "scope": "Skills + cosine retrieval", "status": "shipped" },
+    { "phase": "4", "scope": "Static analysis scanner", "status": "shipped" },
+    { "phase": "5", "scope": "Design subagent", "status": "deferred, see PLAN.md" },
+    { "phase": "6", "scope": "Agent flow registry + planner.dart", "status": "registry shipped, planner.dart not started" },
+    { "phase": "7", "scope": "Per-step thinking/cost metadata surfaced live in a TUI dependency graph", "status": "metadata shipped, TUI not started" },
+    { "phase": "8", "scope": "README migration (this generation mechanism)", "status": "shipped" }
+  ]
+}

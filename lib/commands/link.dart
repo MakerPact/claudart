@@ -26,41 +26,18 @@ final RegExp _generatedMarker =
 /// `_generatedMarker`, this splice is opt-in: a README.md without this
 /// marker is left untouched entirely, since (unlike CLAUDE.md) README.md is
 /// not a claudart-owned file for every project.
-final RegExp _roadmapMarker = RegExp(
-    r'^<!-- claudart:link:roadmap -->.*?(?=\n---|\z)',
+///
+/// `(?![\s\S])` is "end of input," not `\z` — Dart/JS regex has no `\z`
+/// metacharacter (that's Perl/Python syntax); in ECMAScript-flavored regex
+/// `\z` is silently a literal lowercase `z`. Using it here made the splice
+/// stop at the first `z` in the roadmap content instead of the end of
+/// input — worked by luck against claudart's own roadmap text (no `z`
+/// appears in it), corrupted the first live run against a project whose
+/// roadmap text contained "zedup," caught and fixed before landing.
+final RegExp roadmapMarker = RegExp(
+    r'^<!-- claudart:link:roadmap -->.*?(?=\n---|(?![\s\S]))',
     multiLine: true,
     dotAll: true);
-
-/// Roadmap rows for claudart's own README.md. Hand-maintained, not parsed
-/// from PLAN.md — PLAN.md's phase headers aren't uniformly structured for
-/// automated extraction (some mark status inline in the heading, others use
-/// a separate `**Status:**` line). Deferred/parked phases are labeled, not
-/// omitted. Kept in sync with PLAN.md's "What's been built"/"What's next"
-/// sections by hand, same discipline plan_template.dart's callers use for
-/// PLAN.md stub content.
-const List<RoadmapRow> claudartRoadmapRows = [
-  (phase: '1', scope: 'CLI + workspace + scaffold', status: 'shipped'),
-  (phase: '2', scope: 'Sensitivity mode + token map', status: 'shipped'),
-  (phase: '3', scope: 'Skills + cosine retrieval', status: 'shipped'),
-  (phase: '4', scope: 'Static analysis scanner', status: 'shipped'),
-  (phase: '5', scope: 'Design subagent', status: 'deferred, see PLAN.md'),
-  (
-    phase: '6',
-    scope: 'Agent flow registry + planner.dart',
-    status: 'registry shipped, planner.dart not started'
-  ),
-  (
-    phase: '7',
-    scope:
-        'Per-step thinking/cost metadata surfaced live in a TUI dependency graph',
-    status: 'metadata shipped, TUI not started'
-  ),
-  (
-    phase: '8',
-    scope: 'README migration (this generation mechanism)',
-    status: 'in progress'
-  ),
-];
 
 /// Registers the current project with claudart and creates the `.claude` symlink.
 ///
@@ -180,22 +157,36 @@ Future<void> runLink(
   }
   fileIO.write(claudeMdPath, newClaudeMd);
 
-  // 10 — Regenerate README.md's Roadmap table, if the file opted in with
-  // the `<!-- claudart:link:roadmap -->` marker. Unlike CLAUDE.md, most
-  // linked projects' README.md is not claudart-owned — a missing marker
-  // means "not opted in," not "needs the section appended."
-  final readmePath = p.join(projectRoot, 'README.md');
-  final existingReadme =
-      fileIO.fileExists(readmePath) ? fileIO.read(readmePath) : '';
-  final readmeMarkerMatch = _roadmapMarker.firstMatch(existingReadme);
-  if (readmeMarkerMatch != null) {
-    final generatedRoadmap = readmeTemplate(roadmapRows: claudartRoadmapRows);
-    final newReadme = existingReadme.replaceRange(
-      readmeMarkerMatch.start,
-      readmeMarkerMatch.end,
-      generatedRoadmap,
-    );
-    fileIO.write(readmePath, newReadme);
+  // 10 — Regenerate README.md's Roadmap table, if the project opted in with
+  // both a git-committed `roadmap.json` at its project root and the
+  // `<!-- claudart:link:roadmap -->` marker in its README.md. roadmap.json,
+  // not workspace.json: workspace.json lives outside every project's repo
+  // (under ~/.claudart/), so it can never be a source a fresh clone or CI
+  // could verify against. Unlike CLAUDE.md, most linked projects' README.md
+  // is not claudart-owned — a missing marker or missing rows means "not
+  // opted in," not "needs the section appended."
+  final roadmapJsonPath = p.join(projectRoot, 'roadmap.json');
+  final roadmapConfig = fileIO.fileExists(roadmapJsonPath)
+      ? parseRoadmapConfig(fileIO.read(roadmapJsonPath))
+      : null;
+  if (roadmapConfig != null && roadmapConfig.rows.isNotEmpty) {
+    final readmePath = p.join(projectRoot, 'README.md');
+    final existingReadme =
+        fileIO.fileExists(readmePath) ? fileIO.read(readmePath) : '';
+    final readmeMarkerMatch = roadmapMarker.firstMatch(existingReadme);
+    if (readmeMarkerMatch != null) {
+      final generatedRoadmap = readmeTemplate(
+        roadmapRows: roadmapConfig.rows,
+        summaryText: roadmapConfig.summaryText ?? "What's coming",
+        footerLine: roadmapConfig.footerLine,
+      );
+      final newReadme = existingReadme.replaceRange(
+        readmeMarkerMatch.start,
+        readmeMarkerMatch.end,
+        generatedRoadmap,
+      );
+      fileIO.write(readmePath, newReadme);
+    }
   }
 
   print('\n✓ Registered: $effectiveName');
