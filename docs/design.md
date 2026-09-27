@@ -9,37 +9,54 @@
 
 ### Formal definition
 
-Let **S** be the finite set of session states (the `HandoffStatus` enum):
+Let **S** be the finite set of session states — the `HandoffStatus` enum
+(`lib/session/session_state.dart`), 8 variants total:
 
 ```
-S = { suggest-investigating, ready-for-debug, debug-in-progress,
-      needs-suggest, unknown }
+S = { no-handoff, suggest-investigating, ready-for-suggest, ready-for-debug,
+      debug-in-progress, debug-complete, needs-suggest, unknown }
 ```
+
+`no-handoff` and `unknown` are sentinel values — never written to
+handoff.md (see `HandoffStatus.value`'s doc comment). `no-handoff` is the
+pre-session state (zedup-local, emitted when no handoff exists yet);
+`unknown` is the parse-failure fallback for an unrecognized status string.
+Neither participates in the transition table below; the automaton's real
+work happens across the remaining 6 persisted states.
 
 Let **C** be the finite set of commands:
 
 ```
-C = { /suggest, /save, /debug, claudart rotate, claudart teardown, claudart kill }
+C = { claudart setup, /suggest, /save, /debug, claudart rotate,
+      claudart teardown, claudart kill }
 ```
 
 The session is a **deterministic finite automaton** `(S, C, δ, s₀, F)` where:
 
-- `s₀ = suggest-investigating` (initial state)
-- `F = { resolved }` (accepting / terminal state reached by teardown)
+- `s₀ = no-handoff` (initial state, before `claudart setup` writes a handoff)
+- `F = { resolved }` (accepting / terminal state reached by teardown; not an
+  `HandoffStatus` value itself — `debug-complete` transitions here via
+  `/teardown`, at which point the handoff is archived and reset)
 - `δ : S × C → S` is the transition function (total — every command has a defined outcome in every state)
 
 **Transition function δ:**
 
 | Current state | Command | Next state | Precondition |
 |---|---|---|---|
+| `no-handoff` | `claudart setup` | `suggest-investigating` | — |
 | `suggest-investigating` | `/save` | `suggest-investigating` | root cause unconfirmed |
-| `suggest-investigating` | `/save` | `ready-for-debug` | root cause confirmed |
+| `suggest-investigating` | `/save` | `ready-for-suggest` | root cause confirmed, further exploration expected |
+| `suggest-investigating` | `/save` | `ready-for-debug` | root cause confirmed, ready to implement |
 | `suggest-investigating` | `claudart rotate` | `suggest-investigating` (new session) | build gate passes |
+| `ready-for-suggest` | `/save` | `ready-for-debug` | — |
 | `ready-for-debug` | `/debug` | `debug-in-progress` | — |
 | `ready-for-debug` | `claudart rotate` | `suggest-investigating` (new session) | build gate passes |
 | `debug-in-progress` | `/save` | `debug-in-progress` | — |
+| `debug-in-progress` | (blocked) | `needs-suggest` | debug hits a question suggest must resolve |
+| `needs-suggest` | `/suggest` | `suggest-investigating` | — |
+| `debug-in-progress` | fix verified | `debug-complete` | — |
 | `debug-in-progress` | `claudart rotate` | `suggest-investigating` (new session) | build gate passes |
-| `debug-in-progress` | `claudart teardown` | `resolved` (archived) | — |
+| `debug-complete` | `claudart teardown` | `resolved` (archived) | — |
 | any | `claudart kill` | `∅` (handoff erased) | — |
 
 **Key property:** `δ` is exhaustive — the compiler enforces this because `HandoffStatus` is a Dart `enum` and every `switch` on it must be exhaustive. Missing cases are compile errors, not runtime bugs.
@@ -48,27 +65,22 @@ The session is a **deterministic finite automaton** `(S, C, δ, s₀, F)` where:
 
 ```mermaid
 stateDiagram-v2
-    direction LR
-    [*] --> suggest_investigating : claudart setup
-
-    suggest_investigating --> suggest_investigating : /save\n(root cause unknown)
-    suggest_investigating --> ready_for_debug       : /save\n(root cause confirmed)
-    suggest_investigating --> suggest_investigating : rotate\n[build gate ✓]
-
-    ready_for_debug --> debug_in_progress : /debug
-    ready_for_debug --> suggest_investigating : rotate\n[build gate ✓]
-
-    debug_in_progress --> debug_in_progress : /save
-    debug_in_progress --> resolved           : /teardown
-    debug_in_progress --> suggest_investigating : rotate\n[build gate ✓]
-
-    resolved --> [*]
-
-    suggest_investigating --> erased : kill
-    ready_for_debug        --> erased : kill
-    debug_in_progress      --> erased : kill
-    erased --> [*]
+  [*] --> noHandoff
+  noHandoff --> suggestInvestigating: /suggest
+  suggestInvestigating --> readyForSuggest: explore
+  readyForSuggest --> readyForDebug: /save
+  readyForDebug --> debugInProgress: /debug
+  debugInProgress --> needsSuggest: blocked
+  needsSuggest --> suggestInvestigating
+  debugInProgress --> debugComplete: fix verified
+  debugComplete --> [*]: /teardown
 ```
+
+Matches README.md's own diagram exactly — kept in sync deliberately;
+`unknown` (parse-failure sentinel) and the `claudart kill`/`claudart
+rotate` edges (available from any state, omitted here to keep the
+diagram legible) are the two things this simplified view leaves out of
+the full transition table above.
 
 ---
 

@@ -200,7 +200,7 @@ stateDiagram-v2
   debugComplete --> [*]: /teardown
 ```
 
-[`HandoffStatus`](lib/session/session_state.dart#L7), eight values, exhaustive switch in [`teardown_utils.dart`](lib/session/teardown_utils.dart) and every dispatch site.
+[`HandoffStatus`](lib/session/session_state.dart#L7), eight values, exhaustive switch in [`teardown_utils.dart`](lib/teardown_utils.dart) and every dispatch site.
 
 **The planner** routes every input on three orthogonal axes to a model, a total function over sixty cells.
 
@@ -287,26 +287,30 @@ claudart teardown --headless  # same, but resolves every decision itself
 
 | Command | Role | Code |
 |---|---|---|
-| `archives` | list session archives, resume or view | [bin/claudart.dart:113](bin/claudart.dart#L113) |
-| `init` | workspace initialization | [bin/claudart.dart:115](bin/claudart.dart#L115) |
-| `link` | symlink + register + setup sensitivity | [bin/claudart.dart:117](bin/claudart.dart#L117) |
-| `unlink` | remove symlinks cleanly | [bin/claudart.dart:119](bin/claudart.dart#L119) |
-| `setup` | start session, write handoff.md | [bin/claudart.dart:121](bin/claudart.dart#L121) |
-| `status` | session state, compact for shell | [bin/claudart.dart:125](bin/claudart.dart#L125) |
-| `teardown [--headless]` | archive, promote skills; `--headless` resolves every decision itself | [bin/claudart.dart:127](bin/claudart.dart#L127) |
-| `suggest` | run suggest pipeline | [bin/claudart.dart:131](bin/claudart.dart#L131) |
-| `debug` | run debug pipeline | [bin/claudart.dart:133](bin/claudart.dart#L133) |
-| `flow` | experimental agent-constructed session | [bin/claudart.dart:135](bin/claudart.dart#L135) |
-| `save` | checkpoint session | [bin/claudart.dart:137](bin/claudart.dart#L137) |
-| `rotate` | archive, build gate, seed next from Pending Issues | [bin/claudart.dart:139](bin/claudart.dart#L139) |
-| `kill` | abandon session, no skills update | [bin/claudart.dart:141](bin/claudart.dart#L141) |
-| `preflight <op>` | sync check, debug, save, or test | [bin/claudart.dart:145](bin/claudart.dart#L145) |
-| `scan` | rescan for sensitive tokens | [bin/claudart.dart:148](bin/claudart.dart#L148) |
-| `report` | diagnostic report, file GitHub issues | [bin/claudart.dart:163](bin/claudart.dart#L163) |
-| `map` | generate token_map.md from token_map.json | [bin/claudart.dart:170](bin/claudart.dart#L170) |
-| `experiment` | tee command output to experiments/ | [bin/claudart.dart:176](bin/claudart.dart#L176) |
-| `compile` | rebuild the binary | [bin/claudart.dart:178](bin/claudart.dart#L178) |
-| `version` | print version | [bin/claudart.dart:90](bin/claudart.dart#L90) |
+| `chat` | interactive chat shell, the agentflow front door | [bin/claudart.dart:115](bin/claudart.dart#L115) |
+| `archives` | list session archives, resume or view | [bin/claudart.dart:117](bin/claudart.dart#L117) |
+| `add` | scaffold a brand-new project workspace | [bin/claudart.dart:119](bin/claudart.dart#L119) |
+| `init` | workspace initialization | [bin/claudart.dart:121](bin/claudart.dart#L121) |
+| `link` | symlink + register + setup sensitivity | [bin/claudart.dart:123](bin/claudart.dart#L123) |
+| `unlink` | remove symlinks cleanly | [bin/claudart.dart:125](bin/claudart.dart#L125) |
+| `setup` | start session, write handoff.md | [bin/claudart.dart:127](bin/claudart.dart#L127) |
+| `status` | session state, compact for shell | [bin/claudart.dart:131](bin/claudart.dart#L131) |
+| `teardown [--headless]` | archive, promote skills; `--headless` resolves every decision itself | [bin/claudart.dart:133](bin/claudart.dart#L133) |
+| `suggest` | run suggest pipeline | [bin/claudart.dart:137](bin/claudart.dart#L137) |
+| `debug` | run debug pipeline | [bin/claudart.dart:139](bin/claudart.dart#L139) |
+| `flow` | experimental agent-constructed session | [bin/claudart.dart:141](bin/claudart.dart#L141) |
+| `save` | checkpoint session | [bin/claudart.dart:143](bin/claudart.dart#L143) |
+| `rotate` | archive, build gate, seed next from Pending Issues | [bin/claudart.dart:145](bin/claudart.dart#L145) |
+| `kill` | abandon session, no skills update | [bin/claudart.dart:147](bin/claudart.dart#L147) |
+| `resume` | pre-populate setup from the most recent archive | [bin/claudart.dart:149](bin/claudart.dart#L149) |
+| `confirmPending` | set or clear the pending confirmation for the current project | [bin/claudart.dart:151](bin/claudart.dart#L151) |
+| `preflight <op>` | sync check, debug, save, or test | [bin/claudart.dart:153](bin/claudart.dart#L153) |
+| `scan` | rescan for sensitive tokens | [bin/claudart.dart:156](bin/claudart.dart#L156) |
+| `report` | diagnostic report, file GitHub issues | [bin/claudart.dart:171](bin/claudart.dart#L171) |
+| `map` | generate token_map.md from token_map.json | [bin/claudart.dart:179](bin/claudart.dart#L179) |
+| `experiment` | tee command output to experiments/ | [bin/claudart.dart:186](bin/claudart.dart#L186) |
+| `compile` | rebuild the binary | [bin/claudart.dart:188](bin/claudart.dart#L188) |
+| `version` | print version | [bin/claudart.dart:94](bin/claudart.dart#L94) |
 
 </details>
 
@@ -343,17 +347,19 @@ If you run claudart with `ANTHROPIC_API_KEY` set instead of an OAuth login, both
 
 ```
 ~/.claudart/
-├── workspace.json              # owner, stack, knowledge scope
-├── scaffold.md                 # baked once by Agent 1
-├── token_map.json              # identifier → alias map
-├── projects/
-│   └── <project>/
-│       ├── handoff.md          # active session state
-│       ├── skills.md           # promoted learnings
-│       └── archive/            # rotated session archives
-└── logs/
-    ├── interactions.jsonl
-    └── errors.jsonl
+├── registry.json                # startup reads ONLY this
+└── <project>/
+    ├── config.json               # owner, stack, knowledge scope
+    ├── handoff.md                # active session state
+    ├── skills.md                 # promoted learnings
+    ├── token_map.json            # identifier → alias map
+    ├── archive/                  # rotated session archives
+    ├── knowledge/                # generic + per-project knowledge files
+    ├── logs/
+    │   ├── interactions.jsonl
+    │   └── errors.jsonl
+    ├── PLAN.md                   # generated by `claudart add`, owned by project
+    └── CLAUDE.md                 # generated by `claudart add`, re-generatable
 ```
 
 </details>
