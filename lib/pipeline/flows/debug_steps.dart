@@ -12,6 +12,7 @@ import 'package:path/path.dart' as p;
 
 import '../agent_model.dart';
 import '../agent_step.dart';
+import '../agents/categorization.dart';
 import '../pipeline_context.dart';
 
 abstract final class DebugSteps {
@@ -47,12 +48,13 @@ abstract final class DebugSteps {
   );
 
   static const AgentStep implementer = AgentStep(
-    id:           'implementer',
-    label:        'Implementing fix (sonnet)…',
-    model:        AgentModel.sonnet,
-    systemPrompt: _implementerSystem,
-    buildPrompt:  _implementerPrompt,
-    routes:       {},
+    id:            'implementer',
+    label:         'Implementing fix…',
+    model:         AgentModel.sonnet,
+    modelSelector: _implementerModelSelector,
+    systemPrompt:  _implementerSystem,
+    buildPrompt:   _implementerPrompt,
+    routes:        {},
     // NOT bare: --bare strictly requires ANTHROPIC_API_KEY/apiKeyHelper and
     // never reads OAuth or keychain (verified live — a normal OAuth-logged-in
     // session gets "Not logged in · Please run /login" under --bare). That's
@@ -61,6 +63,21 @@ abstract final class DebugSteps {
     // claudart debug for the common case, not just guard against CLAUDE.md
     // override. Revisit if/when this pipeline supports API-key-based auth.
   );
+
+  /// Reads the classification seeded onto `PipelineSlot.categorize` at
+  /// the start of [runDebug] — copied verbatim from the handoff's
+  /// `## Classification` section, which `runSuggest`'s own categorize
+  /// step wrote — and consults [routeModel]. Debug never re-classifies:
+  /// the same bug is being worked on, so the classification computed
+  /// once in suggest is reused here for free, not re-derived at extra
+  /// API cost. Falls back to sonnet when the section is empty or
+  /// unparsable (an older handoff with no Classification section, or
+  /// one hand-written without it).
+  static AgentModel _implementerModelSelector(PipelineContext ctx) =>
+      modelForCategorizeOutput(
+        ctx[PipelineSlot.categorize] ?? '',
+        fallback: AgentModel.sonnet,
+      );
 
   static const List<AgentStep> all = [implementer];
 

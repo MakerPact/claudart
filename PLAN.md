@@ -777,6 +777,61 @@ promotion bar dartrix's own paradigm Growth section applies to itself.
 
 ---
 
+### Phase 13 — Classification persists to the handoff; suggest/debug consult it (complete)
+Gap found live: `claudart suggest`/`claudart debug` are fixed pipelines
+(haiku→sonnet→sonnet, hardcoded per-step literals in `suggest_steps.dart`/
+`debug_steps.dart`) — neither ever calls `routeModel()`. Only `claudart
+flow`'s `plan` step actually consults the τ classification, via its
+`modelSelector` hook. A `gui × design × systemic` task run through
+`suggest`/`debug` got sonnet reasoning throughout, not opus, even though
+the classification (done by hand in the handoff, not by the categorize
+step) was correct — the two commands structurally can't act on it.
+
+Fix: `runSuggest` now runs `FlowSteps.categorize` (haiku) as a real Phase
+0, before the reader, and persists its raw output verbatim to a new
+`## Classification` handoff section. `SuggestSteps.reasoner` gained a
+`modelSelector` (`_reasonerModelSelector`) that reads that slot and calls
+`modelForCategorizeOutput()`, so the reasoner itself now routes through
+`routeModel` — a `design` task gets opus reasoning, not a fixed sonnet.
+`runDebug` reads the persisted `## Classification` section and seeds it
+onto `PipelineSlot.categorize` before running — no second categorize call,
+no extra API cost, since debug operates on the same bug suggest already
+classified. `DebugSteps.implementer` gained the equivalent
+`_implementerModelSelector`. Both selectors fall back to sonnet — the
+pre-existing static default — when the slot is empty or unparsable, so
+an older handoff with no `## Classification` section (or one written
+before this feature) behaves exactly as it did before.
+
+Static labels that named a specific model (`'Reasoning over findings
+(sonnet)…'`, `'Implementing fix (sonnet)…'`) were changed to drop the
+now-inaccurate model name (`'Reasoning over findings…'`,
+`'Implementing fix…'`), matching `FlowSteps.plan`'s own existing label
+convention (`'Generating plan'`, no model qualifier) — the established
+precedent for a step whose model varies per task.
+
+`handoff_template.dart`'s `handoffTemplate()` and `blankHandoff` both
+gained a `## Classification` placeholder section (`_Not yet
+determined._`), positioned right after `## Bug`.
+
+Cost tradeoff, stated plainly: this adds one haiku categorize call
+(~$0.01) to every `suggest` session, including ones that are already
+correctly compound/systemic and would route to sonnet/opus either way —
+the net win is real only for the fraction of sessions that are actually
+atomic/lookup-shaped and would otherwise overpay for a fixed sonnet
+reasoner/implementer. Not measured against real session-mix data; this
+is architecturally correct, not empirically benchmarked.
+
+Verification: `test/pipeline/flows/classification_routing_test.dart`
+(new) mirrors `plan_step_routing_test.dart`'s exact pattern for both
+`SuggestSteps.reasoner.effectiveModel` and
+`DebugSteps.implementer.effectiveModel` — gui×design→opus, empty→sonnet,
+placeholder-text→sonnet. Full suite (1176 tests) + `custom_lint` clean.
+A manual round-trip script confirmed `updateSection` → `readSection` →
+`modelForCategorizeOutput` preserves the XML tags byte-for-byte and
+resolves to opus.
+
+---
+
 ## GitHub archive convention
 
 Every repo using claudart's template system gets an `archive/` folder in the repo root,

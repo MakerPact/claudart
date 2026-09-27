@@ -19,6 +19,7 @@
 
 import '../agent_model.dart';
 import '../agent_step.dart';
+import '../agents/categorization.dart';
 import '../pipeline_context.dart';
 import '../route_tag.dart';
 import '../step_route.dart';
@@ -50,15 +51,32 @@ abstract final class SuggestSteps {
     routes:       const {}, // falls through to reasoner
   );
 
-  /// Phase 2: sonnet reasons over findings, produces full XML analysis.
+  /// Phase 2: reasons over findings, produces full XML analysis. Model
+  /// is dynamic — [_reasonerModelSelector] consults the categorize
+  /// step's output (Phase 0) via [routeModel], so a `gui × design`
+  /// session gets opus reasoning instead of the sonnet default.
   static const AgentStep reasoner = AgentStep(
-    id:           'reasoner',
-    label:        'Reasoning over findings (sonnet)…',
-    model:        AgentModel.sonnet,
-    systemPrompt: _reasonerSystem,
-    buildPrompt:  _reasonerPrompt,
-    routes:       {}, // no routing — executor returns after this
+    id:            'reasoner',
+    label:         'Reasoning over findings…',
+    model:         AgentModel.sonnet,
+    modelSelector: _reasonerModelSelector,
+    systemPrompt:  _reasonerSystem,
+    buildPrompt:   _reasonerPrompt,
+    routes:        {}, // no routing — executor returns after this
   );
+
+  /// Reads the categorize step's `<CATEGORY>`/`<INTENT>`/`<COMPLEXITY>`
+  /// output (written to `PipelineSlot.categorize` by the Phase 0
+  /// categorize step this session ran, or seeded from a persisted
+  /// `## Classification` handoff section) and consults [routeModel].
+  /// Falls back to sonnet — the pre-existing static default — when the
+  /// slot is empty or unparsable, so an older handoff with no
+  /// Classification section behaves exactly as before this feature.
+  static AgentModel _reasonerModelSelector(PipelineContext ctx) =>
+      modelForCategorizeOutput(
+        ctx[PipelineSlot.categorize] ?? '',
+        fallback: AgentModel.sonnet,
+      );
 
   // ── Refinement steps (run in loop after user says [r]) ───────────────────────
 

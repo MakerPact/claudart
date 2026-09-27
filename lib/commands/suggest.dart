@@ -3,6 +3,7 @@ import '../file_io.dart';
 import '../git_utils.dart';
 import '../md_io.dart';
 import '../paths.dart';
+import '../pipeline/flows/flow_steps.dart';
 import '../pipeline/flows/suggest_steps.dart';
 import '../pipeline/pipeline_context.dart';
 import '../pipeline/pipeline_executor.dart';
@@ -88,14 +89,21 @@ Future<void> runSuggest({
 
   print(render.header('CLAUDART SUGGEST'));
   print(
-    '  ${ansi.dim}[1] Read files${ansi.reset}'
+    '  ${ansi.dim}[1] Classify${ansi.reset}'
     '  ${ansi.dim}›${ansi.reset}'
-    '  ${ansi.dim}[2] Reason${ansi.reset}'
+    '  ${ansi.dim}[2] Read files${ansi.reset}'
     '  ${ansi.dim}›${ansi.reset}'
-    '  ${ansi.dim}[3] Write handoff${ansi.reset}\n',
+    '  ${ansi.dim}[3] Reason${ansi.reset}'
+    '  ${ansi.dim}›${ansi.reset}'
+    '  ${ansi.dim}[4] Write handoff${ansi.reset}\n',
   );
 
-  // ── Phase 1: reader ────────────────────────────────────────────────────────
+  // ── Phase 0: categorize ──────────────────────────────────────────────────────
+  //
+  // Classifies the bug once per session (haiku) so the reasoner step below —
+  // and, via the persisted ## Classification section, claudart debug's
+  // implementer step too — can route to the right model instead of always
+  // paying full sonnet cost on atomic/lookup-shaped work.
 
   var ctx = PipelineContext(
     projectRoot: projectRoot,
@@ -105,10 +113,19 @@ Future<void> runSuggest({
   );
 
   ctx = await exec.runFuture(
-    steps:        [SuggestSteps.reader(files.length)],
+    steps:        [FlowSteps.categorize],
     ctx:          ctx,
     displayStep:  1,
-    displayTotal: 3,
+    displayTotal: 4,
+  );
+
+  // ── Phase 1: reader ────────────────────────────────────────────────────────
+
+  ctx = await exec.runFuture(
+    steps:        [SuggestSteps.reader(files.length)],
+    ctx:          ctx,
+    displayStep:  2,
+    displayTotal: 4,
   );
 
   if (ctx.readerOut.isEmpty) {
@@ -121,8 +138,8 @@ Future<void> runSuggest({
   ctx = await exec.runFuture(
     steps:        [SuggestSteps.reasoner],
     ctx:          ctx,
-    displayStep:  2,
-    displayTotal: 3,
+    displayStep:  3,
+    displayTotal: 4,
   );
 
   if (ctx.reasonerOut.isEmpty) {
@@ -194,7 +211,7 @@ Future<void> runSuggest({
 
   // ── Phase 3: write to handoff ──────────────────────────────────────────────
 
-  stdout.write('\n  ${ansi.cyan}·${ansi.reset}  ${ansi.dim}[3/3]${ansi.reset}  Writing handoff…');
+  stdout.write('\n  ${ansi.cyan}·${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Writing handoff…');
 
   final analysisOut  = ctx.applierOut.isNotEmpty ? ctx.applierOut : ctx.reasonerOut;
   final rootCause    = tagOr(analysisOut, 'ROOT_CAUSE');
@@ -216,7 +233,13 @@ $scopeClasses
 ### Must not touch
 $mustNotTouch''';
 
+  final classification = (ctx[PipelineSlot.categorize] ?? '').trim();
+
   var updated = handoff;
+  updated = updateSection(
+    updated, 'Classification',
+    classification.isEmpty ? '_Not yet determined._' : classification,
+  );
   updated = updateSection(updated, 'Root Cause',  rootCause.trim());
   updated = updateSection(updated, 'Scope',        newScope.trim());
   updated = updateSection(updated, 'Constraints',  constraints.trim());
@@ -228,7 +251,7 @@ $mustNotTouch''';
 
   fileIO.write(handoffFile, updated);
 
-  stdout.write('\x1B[2K\r  ${ansi.green}✓${ansi.reset}  ${ansi.dim}[3/3]${ansi.reset}  Handoff written  ${ansi.dim}→${ansi.reset}  status: ready-for-debug\n\n');
+  stdout.write('\x1B[2K\r  ${ansi.green}✓${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Handoff written  ${ansi.dim}→${ansi.reset}  status: ready-for-debug\n\n');
   print('  Next:  ${ansi.bold}claudart save${ansi.reset}  ${ansi.dim}→${ansi.reset}  then /debug in Zed\n');
 }
 

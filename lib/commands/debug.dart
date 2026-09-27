@@ -67,11 +67,12 @@ Future<void> runDebug({
 
   // ── Parse handoff ───────────────────────────────────────────────────────────
 
-  final bug       = readSection(handoff, 'Bug');
-  final expected  = readSection(handoff, 'Expected Behavior');
-  final rootCause = readSection(handoff, 'Root Cause');
-  final scope     = readSection(handoff, 'Scope');
-  final files     = parseScopeFiles(scope, projectRoot);
+  final bug            = readSection(handoff, 'Bug');
+  final expected       = readSection(handoff, 'Expected Behavior');
+  final rootCause      = readSection(handoff, 'Root Cause');
+  final classification = readSection(handoff, 'Classification');
+  final scope          = readSection(handoff, 'Scope');
+  final files          = parseScopeFiles(scope, projectRoot);
 
   if (files.isEmpty) {
     print(
@@ -109,6 +110,12 @@ Future<void> runDebug({
     expected:    expected,
     files:       files,
   );
+  // Seed the classification suggest already computed (persisted to the
+  // handoff's ## Classification section) so the implementer step's
+  // modelSelector can route without debug re-classifying at extra cost.
+  // Empty/placeholder text degrades gracefully to sonnet, same as an
+  // older handoff written before this field existed.
+  ctx = ctx.withSlot(PipelineSlot.categorize, classification);
 
   ctx = await exec.runFuture(
     steps:        [DebugSteps.reader(files.length)],
