@@ -5,8 +5,8 @@
     { "phase": "3", "scope": "Skills + cosine retrieval", "status": "shipped" },
     { "phase": "4", "scope": "Static analysis scanner", "status": "shipped" },
     { "phase": "5", "scope": "Design subagent", "status": "deferred, see PLAN.md" },
-    { "phase": "6", "scope": "Agent flow registry + planner.dart", "status": "registry shipped, planner.dart not started" },
-    { "phase": "7", "scope": "Per-step thinking/cost metadata surfaced live in a TUI dependency graph", "status": "metadata shipped, TUI not started" },
+    { "phase": "6", "scope": "Agent flow registry + planner.dart", "status": "registry shipped, planner.dart closed (not built, see PLAN.md)" },
+    { "phase": "7", "scope": "Per-step thinking/cost metadata + routing loop-back signal in the agent pipeline pane", "status": "shipped, partial scope (see PLAN.md)" },
     { "phase": "8", "scope": "README migration (this generation mechanism)", "status": "shipped" }
   ]
 }

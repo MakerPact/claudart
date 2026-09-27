@@ -516,6 +516,45 @@ zedup's own pre-existing, unrelated in-progress work (chat/dashboard
 files already modified in its working tree before this session) was
 left untouched.
 
+### Phase 7 — Per-step thinking/cost metadata + routing loop-back signal (complete, partial scope)
+Corresponds to README Roadmap table row 7. Delivered narrower than the
+row's "TUI dependency graph" label suggests — a full node-and-edge graph
+layout doesn't fit the pane's fixed 36-char width (verified against
+`agents_workflow_pane.dart`'s own header comment); the honest version
+built instead:
+
+- **claudart**: `AgentStarted` gained `isRevisit` — `PipelineExecutor`
+  tracks a `Set<String> visited` across its routing loop and sets it
+  whenever a step (`GoTo`/`QuestionBranch`/`FeedBackTo`/`EscalateUser`/
+  `ApprovalGate`-refine) runs again, uniformly across all route types
+  since they funnel through the same loop. This is the graph-*cycle*
+  signal a subscriber needs — previously the event stream carried no
+  way to tell a loop-back from ordinary forward advance.
+- **zedup**: `AgentSlot` now forwards `numTurns` and `isRevisit` from
+  events that already carried them but were silently dropped at the
+  handler layer (`AgentCompleted`'s `thinking`/`stopReason`/`durationMs`/
+  `numTurns` existed since `56cf9ab`, 2026-09-21 — only `usage` was ever
+  read). The pane renders a revisited step with a loop glyph (`↻`)
+  instead of its sequence number, and appends a compact thinking-token
+  count to the cost badge when present.
+
+**Not built, deliberately**: a literal connector-line graph layout
+between rows, and a new `durationMs` field (zedup's existing wall-clock
+`elapsedMs` already approximates it). Both would need more pane-layout
+rework than this pass's scope justified.
+
+**Two real mistakes caught before commit, not by any test**: while
+writing the `isRevisit` regression test, first tried distinguishing two
+test steps' runner calls by comparing `AgentModel` and found both used
+the same model — instead of giving them distinct models (the fix),
+swapped the comparison to a bare string literal, introducing exactly the
+`bare_string_for_enum`-class violation this project forbids. Caught and
+fixed properly. Separately, a blanket `dart format` run reformatted
+~330 unrelated lines because the installed SDK's formatter doesn't
+reproduce this codebase's hand-aligned style (same drift as the earlier
+`workspace_config.dart` incident) — reverted and reapplied by hand,
+final diff 92 lines across 3 files.
+
 ---
 
 ## What's next
@@ -550,17 +589,6 @@ this project's extraction threshold; noted, not acted on.
 
 **Restart criteria:** revisit only if a third call site appears or real
 duplication emerges — not on stylistic preference alone.
-
-### Phase 7 — Per-step thinking/cost metadata in a TUI dependency graph
-Corresponds to README Roadmap table row 7 ("planned"), backfilled
-2026-09-27. The metadata half is already shipped, claudart-side:
-`lib/pipeline/step_result.dart`'s `StepResult` (added `56cf9ab`,
-2026-09-21, "capture thinking, stop_reason, duration, num_turns per
-step") already carries per-step thinking/cost/duration data. What's
-unbuilt is the zedup-side TUI surface — a live dependency-graph rendering
-of that data; no such view exists in zedup today (verified: no
-dependency-graph rendering code found in zedup's `lib/`).
-**Status:** metadata capture — shipped; TUI dependency graph — not started.
 
 ### Phase 10 — PLAN.md phase-heading standardization
 Opened, not started. Phase 8 found PLAN.md's phase headers use three
