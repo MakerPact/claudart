@@ -421,16 +421,17 @@ void main() {
       expect(skills, contains('ConfigLoader'));
     });
 
-    test('multiple saves accumulate distinct entries in Pending section',
+    test('multiple saves on the same branch upsert one Pending entry, not duplicates',
         () async {
       final io = _io();
       await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
-      // Two root cause entries (one per save).
+      // One entry, keyed by branch — repeated /save on the same branch
+      // updates in place instead of accumulating duplicate bullets.
       final pendingRootCauses =
           'ConfigLoader splits path on spaces'.allMatches(skills).length;
-      expect(pendingRootCauses, equals(2));
+      expect(pendingRootCauses, equals(1));
     });
 
     test('Pending section header appears exactly once', () async {

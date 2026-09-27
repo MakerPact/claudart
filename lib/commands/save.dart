@@ -101,7 +101,6 @@ SkillsUpdateResult _updatePendingSkills({
 }) {
   if (_isBlank(state.rootCause)) return SkillsUpdateResult.skipped;
 
-  final today = DateTime.now().toIso8601String().split('T').first;
   var skills = fileIO.fileExists(skillsFile)
       ? fileIO.read(skillsFile)
       : _blankSkillsTemplate;
@@ -114,17 +113,13 @@ SkillsUpdateResult _updatePendingSkills({
     return abstractor.abstract(text, tokenMap, defaultDetector);
   }
 
-  // Root cause entry — always written when confirmed.
+  // One upserted entry per branch — combines root cause and (optional) hot
+  // files into a single keyed line, replacing any prior entry for this
+  // branch instead of accumulating duplicate bullets on repeated /save.
   final cause = sanitize(state.rootCause.replaceAll('\n', ' ').trim());
-  skills = appendToSection(
-      skills, 'Pending', '- `${state.branch}` ($today): root cause — $cause');
-
-  // Hot files entry — written when files changed are confirmed.
-  if (!_isBlank(state.changed)) {
-    final changed = sanitize(state.changed.replaceAll('\n', ' ').trim());
-    skills = appendToSection(
-        skills, 'Pending', '- `${state.branch}` ($today): hot files — $changed');
-  }
+  final changed =
+      _isBlank(state.changed) ? null : sanitize(state.changed.replaceAll('\n', ' ').trim());
+  skills = upsertPendingEntry(skills, state.branch, rootCause: cause, hotFiles: changed);
 
   fileIO.write(skillsFile, skills);
   return SkillsUpdateResult.written;

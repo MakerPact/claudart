@@ -403,6 +403,30 @@ void main() {
 
   // ── Skills.md ─────────────────────────────────────────────────────────────
 
+  group('teardown — Pending entry removal', () {
+    test('removes the resolved branch\'s Pending entry on archive', () async {
+      final io = _io(handoff: _richHandoff);
+      io.write(skillsPathFor(_workspace), '''## Pending
+
+- `fix/null-ref` (2026-03-01): root cause — a prior /save guess
+
+## Root Cause Patterns
+
+_None recorded yet._
+''');
+      await runTeardown(
+        io: io,
+        projectRootOverride: _projectRoot,
+        confirmFn: (_) => true,
+        promptFn: _prompts(_richAnswers),
+        pickFn: _pick(TeardownCategory.stateManagement),
+        exitFn: _throwExit,
+      );
+      final skills = io.read(skillsPathFor(_workspace));
+      expect(skills, isNot(contains('a prior /save guess')));
+    });
+  });
+
   group('teardown — skills.md', () {
     test('creates skills.md when it does not exist', () async {
       final io = _io(handoff: _richHandoff);

@@ -16,6 +16,7 @@ import '../ui/menu.dart';
 import 'scan.dart';
 import '../session/session_ops.dart';
 import '../ui/render.dart' as render;
+import '../util/prompt_with_default.dart';
 
 /// Returns absolute paths of files named [basename] under [projectRoot].
 /// Injectable for tests — default uses the OS `find` command.
@@ -29,6 +30,10 @@ Future<void> runSetup({
   int Function(List<String> items)? pickFn,
   Never Function(int code)? exitFn,
   FileFinderFn? fileFinderFn,
+  String? defaultBug,
+  String? defaultExpected,
+  String? defaultFiles,
+  String? defaultEntryPoints,
 }) async {
   final fileIO = io ?? const RealFileIO();
   final exit_ = exitFn ?? exit;
@@ -120,29 +125,33 @@ Future<void> runSetup({
   // Prompt for session context.
   print('\nAnswer the following. Be specific — this seeds the handoff for /suggest.\n');
 
-  final bug = prompt_('1. What is the bug? (actual behavior)');
-  final expected = prompt_('2. What should be happening? (expected behavior)');
+  final bug = promptWithDefault(prompt_, '1. What is the bug? (actual behavior)', defaultBug);
+  final expected = promptWithDefault(
+      prompt_, '2. What should be happening? (expected behavior)', defaultExpected);
 
   if (bug == null || expected == null) {
     print('\n✗ Setup requires an interactive terminal.');
     exit_(1);
   }
 
-  final files = prompt_('3. Any files already in mind?', optional: true);
-  final entryPoints = prompt_(
+  final files = promptWithDefault(prompt_, '3. Any files already in mind?', defaultFiles,
+      optional: true);
+  final entryPoints = promptWithDefault(
+    prompt_,
     '4. Any functions, classes, or entry points involved?',
+    defaultEntryPoints,
     optional: true,
   );
 
   // Confirm before writing.
-  print('\n───────────────────────────────────────');
+  print('\n${render.divider()}');
   print('Project : ${entry.name}');
   print('Branch  : $branch');
   print('Bug     : $bug');
   print('Expected: $expected');
   if (files != null) print('Files   : $files');
   if (entryPoints != null) print('Entry   : $entryPoints');
-  print('───────────────────────────────────────');
+  print(render.divider());
 
   if (!confirm_('Write handoff with this context?')) {
     print('\nSetup cancelled.');

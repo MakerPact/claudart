@@ -73,7 +73,7 @@ SyncCheckResult checkSkillsSync(
   final rootCauseConfirmed = !_isBlank(state.rootCause);
   if (!rootCauseConfirmed) return SyncCheckResult.clean();
 
-  final pendingHasEntry = _pendingHasBranch(skillsContent, state.branch);
+  final pendingHasEntry = pendingHasBranch(skillsContent, state.branch);
   if (pendingHasEntry) return SyncCheckResult.clean();
 
   return const SyncCheckResult([
@@ -85,12 +85,6 @@ SyncCheckResult checkSkillsSync(
   ]);
 }
 
-bool _pendingHasBranch(String skillsContent, String branch) {
-  if (skillsContent.isEmpty) return false;
-  final pending = extractSection(skillsContent, 'Pending');
-  if (pending.isEmpty) return false;
-  return pending.contains('`$branch`');
-}
 
 // ── Check 2: Current git branch vs handoff branch ────────────────────────────
 

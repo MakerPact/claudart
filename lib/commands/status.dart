@@ -51,11 +51,12 @@ Future<void> runStatus({
 
   // ── Prompt mode: compact single-line output for shell RPROMPT/PS1 ──────────
   if (prompt) {
-    final colour = _statusColour(state.status);
-    final dot = state.status == HandoffStatus.unknown
-        ? ansi.c(ansi.dim, '○')
-        : ansi.c(colour, '●');
-    stdout.write('$dot ${ansi.c(ansi.dim, '[')}${ansi.c(ansi.bold, entry.name)}${ansi.c(ansi.dim, '|')}${ansi.c(colour, state.status.value)}${ansi.c(ansi.dim, ']')}');
+    stdout.write(render.statusBar(
+      name: entry.name,
+      statusLabel: state.status.value,
+      statusColorCode: _statusColour(state.status),
+      active: state.status != HandoffStatus.unknown,
+    ));
     return;
   }
 

@@ -217,3 +217,24 @@ String status(StatusBadge badge, String label, {String? detail}) {
 /// width so consecutive fields line up.
 String field(String key, String value, {int pad = 10}) =>
     '  ${key.padRight(pad)}: $value';
+
+/// A thin horizontal rule used to separate sections within a command's
+/// output (distinct from [header]'s boxed `═══` rule, which frames a whole
+/// command's title). The single source for the `───` dividers commands
+/// hand-rolled.
+String divider() => '───────────────────────────────────────';
+
+/// A compact single-line status indicator: `● [name|status]`, coloured by
+/// [statusColorCode] — the format `status.dart`'s `--prompt` mode hand-rolled
+/// for shell RPROMPT/PS1 use. [active] dims the dot and uses a hollow glyph
+/// when the status isn't meaningfully "on" (e.g. `HandoffStatus.unknown`).
+String statusBar({
+  required String name,
+  required String statusLabel,
+  required String statusColorCode,
+  bool active = true,
+}) {
+  final dot = active ? ansi.c(statusColorCode, '●') : ansi.c(ansi.dim, '○');
+  return '$dot ${ansi.c(ansi.dim, '[')}${ansi.c(ansi.bold, name)}'
+      '${ansi.c(ansi.dim, '|')}${ansi.c(statusColorCode, statusLabel)}${ansi.c(ansi.dim, ']')}';
+}

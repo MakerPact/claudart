@@ -15,6 +15,7 @@ import '../session/run_mode.dart';
 import '../session/session_state.dart';
 import '../teardown_utils.dart';
 import '../ui/menu.dart';
+import '../util/prompt_with_default.dart';
 import '../workspace/workspace_index.dart';
 import '../ui/render.dart' as render;
 import '../ui/ansi.dart' as ansi;
@@ -78,14 +79,14 @@ Future<void> runTeardown({
   final branch = extractBranch(handoff);
 
   // Show session summary before confirming.
-  print('\n───────────────────────────────────────');
+  print('\n${render.divider()}');
   print('  Bug     : ${_truncate(bug)}');
   print('  Cause   : ${_truncate(rootCause)}');
   if (!_isBlank(changedFiles)) {
     print('  Changed : ${_truncate(changedFiles)}');
   }
   print('  Branch  : $branch');
-  print('───────────────────────────────────────\n');
+  print('${render.divider()}\n');
 
   // Headless resolves "confirmed resolved?" from the handoff's own typed
   // status rather than asking — debugComplete is the one HandoffStatus
@@ -112,12 +113,12 @@ Future<void> runTeardown({
         // resolved path's fuller Headless decisions block below — this
         // write happens with no human prompt too, so what's about to be
         // archived must be visible first, not just discoverable after.
-        print('\n───────────────────────────────────────');
+        print('\n${render.divider()}');
         print('Headless decision — verify before trusting the archive:');
-        print('───────────────────────────────────────');
+        print(render.divider());
         print('  Record type : reminder (not confirmed resolved)');
         print('  Description : ${_truncate(resolvedDescription)}');
-        print('───────────────────────────────────────');
+        print(render.divider());
       }
       _writeArchiveEntry(
         fileIO:      fileIO,
@@ -167,9 +168,9 @@ Future<void> runTeardown({
   if (headless) {
     archiveKind = ArchiveKind.archive;
   } else {
-    print('\n───────────────────────────────────────');
+    print('\n${render.divider()}');
     print('Session record type:');
-    print('───────────────────────────────────────\n');
+    print('${render.divider()}\n');
     final kindChoice = pick_(['archive (resolved — skills updated)', 'reminder (note for future reference)']);
     archiveKind = kindChoice == 1 ? ArchiveKind.reminder : ArchiveKind.archive;
   }
@@ -178,7 +179,7 @@ Future<void> runTeardown({
 
   final fixSummary = headless
       ? (agentSummary.isEmpty ? 'Fix for: ${_truncate(bug)}' : agentSummary)
-      : _promptWithDefault(
+      : promptWithDefault(
           prompt_,
           'Briefly describe the fix (one or two sentences)',
           agentSummary.isEmpty ? null : agentSummary,
@@ -197,9 +198,7 @@ Future<void> runTeardown({
     category = cat.value;
     area = cat.area;
   } else {
-    print('\n───────────────────────────────────────');
-    print('Categorize this session for skills.md:');
-    print('───────────────────────────────────────\n');
+    print('\nCategorize this session for skills.md:');
     final categoryChoice = pick_(_kCategories, startIndex: startIdx);
     final cat            = TeardownCategory.values[categoryChoice];
     if (cat == TeardownCategory.other) {
@@ -219,7 +218,7 @@ Future<void> runTeardown({
       : (_isBlank(changedFiles) ? null : changedFiles.replaceAll('\n', ', ').trim());
   final hotFiles = headless
       ? hotFilesDefault
-      : _promptWithDefault(
+      : promptWithDefault(
           prompt_,
           'Which files were confirmed key to the fix?',
           hotFilesDefault,
@@ -228,7 +227,7 @@ Future<void> runTeardown({
   final coldDefault = agentColdFiles?.toLowerCase() == 'none' ? null : agentColdFiles;
   final coldFiles   = headless
       ? coldDefault
-      : _promptWithDefault(
+      : promptWithDefault(
           prompt_,
           'Any files explored but NOT the root cause? (comma-separated, or skip)',
           coldDefault,
@@ -242,7 +241,7 @@ Future<void> runTeardown({
       : (_isBlank(rootCause) ? null : rootCause.replaceAll('\n', ' ').trim());
   final pattern = headless
       ? (patternDefault ?? 'unspecified')
-      : _promptWithDefault(
+      : promptWithDefault(
           prompt_,
           'Describe the root cause pattern generically (one sentence)',
           patternDefault,
@@ -250,16 +249,16 @@ Future<void> runTeardown({
 
   final fixPattern = headless
       ? (agentFixPat.isEmpty ? fixSummary : agentFixPat)
-      : _promptWithDefault(
+      : promptWithDefault(
           prompt_,
           'Describe the fix pattern generically (one sentence)',
           agentFixPat.isEmpty ? null : agentFixPat,
         );
 
   if (headless) {
-    print('\n───────────────────────────────────────');
+    print('\n${render.divider()}');
     print('Headless decisions — verify before trusting the archive:');
-    print('───────────────────────────────────────');
+    print(render.divider());
     print('  Record type : ${archiveKind == ArchiveKind.archive ? 'archive (resolved)' : 'reminder'}');
     print('  Category    : $category');
     print('  Fix summary : $fixSummary');
@@ -267,7 +266,7 @@ Future<void> runTeardown({
     print('  Cold files  : ${coldFiles ?? '(none)'}');
     print('  Root cause  : $pattern');
     print('  Fix pattern : $fixPattern');
-    print('───────────────────────────────────────');
+    print(render.divider());
   }
 
   // Update skills.md.
@@ -281,6 +280,16 @@ Future<void> runTeardown({
     pattern: pattern!,
     fixPattern: fixPattern!,
   );
+
+  // A resolved, archived session's root cause is now promoted to Root
+  // Cause Patterns above — its Pending entry (written by /save) would
+  // otherwise sit there stale forever. A reminder is not a real
+  // resolution, so its Pending entry stays.
+  if (archiveKind == ArchiveKind.archive) {
+    final skillsFile = skillsPathFor(workspace);
+    final skills = fileIO.fileExists(skillsFile) ? fileIO.read(skillsFile) : '';
+    fileIO.write(skillsFile, removePendingEntry(skills, branch));
+  }
 
   // Archive handoff + write index entry.
   final archiveDirectory  = archiveDirFor(workspace);
@@ -310,10 +319,10 @@ Future<void> runTeardown({
   print('\n✓ Skills updated: ${skillsPathFor(workspace)}');
   print('✓ Handoff archived: $archiveFile');
   print('✓ Handoff reset.\n');
-  print('───────────────────────────────────────');
+  print(render.divider());
   print('Suggested commit message:\n');
   print(commitMsg);
-  print('───────────────────────────────────────');
+  print(render.divider());
   print('\nRemember: do not push to remote. Open a merge request from your branch.\n');
 }
 
@@ -404,21 +413,6 @@ List<String> get _kCategories =>
 String? _defaultPrompt(String question, {bool optional = false}) =>
     prompt(question, optional: optional);
 
-String? _promptWithDefault(
-  String? Function(String, {bool optional}) prompt_,
-  String question,
-  String? defaultValue, {
-  bool optional = false,
-}) {
-  if (defaultValue != null) {
-    return prompt_(
-          '$question\n  (press enter to use: "$defaultValue")',
-          optional: true,
-        ) ??
-        defaultValue;
-  }
-  return prompt_(question, optional: optional);
-}
 
 bool _isBlank(String s) =>
     s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');

@@ -141,6 +141,68 @@ _No sessions recorded yet._
     });
   });
 
+  group('upsertPendingEntry / removePendingEntry / pendingHasBranch', () {
+    const blankSkills = '''## Pending
+
+_None recorded yet._
+''';
+
+    test('adds a new entry for a branch with no prior entry', () {
+      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      expect(result, contains('`fix/bug`'));
+      expect(result, contains('root cause — null ref'));
+    });
+
+    test('includes hot files when given', () {
+      final result = upsertPendingEntry(
+        blankSkills,
+        'fix/bug',
+        rootCause: 'null ref',
+        hotFiles: 'lib/foo.dart',
+      );
+      expect(result, contains('hot files — lib/foo.dart'));
+    });
+
+    test('omits hot files entirely when not given', () {
+      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      expect(result, isNot(contains('hot files')));
+    });
+
+    test('a second upsert on the same branch replaces, does not duplicate', () {
+      var skills = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'first guess');
+      skills = upsertPendingEntry(skills, 'fix/bug', rootCause: 'confirmed cause');
+      expect('`fix/bug`'.allMatches(skills).length, equals(1));
+      expect(skills, contains('confirmed cause'));
+      expect(skills, isNot(contains('first guess')));
+    });
+
+    test('upserting a different branch adds a second, independent entry', () {
+      var skills = upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
+      skills = upsertPendingEntry(skills, 'fix/bug-b', rootCause: 'cause b');
+      expect(skills, contains('cause a'));
+      expect(skills, contains('cause b'));
+    });
+
+    test('pendingHasBranch is true after upsert, false before', () {
+      expect(pendingHasBranch(blankSkills, 'fix/bug'), isFalse);
+      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      expect(pendingHasBranch(result, 'fix/bug'), isTrue);
+    });
+
+    test('removePendingEntry removes exactly that branch\'s entry', () {
+      var skills = upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
+      skills = upsertPendingEntry(skills, 'fix/bug-b', rootCause: 'cause b');
+      skills = removePendingEntry(skills, 'fix/bug-a');
+      expect(skills, isNot(contains('cause a')));
+      expect(skills, contains('cause b'));
+    });
+
+    test('removePendingEntry on a branch with no entry is a no-op', () {
+      final result = removePendingEntry(blankSkills, 'fix/nonexistent');
+      expect(result, equals(blankSkills));
+    });
+  });
+
   group('TeardownCategory.area', () {
     test('apiIntegration → api', () {
       expect(TeardownCategory.apiIntegration.area, 'api');

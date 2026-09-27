@@ -47,6 +47,49 @@ String appendToSection(String content, String header, String newEntry) {
   return content.replaceFirst(pattern, '${match.group(1)}$updated\n');
 }
 
+/// Matches one `## Pending` entry line for [branchSlug] — the exact line
+/// `upsertPendingEntry`/`removePendingEntry`/`pendingHasBranch` all key on.
+RegExp _pendingEntryPattern(String branchSlug) =>
+    RegExp(r'^- `' + RegExp.escape(branchSlug) + r'`.*$', multiLine: true);
+
+/// Writes (or replaces) the single `## Pending` entry for [branchSlug] —
+/// one line combining root cause and (optional) hot files, keyed by branch
+/// so repeated `/save` calls on the same branch update in place instead of
+/// accumulating duplicate bullets.
+String upsertPendingEntry(
+  String skills,
+  String branchSlug, {
+  required String rootCause,
+  String? hotFiles,
+}) {
+  final today = DateTime.now().toIso8601String().split('T').first;
+  final hotFilesPart = hotFiles != null ? ' | hot files — $hotFiles' : '';
+  final entry = '- `$branchSlug` ($today): root cause — $rootCause$hotFilesPart';
+
+  final pattern = _pendingEntryPattern(branchSlug);
+  if (pattern.hasMatch(skills)) {
+    return skills.replaceFirst(pattern, entry);
+  }
+  return appendToSection(skills, 'Pending', entry);
+}
+
+/// Removes [branchSlug]'s `## Pending` entry — called once its root cause
+/// has been promoted to Root Cause Patterns on a resolved teardown, so a
+/// closed session doesn't leave a stale pending bullet behind forever.
+String removePendingEntry(String skills, String branchSlug) {
+  final withoutLine =
+      skills.replaceFirst(_pendingEntryPattern(branchSlug), '').replaceAll('\n\n\n', '\n\n');
+  return withoutLine;
+}
+
+/// Whether `## Pending` already has an entry for [branchSlug].
+bool pendingHasBranch(String skills, String branchSlug) {
+  if (skills.isEmpty) return false;
+  final pending = extractSection(skills, 'Pending');
+  if (pending.isEmpty) return false;
+  return _pendingEntryPattern(branchSlug).hasMatch(pending);
+}
+
 String incrementHotPath(String skills, String area, String file) {
   final existingPattern = RegExp(r'- `' + RegExp.escape(file) + r'` (↑+)');
   if (existingPattern.hasMatch(skills)) {

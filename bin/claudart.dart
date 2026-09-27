@@ -23,6 +23,7 @@ import 'package:claudart/commands/debug.dart';
 import 'package:claudart/commands/flow.dart';
 import 'package:claudart/commands/suggest.dart';
 import 'package:claudart/commands/status.dart';
+import 'package:claudart/commands/resume.dart';
 import 'package:claudart/commands/rotate.dart';
 import 'package:claudart/session/run_mode.dart';
 import 'package:claudart/commands/teardown.dart';
@@ -51,6 +52,7 @@ Commands:
   save                   Checkpoint session: snapshot handoff, deposit confirmed facts to skills
   rotate                 Archive current session, run build gate, seed next handoff from Pending Issues
   kill                   Abandon session: archive handoff, remove symlink (no skills update)
+  resume                 Pre-populate setup from the most recent archive entry
   confirm-pending --question <q> --on-confirm <cmd>
                          Set the pending confirmation for this workspace
   confirm-pending --clear  Clear the pending confirmation
@@ -144,6 +146,8 @@ Future<void> main(List<String> rawArgs) async {
       await runRotate();
     case ClaudartCommand.kill:
       await runKill();
+    case ClaudartCommand.resume:
+      await runResume();
     case ClaudartCommand.confirmPending:
       await runConfirmPending(rest);
     case ClaudartCommand.preflight:
