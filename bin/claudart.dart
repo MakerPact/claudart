@@ -163,16 +163,18 @@ Future<void> main(List<String> rawArgs) async {
     case ClaudartCommand.report:
       final fileIssue = rest.contains('--file-issue');
       final reportRoot = detectGitContext()?.root;
-      final reportWorkspace = reportRoot != null
-          ? Registry.load().findByProjectRoot(reportRoot)?.workspacePath
+      final reportEntry = reportRoot != null
+          ? Registry.load().findByProjectRoot(reportRoot)
           : null;
-      await runReport(fileIssue: fileIssue, workspacePath: reportWorkspace);
+      if (reportEntry != null) print('Project  : ${reportEntry.name}');
+      await runReport(fileIssue: fileIssue, workspacePath: reportEntry?.workspacePath);
     case ClaudartCommand.map:
       final mapRoot = detectGitContext()?.root;
-      final mapWorkspace = mapRoot != null
-          ? Registry.load().findByProjectRoot(mapRoot)?.workspacePath
+      final mapEntry = mapRoot != null
+          ? Registry.load().findByProjectRoot(mapRoot)
           : null;
-      runMap(workspacePath: mapWorkspace);
+      if (mapEntry != null) print('Project  : ${mapEntry.name}');
+      runMap(workspacePath: mapEntry?.workspacePath);
     case ClaudartCommand.experiment:
       await runExperiment(rest);
     case ClaudartCommand.compile:
