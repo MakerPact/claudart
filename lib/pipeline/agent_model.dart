@@ -7,10 +7,20 @@
 // Consolidates zedup's ClaudartModel — when zedup imports claudart's library,
 // ClaudartModel is retired and replaced by AgentModel.
 //
-// Delegation profile:
-//   capable  → planner / reasoner  (deep reasoning, root cause analysis)
-//   balanced → applier / debug     (precise instruction following, minimal diff)
-//   fast     → reader  / lookup    (constrained lookup, single reference doc)
+// Delegation profile — this is AgentFlow.preferredModel's flow-level
+// choice (one model per whole flow, e.g. zedup's single-shot chat
+// dispatch), not a rule for routing within a flow's own batched pipeline:
+//   capable  → suggest        (deep reasoning, root cause analysis)
+//   balanced → debug / flow   (precise instruction following, minimal diff)
+//   fast     → research       (constrained lookup, single reference doc)
+//
+// Individual steps inside a batched pipeline (suggest_steps.dart's
+// reader/reasoner/planner/lookup/applier, etc.) pick their own model per
+// step to control cost across the whole pipeline — they are not bound by
+// this table, and mostly stay at fast/balanced even where the flow-level
+// preferredModel above is capable. See ModelTier.bestForLookup /
+// bestForAnalysis / bestForExplore for the tier→model bijection this
+// table and every step's literal currently resolve to identically.
 
 // ── ModelTier ─────────────────────────────────────────────────────────────────
 
