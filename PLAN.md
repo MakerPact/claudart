@@ -225,6 +225,16 @@ claudart's test volume grows — requires adding dartrix as a dep and restructur
 domain. When claudart sessions target zedup or dartrix, the handoff should include the relevant
 enum context so Claude understands the typed model without re-reading source files each time.
 
+**Same command names, different meaning — not a bug, just read carefully:**
+`link` and `setup` exist as commands on both binaries, meaning different things on each.
+`claudart link` registers a project with claudart's own registry (`~/.claudart/registry.json`);
+`zedup link` binds a cwd to a zedup workspace under `~/.config/<profile>/zedup/workspaces/` —
+a separate registry entirely. `claudart setup` starts a debug session and writes `handoff.md`;
+`zedup setup`/`zedup init`/`zedup config` are zedup's own onboarding/UX-preference wizard,
+unrelated to claudart sessions. Never ambiguous at the CLI (`claudart`/`zedup` disambiguate
+before the subcommand matters) — noted here only so a human or agent cross-referencing both
+repos' docs doesn't conflate them.
+
 **Delegation of integrity:**
 
 | Concern | Owner | Mechanism |
