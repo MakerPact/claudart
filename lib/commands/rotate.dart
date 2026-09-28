@@ -41,11 +41,13 @@ Future<RotateResult> runRotate({
   Never Function(int code)? exitFn,
   bool Function(String question)? confirmFn,
   Future<bool> Function(String command)? buildFn,
+  bool Function()? hasTerminalFn,
 }) async {
   final fileIO = io ?? const RealFileIO();
   final exit_ = exitFn ?? exit;
   final confirm_ = confirmFn ?? confirm;
   final build_ = buildFn ?? _defaultBuild;
+  final hasTerminal_ = hasTerminalFn ?? () => stdin.hasTerminal;
 
   print(render.header('CLAUDART ROTATE'));
 
@@ -89,7 +91,20 @@ Future<RotateResult> runRotate({
   print('───────────────────────────────────────\n');
 
   // 3 — Confirm before any destructive action.
-  if (!confirm_('Archive this session and rotate to the next issue?')) {
+  //
+  // A non-interactive caller with the real default confirm (no TTY on
+  // stdin — e.g. zedup's chat pane shelling out via Process.runSync) can
+  // never actually answer this prompt: confirm's readLine gets EOF
+  // immediately, which used to read as a silent "no" — the archive/rotate
+  // never ran, but nothing told the caller why. Typing /rotate is itself
+  // the deliberate confirmation in that context, so skip the gate and say
+  // so, rather than fail silently. Gated on confirmFn == null so an
+  // injected test double (which always runs with no TTY too) still gets
+  // to answer for real — this bypass is about the *default* confirm's
+  // stdin being unusable, not about TTY presence in general.
+  if (confirmFn == null && !hasTerminal_()) {
+    print('\n(no terminal attached — proceeding without confirmation)\n');
+  } else if (!confirm_('Archive this session and rotate to the next issue?')) {
     print('\nRotate cancelled.\n');
     return RotateResult.cancelled;
   }

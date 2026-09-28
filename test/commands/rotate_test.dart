@@ -324,6 +324,46 @@ void main() {
     });
   });
 
+  group('runRotate — no terminal, default confirm', () {
+    test('proceeds without asking when no confirmFn is injected', () async {
+      // No confirmFn passed — runRotate falls back to the real default
+      // confirm(), which a non-interactive caller (no TTY on stdin — e.g.
+      // zedup's chat pane shelling out via Process.runSync) can never
+      // actually answer. This must archive for real, not silently cancel.
+      final io = _io();
+
+      final result = await runRotate(
+        io: io,
+        projectRootOverride: _projectRoot,
+        exitFn: _noExit,
+        buildFn: _buildOk,
+        hasTerminalFn: () => false,
+      );
+
+      expect(result, isNot(RotateResult.cancelled));
+      expect(io.files.keys.where((k) => k.contains('/archive/')), isNotEmpty);
+    });
+
+    test('an injected confirmFn still gets asked even with no terminal',
+        () async {
+      // A test double (or a future caller that really does have its own
+      // way to ask) should never be silently bypassed — the bypass is
+      // specifically about the *default* confirm's stdin being unusable.
+      final io = _io();
+
+      final result = await runRotate(
+        io: io,
+        projectRootOverride: _projectRoot,
+        exitFn: _noExit,
+        buildFn: _buildOk,
+        confirmFn: _confirmNo,
+        hasTerminalFn: () => false,
+      );
+
+      expect(result, RotateResult.cancelled);
+    });
+  });
+
   group('runRotate — build gate fails', () {
     test('returns buildFailed, archives handoff, does not seed new one',
         () async {
