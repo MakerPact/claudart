@@ -147,18 +147,6 @@ enum AgentModel {
   bool get bestForAnalysis  => this == AgentModel.sonnet;
   bool get bestForExplore   => this == AgentModel.opus;
 
-  /// Compact 3-letter tag for narrow display columns (e.g. zedup's agent
-  /// flow band) — distinct from [shortName], which is the fuller
-  /// `<name>-<version>` form used in status lines. Enum-owned so callers
-  /// don't hand-roll their own alias→tag switch (and silently miss new
-  /// variants — this closed exactly that gap for [fable]).
-  String get shortAlias => switch (this) {
-        AgentModel.haiku  => 'hku',
-        AgentModel.sonnet => 'snt',
-        AgentModel.opus   => 'ops',
-        AgentModel.fable  => 'fbl',
-      };
-
   // ── Parsing ──────────────────────────────────────────────────────────────────
 
   /// Resolves an alias string ('haiku', 'sonnet', 'opus') to [AgentModel].
