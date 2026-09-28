@@ -845,6 +845,26 @@ real `AgentCategory` value) — confirming the fallback path is rare, not
 "always," and that the earlier design-not-opus incident was a wiring
 gap, not a classification-accuracy problem.
 
+**Update (2026-09-27): the `## Classification` handoff persistence was
+reverted — `debug` now runs its own categorize step instead.** On
+review, the persisted section had exactly two consumers (`suggest`
+writes it, `debug` reads it) and bought exactly one thing: skipping a
+second haiku call (~$0.02) in `debug`. Against that: a real staleness
+risk (`Bug`/`Root Cause` can change between `suggest` and `debug` — a
+`/save` refinement, a manual edit — and the persisted classification
+would silently go stale while `debug` kept trusting it), plus the
+ongoing cost of maintaining a handoff section, a template placeholder in
+two places, and a read/seed round-trip purely to avoid one cheap call.
+`runDebug` now runs `FlowSteps.categorize` as its own Phase 0 (mirroring
+`runSuggest` exactly), and `DebugSteps.implementer`'s `modelSelector` is
+unchanged — it still just reads `ctx[PipelineSlot.categorize]`, agnostic
+to whether that slot came from a persisted string or a fresh live call.
+The `## Classification` section is removed from both `handoffTemplate()`
+and `blankHandoff`. The opus-for-design routing itself is untouched:
+`routeModel`/`modelForCategorizeOutput` and the `modelSelector` wiring on
+`reasoner`/`implementer`/`plan`/`construct` are exactly as Phase 13 left
+them — only the disk round-trip between `suggest` and `debug` is gone.
+
 ---
 
 ## GitHub archive convention

@@ -100,10 +100,12 @@ Future<void> runSuggest({
 
   // ── Phase 0: categorize ──────────────────────────────────────────────────────
   //
-  // Classifies the bug once per session (haiku) so the reasoner step below —
-  // and, via the persisted ## Classification section, claudart debug's
-  // implementer step too — can route to the right model instead of always
-  // paying full sonnet cost on atomic/lookup-shaped work.
+  // Classifies the bug once per session (haiku) so the reasoner step below
+  // can route to the right model instead of always paying full sonnet cost
+  // on atomic/lookup-shaped work. debug.dart runs its own categorize step
+  // rather than reading a persisted classification back — the disk
+  // round-trip isn't worth the staleness risk (Bug/Root Cause can change
+  // between suggest and debug) for the cost of one cheap haiku call.
 
   var ctx = PipelineContext(
     projectRoot: projectRoot,
@@ -233,13 +235,7 @@ $scopeClasses
 ### Must not touch
 $mustNotTouch''';
 
-  final classification = (ctx[PipelineSlot.categorize] ?? '').trim();
-
   var updated = handoff;
-  updated = updateSection(
-    updated, 'Classification',
-    classification.isEmpty ? '_Not yet determined._' : classification,
-  );
   updated = updateSection(updated, 'Root Cause',  rootCause.trim());
   updated = updateSection(updated, 'Scope',        newScope.trim());
   updated = updateSection(updated, 'Constraints',  constraints.trim());

@@ -72,6 +72,24 @@ enum CategorizeTag {
         CategorizeTag.model      =>
           [for (final v in AgentModel.values) v.name],
       };
+
+  /// One-line description per allowed value, shown to the LLM as a
+  /// definitions preamble ahead of the wire-format schema — without it,
+  /// the model sees only bare enum names and has no signal to
+  /// distinguish adjacent values (e.g. `design` vs `document` on a task
+  /// like "redesign this README", both plausible bare-word matches).
+  /// Empty for `model`: `AgentModel` names are self-explanatory proper
+  /// nouns and this self-reported tag isn't consulted by [routeModel]
+  /// anyway.
+  Map<String, String> get descriptions => switch (this) {
+        CategorizeTag.category   =>
+          {for (final v in AgentCategory.values) v.name: v.description},
+        CategorizeTag.intent     =>
+          {for (final v in IntentClass.values) v.name: v.description},
+        CategorizeTag.complexity =>
+          {for (final v in ComplexityTier.values) v.name: v.description},
+        CategorizeTag.model      => const {},
+      };
 }
 
 /// Assembles the categorize step's system prompt from the enum
@@ -84,6 +102,19 @@ enum CategorizeTag {
 /// LLM emits the old variant name, parsing fails, and PR #24's
 /// `ComplexityTier`-driven routing is bypassed.
 String buildCategorizePrompt() {
+  // A definitions preamble ahead of the schema block — kept entirely
+  // separate from the wire-format lines below so the schema block stays
+  // pure, unambiguous XML the model can mirror verbatim (see the schema
+  // comment below for why that purity matters). Without real semantic
+  // signal here, adjacent values are a coin flip: "redesign this
+  // README" is an equally plausible bare-word match for `design` and
+  // `document` with no way to tell them apart.
+  final definitionLines = [
+    for (final tag in CategorizeTag.values)
+      if (tag.descriptions.isNotEmpty)
+        '${tag.wireTag} — ${tag.descriptions.entries.map((e) => '${e.key}: ${e.value}').join('; ')}',
+  ].join('\n');
+
   // Each schema line is itself valid XML — `<TAG>one of: …</TAG>` —
   // so the LLM sees the actual wire format (open tag, content, close
   // tag) it must mirror at output time. The previous "<TAG>: v1, v2"
@@ -100,6 +131,8 @@ String buildCategorizePrompt() {
   return 'You are a precise task classifier. Classify the user input '
       'into exactly one value per axis below and emit each as an XML '
       'tag with matching open + close.\n\n'
+      'Definitions:\n'
+      '$definitionLines\n\n'
       'Schema (mirror this exact wire format, substituting one value '
       'from each list):\n'
       '$schemaLines\n\n'
@@ -133,6 +166,20 @@ enum AgentCategory {
         setup    => {IntentClass.implement, IntentClass.document},
         gui      => {IntentClass.analyze, IntentClass.implement, IntentClass.design},
       };
+
+  /// One-line description shown to the categorize LLM alongside this
+  /// value's bare name — without it, the model sees only enum names with
+  /// zero semantic guidance and effectively guesses. Mirrors the enum
+  /// member's own doc comment; kept as a runtime getter because Dart doc
+  /// comments aren't reflectable.
+  String get description => switch (this) {
+        feature  => 'new capability addition',
+        bug      => 'defect investigation or repair',
+        refactor => 'structural improvement without behaviour change',
+        research => 'knowledge extraction or reference lookup',
+        setup    => 'workspace or environment configuration',
+        gui      => 'visual UI surface — widgets, painters, theme tokens',
+      };
 }
 
 /// What the agent is primarily doing within the task.
@@ -143,7 +190,24 @@ enum IntentClass {
   analyze,    // reasoning over known, bounded context
   implement,  // code generation or modification
   document,   // structured output — reference, glossary, report
-  design;     // visual surface review / spec generation
+  design;     // structural/visual/informational design decisions
+
+  /// One-line description shown to the categorize LLM alongside this
+  /// value's bare name. `design` is deliberately not scoped to UI code
+  /// only — it covers any task making structural, visual, or
+  /// informational design decisions (information architecture, visual
+  /// hierarchy, diagram/colour systems, spec generation), whether the
+  /// surface is a widget or a written document. Without this
+  /// description the model has no signal to distinguish `design` from
+  /// `document` on a task like "redesign this README" — both are
+  /// plausible bare-word matches.
+  String get description => switch (this) {
+        explore   => 'broad discovery over unfamiliar or large scope, correct answer not yet known',
+        analyze   => 'reasoning over a known, bounded context to reach a conclusion',
+        implement => 'writing or modifying code to make a described change',
+        document  => 'producing structured factual output — reference, glossary, transcript — with no structural or design decisions involved',
+        design    => 'making structural, visual, or informational design decisions — information architecture, visual hierarchy, diagram/colour systems, spec generation — on a UI surface or a written document',
+      };
 }
 
 /// How broadly the task affects the codebase.
@@ -154,6 +218,14 @@ enum ComplexityTier {
   atomic,    // isolated — single file, clear scope, no cross-cutting concerns
   compound,  // multi-file — known dependencies, bounded blast radius
   systemic;  // cross-cutting — architectural impact, affects multiple subsystems
+
+  /// One-line description shown to the categorize LLM alongside this
+  /// value's bare name.
+  String get description => switch (this) {
+        atomic    => 'isolated — single file, clear scope, no cross-cutting concerns',
+        compound  => 'multi-file — known dependencies, bounded blast radius',
+        systemic  => 'cross-cutting — architectural impact, affects multiple subsystems',
+      };
 }
 
 // ── Routing function ──────────────────────────────────────────────────────────

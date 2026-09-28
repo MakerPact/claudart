@@ -35,12 +35,6 @@ $bug
 
 ---
 
-## Classification
-
-_Not yet determined._
-
----
-
 ## Expected Behavior
 
 $expected
@@ -144,12 +138,6 @@ suggest-investigating
 ---
 
 ## Bug
-
-_Not yet determined._
-
----
-
-## Classification
 
 _Not yet determined._
 

@@ -64,15 +64,11 @@ abstract final class DebugSteps {
     // override. Revisit if/when this pipeline supports API-key-based auth.
   );
 
-  /// Reads the classification seeded onto `PipelineSlot.categorize` at
-  /// the start of [runDebug] — copied verbatim from the handoff's
-  /// `## Classification` section, which `runSuggest`'s own categorize
-  /// step wrote — and consults [routeModel]. Debug never re-classifies:
-  /// the same bug is being worked on, so the classification computed
-  /// once in suggest is reused here for free, not re-derived at extra
-  /// API cost. Falls back to sonnet when the section is empty or
-  /// unparsable (an older handoff with no Classification section, or
-  /// one hand-written without it).
+  /// Reads the categorize step's output — [runDebug] runs its own Phase 0
+  /// categorize step rather than trusting anything suggest computed
+  /// earlier, since Bug/Root Cause can change between the two commands —
+  /// and consults [routeModel]. Falls back to sonnet when the slot is
+  /// empty or unparsable.
   static AgentModel _implementerModelSelector(PipelineContext ctx) =>
       modelForCategorizeOutput(
         ctx[PipelineSlot.categorize] ?? '',

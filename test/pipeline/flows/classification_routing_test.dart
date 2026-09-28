@@ -1,14 +1,14 @@
 // classification_routing_test.dart — verifies SuggestSteps.reasoner and
 // DebugSteps.implementer's modelSelectors actually wire the categorize
 // output to the τ matrix, mirroring plan_step_routing_test.dart's
-// coverage of FlowSteps.plan for the suggest/debug pipelines.
+// coverage of FlowSteps.plan for the suggest/debug pipelines. Both
+// commands run their own real categorize step — neither reads a
+// persisted classification off the handoff — so both tests just assert
+// the selector's behavior given whatever categorize output it sees.
 //
 // Two paths per step:
 //   gui × design categorize   → opus (the routing this feature exists for)
-//   missing / empty categorize → fallback sonnet (pre-existing default,
-//                                 so an older handoff with no
-//                                 ## Classification section behaves
-//                                 exactly as before this feature)
+//   missing / malformed categorize → fallback sonnet
 
 import 'package:claudart/pipeline/agent_model.dart';
 import 'package:claudart/pipeline/agents/categorization.dart';
@@ -65,18 +65,18 @@ void main() {
   });
 
   group('DebugSteps.implementer — modelSelector', () {
-    test('gui × design categorize (seeded from a persisted handoff) routes to opus', () {
+    test('gui × design categorize routes to opus', () {
       final ctx = _ctxWithCategorize(_guiDesign);
       expect(DebugSteps.implementer.effectiveModel(ctx), equals(AgentModel.opus));
     });
 
-    test('degrades to sonnet when categorize slot is empty (no Classification section)', () {
+    test('degrades to sonnet when categorize slot is empty', () {
       expect(DebugSteps.implementer.effectiveModel(_baseCtx()),
           equals(AgentModel.sonnet));
     });
 
-    test('degrades to sonnet on the "_Not yet determined._" placeholder text', () {
-      final ctx = _ctxWithCategorize('_Not yet determined._');
+    test('degrades to sonnet on malformed categorize output', () {
+      final ctx = _ctxWithCategorize('garbage with no xml tags');
       expect(DebugSteps.implementer.effectiveModel(ctx), equals(AgentModel.sonnet));
     });
   });

@@ -67,11 +67,9 @@ abstract final class SuggestSteps {
 
   /// Reads the categorize step's `<CATEGORY>`/`<INTENT>`/`<COMPLEXITY>`
   /// output (written to `PipelineSlot.categorize` by the Phase 0
-  /// categorize step this session ran, or seeded from a persisted
-  /// `## Classification` handoff section) and consults [routeModel].
-  /// Falls back to sonnet — the pre-existing static default — when the
-  /// slot is empty or unparsable, so an older handoff with no
-  /// Classification section behaves exactly as before this feature.
+  /// categorize step this session ran) and consults [routeModel]. Falls
+  /// back to sonnet — the pre-existing static default — when the slot
+  /// is empty or unparsable.
   static AgentModel _reasonerModelSelector(PipelineContext ctx) =>
       modelForCategorizeOutput(
         ctx[PipelineSlot.categorize] ?? '',
