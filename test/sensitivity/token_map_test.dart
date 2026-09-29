@@ -107,5 +107,13 @@ void main() {
       final loaded = TokenMap.load(path, io: io);
       expect(loaded.size, equals(0));
     });
+
+    test('load handles malformed JSON gracefully', () {
+      final io = MemoryFileIO();
+      const path = '/workspace/token_map.json';
+      io.write(path, '{malformed json');
+      final loaded = TokenMap.load(path, io: io);
+      expect(loaded.size, equals(0));
+    });
   });
 }
