@@ -97,6 +97,28 @@ some content
     test('readFile returns empty string for missing file', () {
       expect(readFile('${tmp.path}/missing.md'), '');
     });
+
+    test('writeFile overwrites existing file', () {
+      final path = '${tmp.path}/overwrite.md';
+      writeFile(path, 'first content');
+      expect(readFile(path), 'first content');
+      writeFile(path, 'second content');
+      expect(readFile(path), 'second content');
+    });
+
+    test('writeFile can write empty string', () {
+      final path = '${tmp.path}/empty.md';
+      writeFile(path, '');
+      expect(readFile(path), '');
+      expect(File(path).existsSync(), isTrue);
+    });
+
+    test('writeFile works when parent directory already exists', () {
+      final dir = Directory('${tmp.path}/existing_dir')..createSync();
+      final path = '${dir.path}/file.md';
+      writeFile(path, 'content in existing dir');
+      expect(readFile(path), 'content in existing dir');
+    });
   });
 
   group('MemoryFileIO', () {
