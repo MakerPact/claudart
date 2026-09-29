@@ -40,6 +40,12 @@ void main() {
       expect(knowledgeDirFor(ws), equals(expectedPath));
     });
 
+    test('knowledgeDirFor joins workspace with knowledge', () {
+      final ws = '/fake/workspace';
+      final expectedPath = p.join(ws, 'knowledge');
+      expect(knowledgeDirFor(ws), equals(expectedPath));
+    });
+
     test('genericKnowledgeDirFor joins workspace with knowledge/generic', () {
       final ws = '/fake/workspace';
       final expectedPath = p.join(ws, 'knowledge', 'generic');
@@ -75,5 +81,17 @@ void main() {
       final expectedPath = p.join(ws, 'experiments');
       expect(experimentsDirFor(ws), equals(expectedPath));
     });
+  });
+
+  group('Legacy single-workspace paths', () {
+    test('claudeDir uses workspacesRoot', () => expect(claudeDir, workspacesRoot));
+    test('handoffPath', () => expect(handoffPath, handoffPathFor(workspacesRoot)));
+    test('skillsPath', () => expect(skillsPath, skillsPathFor(workspacesRoot)));
+    test('archiveDir', () => expect(archiveDir, archiveDirFor(workspacesRoot)));
+    test('knowledgeDir', () => expect(knowledgeDir, knowledgeDirFor(workspacesRoot)));
+    test('genericKnowledgeDir', () => expect(genericKnowledgeDir, genericKnowledgeDirFor(workspacesRoot)));
+    test('projectsKnowledgeDir', () => expect(projectsKnowledgeDir, projectsKnowledgeDirFor(workspacesRoot)));
+    test('claudeCommandsDir', () => expect(claudeCommandsDir, claudeCommandsDirFor(workspacesRoot)));
+    test('claudeMdPath', () => expect(claudeMdPath, p.join(workspacesRoot, 'CLAUDE.md')));
   });
 }
