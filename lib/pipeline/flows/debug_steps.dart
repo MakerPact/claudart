@@ -107,14 +107,15 @@ Implement the fix strictly as specified. Output <CHANGES> and one <EDIT_FILE> pe
 
 // Returns a one-line inventory of all enum types defined in lib/src/enums/.
 // Injected into the implementer prompt so it cannot reference types that do not exist.
+final _enumRegex = RegExp(r'^enum\s+(\w+)');
+
 String _enumInventory(String projectRoot) {
   final enumDir = Directory(p.join(projectRoot, 'lib', 'src', 'enums'));
   if (!enumDir.existsSync()) return '';
   final names = <String>[];
-  final regex = RegExp(r'^enum\s+(\w+)');
   for (final file in enumDir.listSync().whereType<File>()) {
     for (final line in file.readAsLinesSync()) {
-      final m = regex.firstMatch(line);
+      final m = _enumRegex.firstMatch(line);
       if (m != null) names.add(m.group(1)!);
     }
   }

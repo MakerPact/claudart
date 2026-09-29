@@ -51,11 +51,12 @@ String readFile(String path) {
 List<ScopeFile> parseScopeFiles(String scopeSection, String projectRoot) {
   final result  = <ScopeFile>[];
   var   inFiles = false;
+  final fileMatchRegex = RegExp(r'^-\s+`([^`]+)`');
   for (final line in scopeSection.split('\n')) {
     if (line.startsWith('### Files in play')) { inFiles = true; continue; }
     if (inFiles && line.startsWith('###')) break;
     if (!inFiles) continue;
-    final match = RegExp(r'^-\s+`([^`]+)`').firstMatch(line.trim());
+    final match = fileMatchRegex.firstMatch(line.trim());
     if (match != null) {
       final rel = match.group(1)!;
       result.add((relative: rel, absolute: p.join(projectRoot, rel)));
