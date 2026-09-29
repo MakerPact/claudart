@@ -80,7 +80,7 @@ class ProjectConfig {
   }
 }
 
-String get configPath => p.join(claudeDir, 'config.json');
+String get configPath => p.join(workspacesRoot, 'config.json');
 
 ProjectConfig loadConfig({FileIO? io}) {
   final fileIO = io ?? const RealFileIO();

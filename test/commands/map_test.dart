@@ -65,9 +65,9 @@ void main() {
       expect(io.fileExists(tokenMapMdPath), isFalse);
     });
 
-    test('uses global claudeDir when workspacePath is null', () {
-      final globalTokenMapPath = p.join(claudeDir, 'token_map.json');
-      final globalTokenMapMdPath = p.join(claudeDir, 'token_map.md');
+    test('uses global workspacesRoot when workspacePath is null', () {
+      final globalTokenMapPath = p.join(workspacesRoot, 'token_map.json');
+      final globalTokenMapMdPath = p.join(workspacesRoot, 'token_map.md');
       final tokenData = {
         'Class:A': {'r': 'Helper'},
       };
@@ -89,7 +89,7 @@ void main() {
       runMap(io: io, workspacePath: workspace);
 
       expect(io.fileExists(tokenMapMdPath), isTrue);
-      final globalMdPath = p.join(claudeDir, 'token_map.md');
+      final globalMdPath = p.join(workspacesRoot, 'token_map.md');
       expect(io.fileExists(globalMdPath), isFalse);
     });
 
