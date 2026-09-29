@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -63,6 +64,26 @@ MemoryFileIO _io({List<ArchiveEntry> entries = const [], bool withSnapshots = tr
 
 void main() {
   group('runArchives — validation', () {
+    test('exits 1 when not inside a git repository', () async {
+      final tempDir = Directory.systemTemp.createTempSync('claudart_test_');
+      try {
+        final io = MemoryFileIO();
+        await IOOverrides.runZoned(
+          () async {
+            await expectLater(
+              runArchives(
+                io: io,
+                exitFn: _throwExit,
+              ),
+              throwsA(isA<_ExitException>().having((e) => e.code, 'code', equals(1))),
+            );
+          },
+          getCurrentDirectory: () => tempDir,
+        );
+      } finally {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
     test('exits 1 when project is not registered', () async {
       final io = MemoryFileIO();
       await expectLater(

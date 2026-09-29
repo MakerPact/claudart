@@ -85,7 +85,6 @@ SyncCheckResult checkSkillsSync(
   ]);
 }
 
-
 // ── Check 2: Current git branch vs handoff branch ────────────────────────────
 
 /// Checks whether the current git branch matches the branch recorded in the
@@ -144,7 +143,9 @@ SyncCheckResult checkHandoffStatus(
 
 // ── Check 3: Coverage map gaps in a test_X.md file ───────────────────────────
 
-final _gapRegExp = RegExp(r'\|\s*—\s*\|?\s*$');
+
+final _coverageGapRegex = RegExp(r'\|\s*—\s*\|?\s*$');
+
 
 /// Scans [testFileContent] for coverage table rows marked `—` (gap).
 ///
@@ -154,20 +155,14 @@ List<String> checkCoverageGaps(String testFileContent) {
   final gaps = <String>[];
   for (final line in testFileContent.split('\n')) {
     // Match markdown table rows ending with | — | or | —    |
-    if (!_gapRegExp.hasMatch(line)) continue;
 
-    int start = 0;
-    while (start < line.length) {
-      int nextBar = line.indexOf('|', start);
-      if (nextBar == -1) nextBar = line.length;
-
-      final segment = line.substring(start, nextBar).trim();
-      if (segment.isNotEmpty) {
-        gaps.add(segment);
-        break;
-      }
-      start = nextBar + 1;
-    }
+    if (!_coverageGapRegex.hasMatch(line)) continue;
+    final cols = line
+        .split('|')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (cols.isNotEmpty) gaps.add(cols.first);
   }
   return gaps;
 }

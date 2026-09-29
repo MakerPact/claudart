@@ -38,21 +38,66 @@ some content
     test('reads last section without trailing separator', () {
       expect(readSection(doc, 'Other'), 'some content');
     });
+
+    test('returns fallback for empty content', () {
+      expect(readSection('', 'Bug'), '_Not yet determined._');
+    });
+
+    test('escapes regex special characters in header', () {
+      const docWithRegex = '''
+## Special (Header) [Regex]
+
+Content with special header.
+''';
+      expect(readSection(docWithRegex, 'Special (Header) [Regex]'), 'Content with special header.');
+    });
+
+    test('returns first match when multiple sections have the same header', () {
+      const duplicateHeaders = '''
+## Duplicate
+
+First content
+
+## Duplicate
+
+Second content
+''';
+      expect(readSection(duplicateHeaders, 'Duplicate'), 'First content');
+    });
+
+    test('handles trailing newlines gracefully', () {
+      const docTrailing = '## End\n\nContent at the end\n\n\n\n';
+      expect(readSection(docTrailing, 'End'), 'Content at the end');
+    });
   });
 
   group('updateSection', () {
     const doc = '## Status\n\nold-status\n\n## Other\n\ncontent\n';
 
-    test('replaces existing section content', () {
+    test('replaces existing section content (middle/start)', () {
       final result = updateSection(doc, 'Status', 'new-status');
-      expect(result, contains('new-status'));
-      expect(result, isNot(contains('old-status')));
+      expect(result, '## Status\n\nnew-status\n\n## Other\n\ncontent\n');
+    });
+
+    test('replaces existing section content (end)', () {
+      final result = updateSection(doc, 'Other', 'new-content');
+      // updateSection adds a trailing newline when replacing
+      expect(result, '## Status\n\nold-status\n\n## Other\n\nnew-content\n\n');
     });
 
     test('appends new section when not found', () {
       final result = updateSection(doc, 'Missing', 'added');
-      expect(result, contains('## Missing'));
-      expect(result, contains('added'));
+      expect(result, '## Status\n\nold-status\n\n## Other\n\ncontent\n\n## Missing\n\nadded\n');
+    });
+
+    test('appends new section to empty document', () {
+      final result = updateSection('', 'Status', 'new-status');
+      expect(result, '\n## Status\n\nnew-status\n');
+    });
+
+    test('appends new section to document with no sections', () {
+      final result = updateSection('some text', 'Status', 'new-status');
+      expect(result, 'some text\n## Status\n\nnew-status\n');
     });
   });
 
@@ -60,6 +105,26 @@ some content
     test('extracts status value', () {
       const doc = '## Status\n\nsuggest-investigating\n';
       expect(readStatus(doc), 'suggest-investigating');
+    });
+
+    test('extracts status with spaces', () {
+      const doc = '## Status\n\nready for debug\n';
+      expect(readStatus(doc), 'ready for debug');
+    });
+
+    test('extracts status with multiple newlines before it', () {
+      const doc = '## Status\n\n\n\n\nsuggest-investigating\n';
+      expect(readStatus(doc), 'suggest-investigating');
+    });
+
+    test('extracts status with leading spaces in the status line', () {
+      const doc = '## Status\n\n  some status\n';
+      expect(readStatus(doc), 'some status');
+    });
+
+    test('handles empty status', () {
+      const doc = '## Status\n\n## Other\n';
+      expect(readStatus(doc), 'unknown');
     });
 
     test('returns unknown when missing', () {
@@ -96,6 +161,28 @@ some content
 
     test('readFile returns empty string for missing file', () {
       expect(readFile('${tmp.path}/missing.md'), '');
+    });
+
+    test('writeFile overwrites existing file', () {
+      final path = '${tmp.path}/overwrite.md';
+      writeFile(path, 'first content');
+      expect(readFile(path), 'first content');
+      writeFile(path, 'second content');
+      expect(readFile(path), 'second content');
+    });
+
+    test('writeFile can write empty string', () {
+      final path = '${tmp.path}/empty.md';
+      writeFile(path, '');
+      expect(readFile(path), '');
+      expect(File(path).existsSync(), isTrue);
+    });
+
+    test('writeFile works when parent directory already exists', () {
+      final dir = Directory('${tmp.path}/existing_dir')..createSync();
+      final path = '${dir.path}/file.md';
+      writeFile(path, 'content in existing dir');
+      expect(readFile(path), 'content in existing dir');
     });
   });
 
