@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:path/path.dart' as p;
 import 'file_io.dart';
 import 'paths.dart';
 
@@ -80,7 +79,7 @@ class ProjectConfig {
   }
 }
 
-String get configPath => p.join(claudeDir, 'config.json');
+String get configPath => configPathFor(workspacesRoot);
 
 ProjectConfig loadConfig({FileIO? io}) {
   final fileIO = io ?? const RealFileIO();

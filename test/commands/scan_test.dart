@@ -7,7 +7,7 @@ import 'package:claudart/paths.dart';
 import 'package:claudart/sensitivity/token_map.dart';
 import '../helpers/mocks.dart';
 
-String get _tokenMapPath => p.join(claudeDir, 'token_map.json');
+String get _tokenMapPath => tokenMapPathFor(workspacesRoot);
 
 void main() {
   group('runScan', () {
@@ -112,7 +112,7 @@ void main() {
       );
       await runScan(io: testIo);
 
-      final logsPath = p.join(claudeDir, 'logs', 'interactions.jsonl');
+      final logsPath = p.join(logsDirFor(workspacesRoot), 'interactions.jsonl');
       final raw = testIo.read(logsPath);
       expect(raw, isNotEmpty);
       final entry = jsonDecode(raw.trim().split('\n').last)
