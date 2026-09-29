@@ -28,7 +28,7 @@ String updateSection(String content, String header, String newContent) {
 
 /// Reads the Status line value from the handoff.
 String readStatus(String content) {
-  final match = RegExp(r'## Status\n+(\S[^\n]*)').firstMatch(content);
+  final match = RegExp(r'## Status\n+\s*([^#\n\s][^\n]*)').firstMatch(content);
   return match?.group(1)?.trim() ?? 'unknown';
 }
 
