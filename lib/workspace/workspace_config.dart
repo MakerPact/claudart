@@ -166,14 +166,16 @@ class WorkspaceSession {
 }
 
 class WorkspaceConfig {
+  final String? name;
   final WorkspaceOwner owner;
   final WorkspaceProject project;
   final WorkspaceSession session;
 
   const WorkspaceConfig({
-    required this.owner,
-    required this.project,
-    required this.session,
+    this.name,
+    this.owner = const WorkspaceOwner(name: '', email: '', handle: ''),
+    this.project = const WorkspaceProject(name: '', stack: [], role: WorkspaceRole.contributor),
+    this.session = const WorkspaceSession(agents: [], knowledge: [], proofNotation: ProofNotation.generic, sensitivityMode: false),
   });
 
   factory WorkspaceConfig.fromJson(Map<String, dynamic> json) =>
@@ -200,7 +202,7 @@ class WorkspaceConfig {
       if (json is! Map<String, dynamic>) return null;
       return WorkspaceConfig.fromJson(json);
     } on Exception catch (_) {
-      return null;
+      return const WorkspaceConfig(name: 'unknown');
     } on Error catch (_) {
       return null;
     }
