@@ -4,6 +4,8 @@ import 'detector.dart';
 /// Replaces sensitive tokens in text with their mapped abstract tokens,
 /// and provides the inverse operation.
 class Abstractor {
+  final _regexCache = <String, RegExp>{};
+
   /// Replaces all sensitive tokens in [text] with their mapped counterparts.
   /// New tokens are assigned in [map] for any unmapped sensitive identifiers.
   String abstract(String text, TokenMap map, SensitivityDetector detector) {
@@ -17,7 +19,16 @@ class Abstractor {
     for (final token in sensitive) {
       final typePrefix = _inferType(token, map);
       final mapped = map.tokenFor(token, typePrefix);
-      result = result.replaceAll(token, mapped);
+
+      var regExp = _regexCache[token];
+      if (regExp == null) {
+        // Use word boundaries to avoid corrupting related tokens
+        regExp = RegExp(r'\b' + RegExp.escape(token) + r'\b');
+        if (_regexCache.length > 1000) _regexCache.clear();
+        _regexCache[token] = regExp;
+      }
+
+      result = result.replaceAll(regExp, mapped);
     }
     return result;
   }
