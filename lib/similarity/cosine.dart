@@ -81,10 +81,12 @@ List<String> topKChunks(
   return scored.take(k).map((e) => e.$2).toList();
 }
 
+final _tokenPattern = RegExp(r'[^a-z0-9]+');
+
 List<String> _tokenize(String text) {
   return text
       .toLowerCase()
-      .split(RegExp(r'[^a-z0-9]+'))
+      .split(_tokenPattern)
       .where((t) => t.length > 1)
       .toList();
 }
