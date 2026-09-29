@@ -28,10 +28,22 @@ void main() {
       expect(archiveDirFor(ws), equals(expectedPath));
     });
 
-    test('configPathFor joins workspace with config.json', () {
-      final ws = '/fake/workspace';
-      final expectedPath = p.join(ws, 'config.json');
-      expect(configPathFor(ws), equals(expectedPath));
+    group('configPathFor', () {
+      test('joins workspace with config.json', () {
+        final ws = '/fake/workspace';
+        final expectedPath = p.join(ws, 'config.json');
+        expect(configPathFor(ws), equals(expectedPath));
+      });
+      test('handles empty workspace string correctly', () {
+        final ws = '';
+        final expectedPath = p.join(ws, 'config.json');
+        expect(configPathFor(ws), equals(expectedPath));
+      });
+      test('handles workspace with trailing slash', () {
+        final ws = '/fake/workspace/';
+        final expectedPath = p.join(ws, 'config.json');
+        expect(configPathFor(ws), equals(expectedPath));
+      });
     });
 
     test('knowledgeDirFor joins workspace with knowledge', () {
