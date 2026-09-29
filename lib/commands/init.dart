@@ -27,7 +27,9 @@ Future<void> runInit(List<String> args) async {
 
 Future<void> _initWorkspace() async {
   print(render.header('CLAUDART WORKSPACE INIT'));
-  print('\nWorkspace: $workspacesRoot');
+
+  print('\nWorkspace: ${workspacesRoot}');
+
 
   // Check if already initialized
   if (Directory(genericKnowledgeDirFor(workspacesRoot)).existsSync()) {
