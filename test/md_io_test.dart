@@ -38,6 +38,37 @@ some content
     test('reads last section without trailing separator', () {
       expect(readSection(doc, 'Other'), 'some content');
     });
+
+    test('returns fallback for empty content', () {
+      expect(readSection('', 'Bug'), '_Not yet determined._');
+    });
+
+    test('escapes regex special characters in header', () {
+      const docWithRegex = '''
+## Special (Header) [Regex]
+
+Content with special header.
+''';
+      expect(readSection(docWithRegex, 'Special (Header) [Regex]'), 'Content with special header.');
+    });
+
+    test('returns first match when multiple sections have the same header', () {
+      const duplicateHeaders = '''
+## Duplicate
+
+First content
+
+## Duplicate
+
+Second content
+''';
+      expect(readSection(duplicateHeaders, 'Duplicate'), 'First content');
+    });
+
+    test('handles trailing newlines gracefully', () {
+      const docTrailing = '## End\n\nContent at the end\n\n\n\n';
+      expect(readSection(docTrailing, 'End'), 'Content at the end');
+    });
   });
 
   group('updateSection', () {
