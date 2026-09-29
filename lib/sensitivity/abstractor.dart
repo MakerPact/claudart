@@ -38,10 +38,16 @@ class Abstractor {
     // Build reverse: mapped token -> real name
     // Collect all tokens by scanning the text for token-shaped strings.
     final tokenPattern = RegExp(r'[A-Za-z]+:[A-Z]{1,2}');
-    return text.replaceAllMapped(tokenPattern, (match) {
-      final tok = match.group(0)!;
-      return map.realFor(tok) ?? tok;
-    });
+    var result = text;
+    final seen = <String>{};
+    for (final m in tokenPattern.allMatches(text)) {
+      final tok = m.group(0)!;
+      if (seen.contains(tok)) continue;
+      seen.add(tok);
+      final real = map.realFor(tok);
+      if (real != null) result = result.replaceAll(tok, real);
+    }
+    return result;
   }
 
   /// Returns true when [text] contains no sensitive tokens.

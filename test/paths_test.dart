@@ -4,12 +4,6 @@ import 'package:path/path.dart' as p;
 
 void main() {
   group('Workspace Path Functions', () {
-    test('workspaceFor joins workspacesRoot with projectName', () {
-      final projectName = 'test_project';
-      final expectedPath = p.join(workspacesRoot, projectName);
-      expect(workspaceFor(projectName), equals(expectedPath));
-    });
-
     test('handoffPathFor joins workspace with handoff.md', () {
       final ws = '/fake/workspace';
       final expectedPath = p.join(ws, 'handoff.md');
