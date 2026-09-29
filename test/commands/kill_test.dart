@@ -182,7 +182,8 @@ void main() {
       expect(entry.lastSession, equals(today));
     });
 
-    test('a real .claude/ directory (symlink was never possible) is not '
+    test(
+        'a real .claude/ directory (symlink was never possible) is not '
         'reported as "no active session"', () async {
       final io = _io(withLink: false, withRealDir: true);
       final confirmQuestions = <String>[];
@@ -340,6 +341,10 @@ class _FailOnUnlinkIO implements FileIO {
 
   @override
   void deleteLink(String path) => throw Exception('simulated unlink failure');
+
+  @override
+  void writeAtomic(String path, String content) =>
+      delegate.writeAtomic(path, content);
 
   @override
   String read(String path) => delegate.read(path);
