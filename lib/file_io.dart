@@ -47,7 +47,7 @@ class RealFileIO implements FileIO {
     // Atomic rename
     try {
       tempFile.renameSync(path);
-    } on Exception catch (_) {
+    } on Exception {
       // Clean up temp file on failure
       if (tempFile.existsSync()) {
         try {
