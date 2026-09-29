@@ -41,7 +41,7 @@ Future<void> runScan({
 
   final tokenMapPath = workspacePath != null
       ? tokenMapPathFor(workspacePath)
-      : tokenMapPathFor(claudeDir);
+      : tokenMapPathFor(workspacesRoot);
 
   final ignoreRules = loadIgnoreRules(projectRoot, io: fileIO);
   final tokenMap = TokenMap.load(tokenMapPath, io: fileIO);

@@ -10,10 +10,10 @@ void runMap({FileIO? io, String? workspacePath}) {
 
   final tokenMapPath = workspacePath != null
       ? tokenMapPathFor(workspacePath)
-      : tokenMapPathFor(claudeDir);
+      : tokenMapPathFor(workspacesRoot);
   final tokenMapMdPath = workspacePath != null
       ? p.join(workspacePath, 'token_map.md')
-      : p.join(claudeDir, 'token_map.md');
+      : p.join(workspacesRoot, 'token_map.md');
 
   final raw = fileIO.read(tokenMapPath);
   if (raw.isEmpty) {
