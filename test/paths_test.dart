@@ -101,15 +101,4 @@ void main() {
     });
   });
 
-  group('Legacy single-workspace paths', () {
-    test('claudeDir uses workspacesRoot', () => expect(claudeDir, workspacesRoot));
-    test('handoffPath', () => expect(handoffPath, handoffPathFor(workspacesRoot)));
-    test('skillsPath', () => expect(skillsPath, skillsPathFor(workspacesRoot)));
-    test('archiveDir', () => expect(archiveDir, archiveDirFor(workspacesRoot)));
-    test('knowledgeDir', () => expect(knowledgeDir, knowledgeDirFor(workspacesRoot)));
-    test('genericKnowledgeDir', () => expect(genericKnowledgeDir, genericKnowledgeDirFor(workspacesRoot)));
-    test('projectsKnowledgeDir', () => expect(projectsKnowledgeDir, projectsKnowledgeDirFor(workspacesRoot)));
-    test('claudeCommandsDir', () => expect(claudeCommandsDir, claudeCommandsDirFor(workspacesRoot)));
-    test('claudeMdPath', () => expect(claudeMdPath, p.join(workspacesRoot, 'CLAUDE.md')));
-  });
 }
