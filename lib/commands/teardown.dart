@@ -14,6 +14,7 @@ import '../session/archive_entry.dart';
 import '../session/run_mode.dart';
 import '../session/session_state.dart';
 import '../session/teardown_utils.dart';
+import '../session/utilities.dart';
 import '../ui/menu.dart';
 import '../util/prompt_with_default.dart';
 import '../workspace/workspace_index.dart';
@@ -82,7 +83,7 @@ Future<void> runTeardown({
   print('\n${render.divider()}');
   print('  Bug     : ${_truncate(bug)}');
   print('  Cause   : ${_truncate(rootCause)}');
-  if (!_isBlank(changedFiles)) {
+  if (!isBlank(changedFiles)) {
     print('  Changed : ${_truncate(changedFiles)}');
   }
   print('  Branch  : $branch');
@@ -215,7 +216,7 @@ Future<void> runTeardown({
 
   final hotFilesDefault = agentHotFiles?.isNotEmpty == true
       ? agentHotFiles
-      : (_isBlank(changedFiles) ? null : changedFiles.replaceAll('\n', ', ').trim());
+      : (isBlank(changedFiles) ? null : changedFiles.replaceAll('\n', ', ').trim());
   final hotFiles = headless
       ? hotFilesDefault
       : promptWithDefault(
@@ -238,7 +239,7 @@ Future<void> runTeardown({
 
   final patternDefault = agentRootPat.isNotEmpty
       ? agentRootPat
-      : (_isBlank(rootCause) ? null : rootCause.replaceAll('\n', ' ').trim());
+      : (isBlank(rootCause) ? null : rootCause.replaceAll('\n', ' ').trim());
   final pattern = headless
       ? (patternDefault ?? 'unspecified')
       : promptWithDefault(
@@ -412,10 +413,6 @@ List<String> get _kCategories =>
 
 String? _defaultPrompt(String question, {bool optional = false}) =>
     prompt(question, optional: optional);
-
-
-bool _isBlank(String s) =>
-    s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');
 
 String _truncate(String s, {int max = 72}) =>
     s.length > max ? '${s.substring(0, max)}…' : s;

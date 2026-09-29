@@ -1,4 +1,5 @@
 import 'teardown_utils.dart';
+import 'utilities.dart';
 
 /// Typed representation of the handoff status field.
 ///
@@ -95,10 +96,7 @@ class SessionState {
   /// Returns true if the handoff contains non-placeholder content in any
   /// meaningful field — i.e., the session was actually started.
   bool get hasActiveContent =>
-      !_isBlank(bug) || !_isBlank(rootCause) || !_isBlank(attempted);
-
-  static bool _isBlank(String s) =>
-      s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');
+      !isBlank(bug) || !isBlank(rootCause) || !isBlank(attempted);
 
   /// Parses [content] from a handoff.md file into a [SessionState].
   ///
