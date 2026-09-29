@@ -70,18 +70,3 @@ String experimentsDirFor(String ws) => p.join(ws, 'experiments');
 /// legacy-global-workspace `claudeMdPath` getter below.
 String claudeMdPathFor(String projectRoot) => p.join(projectRoot, 'CLAUDE.md');
 
-// ── Legacy single-workspace paths ──────────────────────────────────────────
-// Kept for backward compatibility while commands migrate to workspaceFor().
-// TODO: remove once all callers use the per-workspace functions above.
-
-/// @deprecated Use workspacesRoot directly.
-String get claudeDir => workspacesRoot;
-
-String get handoffPath           => handoffPathFor(workspacesRoot);
-String get skillsPath            => skillsPathFor(workspacesRoot);
-String get archiveDir            => archiveDirFor(workspacesRoot);
-String get knowledgeDir          => knowledgeDirFor(workspacesRoot);
-String get genericKnowledgeDir   => genericKnowledgeDirFor(workspacesRoot);
-String get projectsKnowledgeDir  => projectsKnowledgeDirFor(workspacesRoot);
-String get claudeCommandsDir     => claudeCommandsDirFor(workspacesRoot);
-String get claudeMdPath          => p.join(workspacesRoot, 'CLAUDE.md');
