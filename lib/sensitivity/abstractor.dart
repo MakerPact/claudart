@@ -4,7 +4,7 @@ import 'detector.dart';
 /// Replaces sensitive tokens in text with their mapped abstract tokens,
 /// and provides the inverse operation.
 class Abstractor {
-  final _regexCache = <String, RegExp>{};
+  final _combinedRegexCache = <String, RegExp>{};
 
   /// Replaces all sensitive tokens in [text] with their mapped counterparts.
   /// New tokens are assigned in [map] for any unmapped sensitive identifiers.
@@ -15,22 +15,20 @@ class Abstractor {
     // Sort longest first to avoid partial replacement conflicts.
     sensitive.sort((a, b) => b.length.compareTo(a.length));
 
-    var result = text;
-    for (final token in sensitive) {
-      final typePrefix = _inferType(token, map);
-      final mapped = map.tokenFor(token, typePrefix);
-
-      var regExp = _regexCache[token];
-      if (regExp == null) {
-        // Use word boundaries to avoid corrupting related tokens
-        regExp = RegExp(r'\b' + RegExp.escape(token) + r'\b');
-        if (_regexCache.length > 1000) _regexCache.clear();
-        _regexCache[token] = regExp;
-      }
-
-      result = result.replaceAll(regExp, mapped);
+    final pattern = sensitive.map(RegExp.escape).join('|');
+    var combinedRegex = _combinedRegexCache[pattern];
+    if (combinedRegex == null) {
+      // Use word boundaries to avoid corrupting related tokens
+      combinedRegex = RegExp(r'\b(?:' + pattern + r')\b');
+      if (_combinedRegexCache.length > 100) _combinedRegexCache.clear();
+      _combinedRegexCache[pattern] = combinedRegex;
     }
-    return result;
+
+    return text.replaceAllMapped(combinedRegex, (match) {
+      final token = match.group(0)!;
+      final typePrefix = _inferType(token, map);
+      return map.tokenFor(token, typePrefix);
+    });
   }
 
   /// Restores abstracted tokens to real names using the [map].
