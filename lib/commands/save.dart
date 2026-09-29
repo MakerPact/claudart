@@ -10,7 +10,7 @@ import '../sensitivity/token_map.dart';
 import '../templates/handoff_template.dart' show stampHandoffUpdated;
 import '../session/session_state.dart';
 import '../session/teardown_utils.dart';
-import '../session/utilities.dart';
+import '../util/string_utils.dart';
 import '../ui/render.dart' as render;
 
 /// Result of the skills.md pending update — used in reports and tests.
@@ -86,7 +86,14 @@ Future<SkillsUpdateResult> runSave({
 
   // 6 — Report.
   sw.stop();
-  _printReport(entry.name, state, gitCtx?.branch, checkpointFile, skillsResult, sw.elapsedMilliseconds);
+  _printReport(
+    entry.name,
+    state,
+    gitCtx?.branch,
+    checkpointFile,
+    skillsResult,
+    sw.elapsedMilliseconds,
+  );
 
   return skillsResult;
 }
@@ -100,7 +107,7 @@ SkillsUpdateResult _updatePendingSkills({
   required bool sensitivityMode,
   required SessionState state,
 }) {
-  if (isBlank(state.rootCause)) return SkillsUpdateResult.skipped;
+  if (state.rootCause.isBlank) return SkillsUpdateResult.skipped;
 
   var skills = fileIO.fileExists(skillsFile)
       ? fileIO.read(skillsFile)
@@ -118,9 +125,15 @@ SkillsUpdateResult _updatePendingSkills({
   // files into a single keyed line, replacing any prior entry for this
   // branch instead of accumulating duplicate bullets on repeated /save.
   final cause = sanitize(state.rootCause.replaceAll('\n', ' ').trim());
-  final changed =
-      isBlank(state.changed) ? null : sanitize(state.changed.replaceAll('\n', ' ').trim());
-  skills = upsertPendingEntry(skills, state.branch, rootCause: cause, hotFiles: changed);
+  final changed = state.changed.isBlank
+      ? null
+      : sanitize(state.changed.replaceAll('\n', ' ').trim());
+  skills = upsertPendingEntry(
+    skills,
+    state.branch,
+    rootCause: cause,
+    hotFiles: changed,
+  );
 
   fileIO.write(skillsFile, skills);
   return SkillsUpdateResult.written;
@@ -159,7 +172,9 @@ void _printReport(
   print('');
   switch (state.status) {
     case HandoffStatus.suggestInvestigating:
-      print('Continue exploring. Run /save again when root cause is confirmed.');
+      print(
+        'Continue exploring. Run /save again when root cause is confirmed.',
+      );
     case HandoffStatus.readyForSuggest:
       print('Run /suggest to continue.');
     case HandoffStatus.readyForDebug:
@@ -169,8 +184,8 @@ void _printReport(
     case HandoffStatus.debugComplete:
       print('Debug complete. Verify with dart test, then claudart teardown.');
     case HandoffStatus.needsSuggest ||
-         HandoffStatus.unknown ||
-         HandoffStatus.noHandoff:
+        HandoffStatus.unknown ||
+        HandoffStatus.noHandoff:
       print('Run /suggest or /debug to continue.');
   }
   print('');
