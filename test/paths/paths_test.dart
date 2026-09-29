@@ -35,6 +35,10 @@ void main() {
       expect(knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
     });
 
+    test('knowledgeDirFor returns correct path', () {
+      expect(knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
+    });
+
     test('genericKnowledgeDirFor returns correct path', () {
       expect(genericKnowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge', 'generic')));
     });
