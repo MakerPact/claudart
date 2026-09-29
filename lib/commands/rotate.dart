@@ -157,11 +157,12 @@ ProjectConfig _loadConfig(FileIO fileIO, String workspace) {
 }
 
 Future<bool> _defaultBuild(String command) async {
-  final parts = command.split(' ');
+  final parts = command.trim().split(RegExp(r'\s+'));
+  if (parts.isEmpty || parts.first.isEmpty) return false;
+
   final result = await Process.run(
     parts.first,
     parts.skip(1).toList(),
-    runInShell: true,
   );
   return result.exitCode == 0;
 }
