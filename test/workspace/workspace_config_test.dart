@@ -86,6 +86,27 @@ void main() {
       expect(WorkspaceConfig.load(_workspaceDir, io: io), isNull);
     });
 
+    test('returns null when workspace.json is completely invalid format to trigger FormatException', () {
+      final io = MemoryFileIO(files: {
+        _workspaceJsonPath: '{ invalid-json ]',
+      });
+      expect(WorkspaceConfig.load(_workspaceDir, io: io), isNull);
+    });
+
+    test('returns null when workspace.json is a valid JSON array instead of an object', () {
+      final io = MemoryFileIO(files: {
+        _workspaceJsonPath: '["not", "an", "object"]',
+      });
+      expect(WorkspaceConfig.load(_workspaceDir, io: io), isNull);
+    });
+
+    test('returns null when workspace.json is missing required fields', () {
+      final io = MemoryFileIO(files: {
+        _workspaceJsonPath: '{"owner": {}}',
+      });
+      expect(WorkspaceConfig.load(_workspaceDir, io: io), isNull);
+    });
+
     test('parses a full workspace.json into typed fields', () {
       final io = MemoryFileIO(files: {
         _workspaceJsonPath: '''

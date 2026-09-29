@@ -196,9 +196,12 @@ class WorkspaceConfig {
     final raw = fileIO.read(path);
     if (raw.isEmpty) return null;
     try {
-      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final json = jsonDecode(raw);
+      if (json is! Map<String, dynamic>) return null;
       return WorkspaceConfig.fromJson(json);
     } on Exception catch (_) {
+      return null;
+    } on Error catch (_) {
       return null;
     }
   }
