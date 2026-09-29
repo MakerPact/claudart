@@ -62,6 +62,26 @@ some content
       expect(readStatus(doc), 'suggest-investigating');
     });
 
+    test('extracts status with spaces', () {
+      const doc = '## Status\n\nready for debug\n';
+      expect(readStatus(doc), 'ready for debug');
+    });
+
+    test('extracts status with multiple newlines before it', () {
+      const doc = '## Status\n\n\n\n\nsuggest-investigating\n';
+      expect(readStatus(doc), 'suggest-investigating');
+    });
+
+    test('extracts status with leading spaces in the status line', () {
+      const doc = '## Status\n\n  some status\n';
+      expect(readStatus(doc), 'some status');
+    });
+
+    test('handles empty status', () {
+      const doc = '## Status\n\n## Other\n';
+      expect(readStatus(doc), 'unknown');
+    });
+
     test('returns unknown when missing', () {
       expect(readStatus('no status here'), 'unknown');
     });
