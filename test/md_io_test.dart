@@ -43,16 +43,30 @@ some content
   group('updateSection', () {
     const doc = '## Status\n\nold-status\n\n## Other\n\ncontent\n';
 
-    test('replaces existing section content', () {
+    test('replaces existing section content (middle/start)', () {
       final result = updateSection(doc, 'Status', 'new-status');
-      expect(result, contains('new-status'));
-      expect(result, isNot(contains('old-status')));
+      expect(result, '## Status\n\nnew-status\n\n## Other\n\ncontent\n');
+    });
+
+    test('replaces existing section content (end)', () {
+      final result = updateSection(doc, 'Other', 'new-content');
+      // updateSection adds a trailing newline when replacing
+      expect(result, '## Status\n\nold-status\n\n## Other\n\nnew-content\n\n');
     });
 
     test('appends new section when not found', () {
       final result = updateSection(doc, 'Missing', 'added');
-      expect(result, contains('## Missing'));
-      expect(result, contains('added'));
+      expect(result, '## Status\n\nold-status\n\n## Other\n\ncontent\n\n## Missing\n\nadded\n');
+    });
+
+    test('appends new section to empty document', () {
+      final result = updateSection('', 'Status', 'new-status');
+      expect(result, '\n## Status\n\nnew-status\n');
+    });
+
+    test('appends new section to document with no sections', () {
+      final result = updateSection('some text', 'Status', 'new-status');
+      expect(result, 'some text\n## Status\n\nnew-status\n');
     });
   });
 
