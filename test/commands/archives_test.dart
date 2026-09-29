@@ -39,6 +39,15 @@ final _entryTwo = ArchiveEntry(
   handoffFile: 'handoff_e2.md',
 );
 
+final _entryLongDescription = ArchiveEntry(
+  id: 'e3',
+  kind: ArchiveKind.archive,
+  description: 'this is a very long description that exceeds sixty characters in length to test the truncation formatting',
+  branch: 'main',
+  createdAt: DateTime.utc(2026, 1, 3),
+  handoffFile: 'handoff_e3.md',
+);
+
 MemoryFileIO _io({List<ArchiveEntry> entries = const [], bool withSnapshots = true}) {
   const entry = RegistryEntry(
     name: 'my-app',
@@ -129,6 +138,27 @@ void main() {
   });
 
   group('runArchives — selection menu', () {
+    test('formats description > 60 characters with an ellipsis', () async {
+      final io = _io(entries: [_entryLongDescription]);
+      List<String>? capturedLabels;
+      await expectLater(
+        runArchives(
+          io: io,
+          projectRootOverride: _projectRoot,
+          exitFn: _throwExit,
+          pickFn: (items) {
+            capturedLabels = items;
+            return items.length - 1; // cancel
+          },
+        ),
+        throwsA(isA<_ExitException>().having((e) => e.code, 'code', equals(0))),
+      );
+      expect(
+        capturedLabels![0],
+        contains('this is a very long description that exceeds sixty character…'),
+      );
+    });
+
     test('lists newest-first, cancel index is entries.length', () async {
       final io = _io(entries: [_entryOne, _entryTwo]);
       List<String>? capturedLabels;
@@ -148,6 +178,29 @@ void main() {
       expect(capturedLabels![0], contains('paused mid-refactor'));
       expect(capturedLabels![1], contains('fixed the flaky test'));
       expect(capturedLabels!.last, contains('Cancel'));
+    });
+  });
+
+  group('runArchives — action menu', () {
+    test('cancels from the action menu', () async {
+      final io = _io(entries: [_entryOne]);
+      final output = <String>[];
+      var pickCall = 0;
+      await runZoned(
+        () => runArchives(
+          io: io,
+          projectRootOverride: _projectRoot,
+          exitFn: _throwExit,
+          pickFn: (items) {
+            pickCall++;
+            return pickCall == 1 ? 0 : 2; // select entry, then "Cancel"
+          },
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Cancelled.'));
     });
   });
 
@@ -202,6 +255,27 @@ void main() {
         },
       );
       expect(io.fileExists(handoffPathFor(_workspace)), isFalse);
+    });
+
+    test('reports missing snapshot file when viewing', () async {
+      final io = _io(entries: [_entryOne], withSnapshots: false);
+      final output = <String>[];
+      var pickCall = 0;
+      await runZoned(
+        () => runArchives(
+          io: io,
+          projectRootOverride: _projectRoot,
+          exitFn: _throwExit,
+          pickFn: (_) {
+            pickCall++;
+            return pickCall == 1 ? 0 : 1; // select entry, then "View snapshot"
+          },
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) => output.add(line),
+        ),
+      );
+      expect(output.join('\n'), contains('Snapshot file not found'));
     });
   });
 }

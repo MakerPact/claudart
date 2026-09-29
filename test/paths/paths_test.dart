@@ -6,6 +6,11 @@ void main() {
   group('per-workspace path functions', () {
     const workspace = '/mock/workspace';
 
+    test('workspaceFor returns correct path', () {
+      const projectName = 'test_project';
+      expect(workspaceFor(projectName), equals(p.join(workspacesRoot, projectName)));
+    });
+
     test('handoffPathFor returns correct path', () {
       expect(handoffPathFor(workspace), equals(p.join(workspace, 'handoff.md')));
     });

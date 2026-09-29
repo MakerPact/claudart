@@ -4,6 +4,8 @@ import 'detector.dart';
 /// Replaces sensitive tokens in text with their mapped abstract tokens,
 /// and provides the inverse operation.
 class Abstractor {
+
+  final _combinedRegexCache = <String, RegExp>{};
   /// Replaces all sensitive tokens in [text] with their mapped counterparts.
   /// New tokens are assigned in [map] for any unmapped sensitive identifiers.
   String abstract(String text, TokenMap map, SensitivityDetector detector) {
@@ -14,12 +16,16 @@ class Abstractor {
     // When combined into a single regex with '|', the first match (left to right)
     // is taken. Longest first ensures we don't partially match substrings.
     sensitive.sort((a, b) => b.length.compareTo(a.length));
+    final pattern = sensitive.map(RegExp.escape).join('|');
+    var combinedRegex = _combinedRegexCache[pattern];
+    if (combinedRegex == null) {
+      // Use word boundaries to avoid corrupting related tokens
+      combinedRegex = RegExp(r'\b(?:' + pattern + r')\b');
+      if (_combinedRegexCache.length > 100) _combinedRegexCache.clear();
+      _combinedRegexCache[pattern] = combinedRegex;
+    }
 
-    // Compile a single regex matching any of the sensitive tokens with word boundaries.
-    final pattern = r'\b(' + sensitive.map(RegExp.escape).join('|') + r')\b';
-    final regex = RegExp(pattern);
-
-    return text.replaceAllMapped(regex, (match) {
+    return text.replaceAllMapped(combinedRegex, (match) {
       final token = match.group(0)!;
       final typePrefix = _inferType(token, map);
       return map.tokenFor(token, typePrefix);
@@ -31,16 +37,10 @@ class Abstractor {
     // Build reverse: mapped token -> real name
     // Collect all tokens by scanning the text for token-shaped strings.
     final tokenPattern = RegExp(r'[A-Za-z]+:[A-Z]{1,2}');
-    var result = text;
-    final seen = <String>{};
-    for (final m in tokenPattern.allMatches(text)) {
-      final tok = m.group(0)!;
-      if (seen.contains(tok)) continue;
-      seen.add(tok);
-      final real = map.realFor(tok);
-      if (real != null) result = result.replaceAll(tok, real);
-    }
-    return result;
+    return text.replaceAllMapped(tokenPattern, (match) {
+      final tok = match.group(0)!;
+      return map.realFor(tok) ?? tok;
+    });
   }
 
   /// Returns true when [text] contains no sensitive tokens.
