@@ -1,5 +1,6 @@
 import 'session_state.dart';
 import 'teardown_utils.dart';
+import '../util/string_utils.dart';
 
 /// Severity of a sync issue found during preflight.
 enum IssueSeverity { warning, error }
@@ -11,10 +12,10 @@ enum ClaudartOperation {
   test;
 
   static ClaudartOperation fromString(String s) => switch (s) {
-        'debug' => debug,
-        'save' => save,
-        _ => test,
-      };
+    'debug' => debug,
+    'save' => save,
+    _ => test,
+  };
 }
 
 /// A single issue found during a preflight sync check.
@@ -62,15 +63,12 @@ class SyncCheckResult {
 /// Returns a warning when root cause is confirmed in the handoff but no
 /// matching pending entry exists — meaning `claudart save` has not been run
 /// since the root cause was confirmed.
-SyncCheckResult checkSkillsSync(
-  String handoffContent,
-  String skillsContent,
-) {
+SyncCheckResult checkSkillsSync(String handoffContent, String skillsContent) {
   final state = SessionState.parse(handoffContent);
 
   if (!state.hasActiveContent) return SyncCheckResult.clean();
 
-  final rootCauseConfirmed = !_isBlank(state.rootCause);
+  final rootCauseConfirmed = !state.rootCause.isBlank;
   if (!rootCauseConfirmed) return SyncCheckResult.clean();
 
   final pendingHasEntry = pendingHasBranch(skillsContent, state.branch);
@@ -84,7 +82,6 @@ SyncCheckResult checkSkillsSync(
     ),
   ]);
 }
-
 
 // ── Check 2: Current git branch vs handoff branch ────────────────────────────
 
@@ -115,7 +112,9 @@ SyncCheckResult checkBranchSync(String handoffContent, String? currentBranch) {
 
 /// Checks whether the handoff status is appropriate for [operation].
 SyncCheckResult checkHandoffStatus(
-    ClaudartOperation operation, String handoffContent) {
+  ClaudartOperation operation,
+  String handoffContent,
+) {
   final state = SessionState.parse(handoffContent);
 
   return switch (operation) {
@@ -144,6 +143,8 @@ SyncCheckResult checkHandoffStatus(
 
 // ── Check 3: Coverage map gaps in a test_X.md file ───────────────────────────
 
+final _coverageGapRegex = RegExp(r'\|\s*—\s*\|?\s*$');
+
 /// Scans [testFileContent] for coverage table rows marked `—` (gap).
 ///
 /// Returns the scenario names of any uncovered rows. An empty list means
@@ -152,7 +153,7 @@ List<String> checkCoverageGaps(String testFileContent) {
   final gaps = <String>[];
   for (final line in testFileContent.split('\n')) {
     // Match markdown table rows ending with | — | or | —    |
-    if (!RegExp(r'\|\s*—\s*\|?\s*$').hasMatch(line)) continue;
+    if (!_coverageGapRegex.hasMatch(line)) continue;
     final cols = line
         .split('|')
         .map((s) => s.trim())
@@ -187,19 +188,18 @@ SyncCheckResult runPreflight({
     for (final entry in testFileContents.entries) {
       final gaps = checkCoverageGaps(entry.value);
       if (gaps.isNotEmpty) {
-        result = result.merge(SyncCheckResult([
-          SyncIssue(
-            IssueSeverity.warning,
-            '${entry.key}: ${gaps.length} coverage gap(s): ${gaps.join(', ')}',
-            suggestion: 'Fill gaps or mark as intentional before committing.',
-          ),
-        ]));
+        result = result.merge(
+          SyncCheckResult([
+            SyncIssue(
+              IssueSeverity.warning,
+              '${entry.key}: ${gaps.length} coverage gap(s): ${gaps.join(', ')}',
+              suggestion: 'Fill gaps or mark as intentional before committing.',
+            ),
+          ]),
+        );
       }
     }
   }
 
   return result;
 }
-
-bool _isBlank(String s) =>
-    s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');

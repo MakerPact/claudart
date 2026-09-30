@@ -14,6 +14,7 @@ import '../session/archive_entry.dart';
 import '../session/run_mode.dart';
 import '../session/session_state.dart';
 import '../session/teardown_utils.dart';
+import '../util/string_utils.dart';
 import '../ui/menu.dart';
 import '../util/prompt_with_default.dart';
 import '../workspace/workspace_index.dart';
@@ -41,7 +42,9 @@ Future<void> runTeardown({
 
   print(render.header('CLAUDART SESSION TEARDOWN'));
   if (headless) {
-    print('  ${ansi.dim}headless — every decision below resolves itself; verify the summary at the end${ansi.reset}\n');
+    print(
+      '  ${ansi.dim}headless — every decision below resolves itself; verify the summary at the end${ansi.reset}\n',
+    );
   }
 
   final gitCtx = projectRootOverride != null ? null : detectGitContext();
@@ -63,8 +66,9 @@ Future<void> runTeardown({
 
   final workspace = entry.workspacePath;
   final handoffFile = handoffPathFor(workspace);
-  final handoff =
-      fileIO.fileExists(handoffFile) ? fileIO.read(handoffFile) : '';
+  final handoff = fileIO.fileExists(handoffFile)
+      ? fileIO.read(handoffFile)
+      : '';
 
   if (handoff.isEmpty) {
     print('\nNo active handoff found. Nothing to tear down.\n');
@@ -75,14 +79,17 @@ Future<void> runTeardown({
   final bug = readSection(handoff, 'Bug');
   final rootCause = readSection(handoff, 'Root Cause');
   final debugProgress = extractSection(handoff, 'Debug Progress');
-  final changedFiles = readSubSection(debugProgress, 'What changed (files modified)');
+  final changedFiles = readSubSection(
+    debugProgress,
+    'What changed (files modified)',
+  );
   final branch = extractBranch(handoff);
 
   // Show session summary before confirming.
   print('\n${render.divider()}');
   print('  Bug     : ${_truncate(bug)}');
   print('  Cause   : ${_truncate(rootCause)}');
-  if (!_isBlank(changedFiles)) {
+  if (!changedFiles.isBlank) {
     print('  Changed : ${_truncate(changedFiles)}');
   }
   print('  Branch  : $branch');
@@ -105,9 +112,14 @@ Future<void> runTeardown({
     if (headless || confirm_('Save as a reminder to resume later?')) {
       final description = headless
           ? bug
-          : prompt_("Brief description (what's still pending)", optional: true) ?? '';
-      final resolvedDescription =
-          description.trim().isEmpty ? bug : description.trim();
+          : prompt_(
+                  "Brief description (what's still pending)",
+                  optional: true,
+                ) ??
+                '';
+      final resolvedDescription = description.trim().isEmpty
+          ? bug
+          : description.trim();
       if (headless) {
         // Same "verify before trusting the archive" contract as the
         // resolved path's fuller Headless decisions block below — this
@@ -121,17 +133,19 @@ Future<void> runTeardown({
         print(render.divider());
       }
       _writeArchiveEntry(
-        fileIO:      fileIO,
-        workspace:   workspace,
-        kind:        ArchiveKind.reminder,
+        fileIO: fileIO,
+        workspace: workspace,
+        kind: ArchiveKind.reminder,
         description: resolvedDescription,
-        branch:      branch,
-        handoff:     handoff,
+        branch: branch,
+        handoff: handoff,
         skillsDelta: null,
       );
       print('\n✓ Reminder saved. Run `claudart archives` to resume.\n');
     }
-    print('\nCome back when the fix is confirmed. Continue with /debug or /suggest.\n');
+    print(
+      '\nCome back when the fix is confirmed. Continue with /debug or /suggest.\n',
+    );
     exit_(0);
   }
 
@@ -139,24 +153,24 @@ Future<void> runTeardown({
 
   print('');
   final analyzerCtx = await PipelineExecutor().runFuture(
-    steps:        [TeardownSteps.analyzer],
-    ctx:          PipelineContext(
+    steps: [TeardownSteps.analyzer],
+    ctx: PipelineContext(
       projectRoot: projectRoot,
-      bug:         handoff,
-      expected:    '',
-      files:       [],
+      bug: handoff,
+      expected: '',
+      files: [],
     ),
-    displayStep:  1,
+    displayStep: 1,
     displayTotal: 1,
   );
 
-  final analyzerOut           = analyzerCtx[TeardownSteps.slotKey] ?? '';
-  final agentCategory  = tagOrNull(analyzerOut, 'CATEGORY')           ?? '';
-  final agentSummary   = tagOrNull(analyzerOut, 'FIX_SUMMARY')        ?? '';
-  final agentHotFiles  = tagOrNull(analyzerOut, 'HOT_FILES');
+  final analyzerOut = analyzerCtx[TeardownSteps.slotKey] ?? '';
+  final agentCategory = tagOrNull(analyzerOut, 'CATEGORY') ?? '';
+  final agentSummary = tagOrNull(analyzerOut, 'FIX_SUMMARY') ?? '';
+  final agentHotFiles = tagOrNull(analyzerOut, 'HOT_FILES');
   final agentColdFiles = tagOrNull(analyzerOut, 'COLD_FILES');
-  final agentRootPat   = tagOrNull(analyzerOut, 'ROOT_CAUSE_PATTERN') ?? '';
-  final agentFixPat    = tagOrNull(analyzerOut, 'FIX_PATTERN')        ?? '';
+  final agentRootPat = tagOrNull(analyzerOut, 'ROOT_CAUSE_PATTERN') ?? '';
+  final agentFixPat = tagOrNull(analyzerOut, 'FIX_PATTERN') ?? '';
 
   // ── Archive kind ─────────────────────────────────────────────────────────────
   //
@@ -171,7 +185,10 @@ Future<void> runTeardown({
     print('\n${render.divider()}');
     print('Session record type:');
     print('${render.divider()}\n');
-    final kindChoice = pick_(['archive (resolved — skills updated)', 'reminder (note for future reference)']);
+    final kindChoice = pick_([
+      'archive (resolved — skills updated)',
+      'reminder (note for future reference)',
+    ]);
     archiveKind = kindChoice == 1 ? ArchiveKind.reminder : ArchiveKind.archive;
   }
 
@@ -187,8 +204,12 @@ Future<void> runTeardown({
 
   // ── Category (agent pre-selected in menu) ────────────────────────────────────
 
-  final suggestedIdx = TeardownCategory.values.indexWhere((c) => c.value == agentCategory);
-  final startIdx     = suggestedIdx >= 0 ? suggestedIdx : TeardownCategory.values.indexOf(TeardownCategory.general);
+  final suggestedIdx = TeardownCategory.values.indexWhere(
+    (c) => c.value == agentCategory,
+  );
+  final startIdx = suggestedIdx >= 0
+      ? suggestedIdx
+      : TeardownCategory.values.indexOf(TeardownCategory.general);
   final String category;
   final String area;
   if (headless) {
@@ -200,7 +221,7 @@ Future<void> runTeardown({
   } else {
     print('\nCategorize this session for skills.md:');
     final categoryChoice = pick_(_kCategories, startIndex: startIdx);
-    final cat            = TeardownCategory.values[categoryChoice];
+    final cat = TeardownCategory.values[categoryChoice];
     if (cat == TeardownCategory.other) {
       final raw = prompt_('Enter category') ?? '';
       category = raw.trim().isEmpty ? 'general' : raw.trim();
@@ -215,7 +236,9 @@ Future<void> runTeardown({
 
   final hotFilesDefault = agentHotFiles?.isNotEmpty == true
       ? agentHotFiles
-      : (_isBlank(changedFiles) ? null : changedFiles.replaceAll('\n', ', ').trim());
+      : (changedFiles.isBlank
+            ? null
+            : changedFiles.replaceAll('\n', ', ').trim());
   final hotFiles = headless
       ? hotFilesDefault
       : promptWithDefault(
@@ -224,8 +247,10 @@ Future<void> runTeardown({
           hotFilesDefault,
         );
 
-  final coldDefault = agentColdFiles?.toLowerCase() == 'none' ? null : agentColdFiles;
-  final coldFiles   = headless
+  final coldDefault = agentColdFiles?.toLowerCase() == 'none'
+      ? null
+      : agentColdFiles;
+  final coldFiles = headless
       ? coldDefault
       : promptWithDefault(
           prompt_,
@@ -238,7 +263,7 @@ Future<void> runTeardown({
 
   final patternDefault = agentRootPat.isNotEmpty
       ? agentRootPat
-      : (_isBlank(rootCause) ? null : rootCause.replaceAll('\n', ' ').trim());
+      : (rootCause.isBlank ? null : rootCause.replaceAll('\n', ' ').trim());
   final pattern = headless
       ? (patternDefault ?? 'unspecified')
       : promptWithDefault(
@@ -259,7 +284,9 @@ Future<void> runTeardown({
     print('\n${render.divider()}');
     print('Headless decisions — verify before trusting the archive:');
     print(render.divider());
-    print('  Record type : ${archiveKind == ArchiveKind.archive ? 'archive (resolved)' : 'reminder'}');
+    print(
+      '  Record type : ${archiveKind == ArchiveKind.archive ? 'archive (resolved)' : 'reminder'}',
+    );
     print('  Category    : $category');
     print('  Fix summary : $fixSummary');
     print('  Hot files   : ${hotFiles ?? 'unspecified'}');
@@ -292,20 +319,20 @@ Future<void> runTeardown({
   }
 
   // Archive handoff + write index entry.
-  final archiveDirectory  = archiveDirFor(workspace);
-  final archiveFileName   = archiveName(branch);
-  final archiveFile       = p.join(archiveDirectory, archiveFileName);
+  final archiveDirectory = archiveDirFor(workspace);
+  final archiveFileName = archiveName(branch);
+  final archiveFile = p.join(archiveDirectory, archiveFileName);
   fileIO.createDir(archiveDirectory);
   fileIO.write(archiveFile, handoff);
   _writeArchiveEntry(
-    fileIO:          fileIO,
-    workspace:       workspace,
-    kind:            archiveKind,
-    description:     fixSummary ?? bug,
-    branch:          branch,
-    handoff:         handoff,
+    fileIO: fileIO,
+    workspace: workspace,
+    kind: archiveKind,
+    description: fixSummary ?? bug,
+    branch: branch,
+    handoff: handoff,
     handoffFileName: archiveFileName,
-    skillsDelta:     archiveKind == ArchiveKind.archive
+    skillsDelta: archiveKind == ArchiveKind.archive
         ? '$category: $pattern → $fixPattern'
         : null,
   );
@@ -323,7 +350,9 @@ Future<void> runTeardown({
   print('Suggested commit message:\n');
   print(commitMsg);
   print(render.divider());
-  print('\nRemember: do not push to remote. Open a merge request from your branch.\n');
+  print(
+    '\nRemember: do not push to remote. Open a merge request from your branch.\n',
+  );
 }
 
 void _updateSkills({
@@ -336,36 +365,55 @@ void _updateSkills({
   required String pattern,
   required String fixPattern,
 }) {
-  var skills =
-      fileIO.fileExists(skillsFile) ? fileIO.read(skillsFile) : _defaultSkillsTemplate();
+  var skills = fileIO.fileExists(skillsFile)
+      ? fileIO.read(skillsFile)
+      : _defaultSkillsTemplate();
 
   final date = DateTime.now().toIso8601String().split('T').first;
 
   skills = appendToSection(
-      skills, 'Root Cause Patterns', '- **$category**: $pattern → Fix: $fixPattern');
+    skills,
+    'Root Cause Patterns',
+    '- **$category**: $pattern → Fix: $fixPattern',
+  );
 
   if (hotFiles != null && hotFiles.toLowerCase() != 'none') {
     for (final file
-        in hotFiles.split(',').map((f) => f.trim()).where((f) => f.isNotEmpty)) {
+        in hotFiles
+            .split(',')
+            .map((f) => f.trim())
+            .where((f) => f.isNotEmpty)) {
       skills = incrementHotPath(skills, category, file);
     }
   }
 
   if (coldFiles != null && coldFiles.toLowerCase() != 'none') {
     for (final file
-        in coldFiles.split(',').map((f) => f.trim()).where((f) => f.isNotEmpty)) {
-      skills = appendToSection(skills, 'Anti-patterns',
-          '- `$file` — explored for $category, not the root cause');
+        in coldFiles
+            .split(',')
+            .map((f) => f.trim())
+            .where((f) => f.isNotEmpty)) {
+      skills = appendToSection(
+        skills,
+        'Anti-patterns',
+        '- `$file` — explored for $category, not the root cause',
+      );
     }
   }
 
   if (branch != 'unknown') {
     skills = appendToSection(
-        skills, 'Branch Notes', '- `$branch` ($date): $category resolved');
+      skills,
+      'Branch Notes',
+      '- `$branch` ($date): $category resolved',
+    );
   }
 
   skills = appendToSection(
-      skills, 'Session Index', '`$branch` | $date | $category | resolved');
+    skills,
+    'Session Index',
+    '`$branch` | $date | $category | resolved',
+  );
 
   fileIO.write(skillsFile, skills);
 }
@@ -382,26 +430,26 @@ enum TeardownCategory {
 
   /// Canonical string written to skills.md.
   String get value => switch (this) {
-        apiIntegration  => 'api-integration',
-        concurrency     => 'concurrency',
-        configuration   => 'configuration',
-        dataParsing     => 'data-parsing',
-        ioFilesystem    => 'io-filesystem',
-        stateManagement => 'state-management',
-        general         => 'general',
-        other           => 'other',
-      };
+    apiIntegration => 'api-integration',
+    concurrency => 'concurrency',
+    configuration => 'configuration',
+    dataParsing => 'data-parsing',
+    ioFilesystem => 'io-filesystem',
+    stateManagement => 'state-management',
+    general => 'general',
+    other => 'other',
+  };
 
   /// Commit area label for buildCommitMessage.
   String get area => switch (this) {
-        apiIntegration  => 'api',
-        concurrency     => 'async',
-        configuration   => 'config',
-        ioFilesystem    => 'io',
-        stateManagement => 'state',
-        dataParsing     => 'data',
-        general || other => 'fix',
-      };
+    apiIntegration => 'api',
+    concurrency => 'async',
+    configuration => 'config',
+    ioFilesystem => 'io',
+    stateManagement => 'state',
+    dataParsing => 'data',
+    general || other => 'fix',
+  };
 
   /// Display label shown in the interactive menu.
   String get label => this == other ? 'other (type manually)' : value;
@@ -412,10 +460,6 @@ List<String> get _kCategories =>
 
 String? _defaultPrompt(String question, {bool optional = false}) =>
     prompt(question, optional: optional);
-
-
-bool _isBlank(String s) =>
-    s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');
 
 String _truncate(String s, {int max = 72}) =>
     s.length > max ? '${s.substring(0, max)}…' : s;
@@ -457,16 +501,16 @@ _No sessions recorded yet._
 ''';
 
 void _writeArchiveEntry({
-  required FileIO      fileIO,
-  required String      workspace,
+  required FileIO fileIO,
+  required String workspace,
   required ArchiveKind kind,
-  required String      description,
-  required String      branch,
-  required String      handoff,
-  String?              handoffFileName,
-  String?              skillsDelta,
+  required String description,
+  required String branch,
+  required String handoff,
+  String? handoffFileName,
+  String? skillsDelta,
 }) {
-  final ts       = DateTime.now();
+  final ts = DateTime.now();
   final fileName = handoffFileName ?? archiveName(branch);
   // Ensure the handoff file exists (reminder path may not have written it yet).
   if (handoffFileName == null) {
@@ -475,11 +519,11 @@ void _writeArchiveEntry({
     fileIO.write('$dir/$fileName', handoff);
   }
   final entry = ArchiveEntry(
-    id:          '${branch}_${ts.millisecondsSinceEpoch}',
-    kind:        kind,
+    id: '${branch}_${ts.millisecondsSinceEpoch}',
+    kind: kind,
     description: description,
-    branch:      branch,
-    createdAt:   ts,
+    branch: branch,
+    createdAt: ts,
     handoffFile: fileName,
     skillsDelta: skillsDelta,
   );

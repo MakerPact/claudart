@@ -6,7 +6,7 @@ import 'package:path/path.dart' as p;
 import '../helpers/mocks.dart';
 import 'package:claudart/paths.dart';
 
-String get _logsDir => p.join(claudeDir, 'logs');
+String get _logsDir => p.join(workspacesRoot, 'logs');
 String get _interactionsPath => p.join(_logsDir, 'interactions.jsonl');
 String get _errorsPath => p.join(_logsDir, 'errors.jsonl');
 String get _performancePath => p.join(_logsDir, 'performance.md');

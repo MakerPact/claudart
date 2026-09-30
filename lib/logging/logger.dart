@@ -25,7 +25,7 @@ class SessionLogger {
   })  : _io = io ?? const RealFileIO(),
         _logsDir = workspacePath != null
             ? logsDirFor(workspacePath)
-            : p.join(claudeDir, 'logs');
+            : p.join(workspacesRoot, 'logs');
 
   String get _interactionsPath => p.join(_logsDir, 'interactions.jsonl');
   String get _errorsPath => p.join(_logsDir, 'errors.jsonl');

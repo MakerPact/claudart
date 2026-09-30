@@ -39,22 +39,23 @@ abstract final class DebugSteps {
       '</EDIT_FILE>';
 
   static AgentStep reader(int fileCount) => AgentStep(
-    id:           PipelineSlot.reader.key,
-    label:        'Reading $fileCount scope file${fileCount == 1 ? '' : 's'} (haiku)…',
-    model:        AgentModel.haiku,
-    systemPrompt: _readerSystem,
-    buildPrompt:  _readerPrompt,
-    routes:       const {},
-  );
+        id: PipelineSlot.reader.key,
+        label:
+            'Reading $fileCount scope file${fileCount == 1 ? '' : 's'} (haiku)…',
+        model: AgentModel.haiku,
+        systemPrompt: _readerSystem,
+        buildPrompt: _readerPrompt,
+        routes: const {},
+      );
 
   static const AgentStep implementer = AgentStep(
-    id:            'implementer',
-    label:         'Implementing fix…',
-    model:         AgentModel.sonnet,
+    id: 'implementer',
+    label: 'Implementing fix…',
+    model: AgentModel.sonnet,
     modelSelector: _implementerModelSelector,
-    systemPrompt:  _implementerSystem,
-    buildPrompt:   _implementerPrompt,
-    routes:        {},
+    systemPrompt: _implementerSystem,
+    buildPrompt: _implementerPrompt,
+    routes: {},
     // NOT bare: --bare strictly requires ANTHROPIC_API_KEY/apiKeyHelper and
     // never reads OAuth or keychain (verified live — a normal OAuth-logged-in
     // session gets "Not logged in · Please run /login" under --bare). That's
@@ -77,7 +78,8 @@ abstract final class DebugSteps {
 
   static const List<AgentStep> all = [implementer];
 
-  static List<AgentStep> forScope(int fileCount) => [reader(fileCount), implementer];
+  static List<AgentStep> forScope(int fileCount) =>
+      [reader(fileCount), implementer];
 }
 
 // ── Prompt builders ───────────────────────────────────────────────────────────
@@ -105,13 +107,15 @@ Implement the fix strictly as specified. Output <CHANGES> and one <EDIT_FILE> pe
 
 // Returns a one-line inventory of all enum types defined in lib/src/enums/.
 // Injected into the implementer prompt so it cannot reference types that do not exist.
+final _enumRegex = RegExp(r'^enum\s+(\w+)');
+
 String _enumInventory(String projectRoot) {
   final enumDir = Directory(p.join(projectRoot, 'lib', 'src', 'enums'));
   if (!enumDir.existsSync()) return '';
   final names = <String>[];
   for (final file in enumDir.listSync().whereType<File>()) {
     for (final line in file.readAsLinesSync()) {
-      final m = RegExp(r'^enum\s+(\w+)').firstMatch(line);
+      final m = _enumRegex.firstMatch(line);
       if (m != null) names.add(m.group(1)!);
     }
   }

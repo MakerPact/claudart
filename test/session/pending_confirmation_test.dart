@@ -18,7 +18,11 @@ class _ThrowsOnReadFileIO implements FileIO {
   bool fileExists(String path) => true;
 
   @override
-  String read(String path) => throw const FileSystemException('simulated IO error');
+  void writeAtomic(String path, String content) {}
+
+  @override
+  String read(String path) =>
+      throw const FileSystemException('simulated IO error');
 
   @override
   void write(String path, String content) => throw UnimplementedError();
@@ -29,13 +33,15 @@ class _ThrowsOnReadFileIO implements FileIO {
   @override
   void createDir(String path) => throw UnimplementedError();
   @override
-  List<String> listFiles(String dirPath, {String? extension}) => throw UnimplementedError();
+  List<String> listFiles(String dirPath, {String? extension}) =>
+      throw UnimplementedError();
   @override
   bool linkExists(String path) => throw UnimplementedError();
   @override
   void deleteLink(String path) => throw UnimplementedError();
   @override
-  void createLink(String linkPath, String targetPath) => throw UnimplementedError();
+  void createLink(String linkPath, String targetPath) =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -51,11 +57,13 @@ void main() {
       final roundTripped = PendingConfirmation.fromJson(confirmation.toJson());
 
       expect(roundTripped.question, equals(confirmation.question));
-      expect(roundTripped.onConfirmCommand, equals(confirmation.onConfirmCommand));
+      expect(
+          roundTripped.onConfirmCommand, equals(confirmation.onConfirmCommand));
       expect(roundTripped.createdAt, equals(confirmation.createdAt));
     });
 
-    test('normalizes a local-time createdAt to UTC on both write and read '
+    test(
+        'normalizes a local-time createdAt to UTC on both write and read '
         '— durable state must be timezone-unambiguous regardless of which '
         'consumer wrote or reads it', () {
       final localCreatedAt = DateTime(2026, 9, 20, 22, 0, 0);
@@ -94,20 +102,24 @@ void main() {
 
     test('returns null when a required field is missing', () {
       final io = MemoryFileIO();
-      io.write(pendingConfirmationPathFor(_workspace), '{"question": "only this"}');
+      io.write(
+          pendingConfirmationPathFor(_workspace), '{"question": "only this"}');
       expect(PendingConfirmationStore.load(_workspace, io: io), isNull);
     });
 
-    test('never throws — a real IO error on read() resolves to null, not '
+    test(
+        'never throws — a real IO error on read() resolves to null, not '
         'an uncaught exception (the file existed at the fileExists() '
         'check but became unreadable before the read — a genuine race, '
         'not hypothetical)', () {
       expect(
-        () => PendingConfirmationStore.load(_workspace, io: const _ThrowsOnReadFileIO()),
+        () => PendingConfirmationStore.load(_workspace,
+            io: const _ThrowsOnReadFileIO()),
         returnsNormally,
       );
       expect(
-        PendingConfirmationStore.load(_workspace, io: const _ThrowsOnReadFileIO()),
+        PendingConfirmationStore.load(_workspace,
+            io: const _ThrowsOnReadFileIO()),
         isNull,
       );
     });

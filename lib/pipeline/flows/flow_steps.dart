@@ -264,10 +264,11 @@ String _projectIndex(String projectRoot) {
     } on FileSystemException {
       enumFiles = const [];
     }
+    final regex = RegExp(r'^\s*enum\s+(\w+)');
     for (final file in enumFiles) {
       try {
         for (final line in file.readAsLinesSync()) {
-          final m = RegExp(r'^\s*enum\s+(\w+)').firstMatch(line);
+          final m = regex.firstMatch(line);
           if (m != null) names.add(m.group(1)!);
         }
       } on FileSystemException {

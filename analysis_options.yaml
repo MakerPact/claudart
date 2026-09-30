@@ -14,13 +14,6 @@ analyzer:
     missing_enum_constant_in_switch: error
     # Treat dead code as a warning — unused enum branches are a smell
     dead_code: warning
-    # Bare-string switches — see custom_lint block below for the rule itself
-    bare_string_for_enum: error
-    # Enum-values loop inside a single test() — see custom_lint block below
-    enum_values_loop_in_single_test: error
-    # Repeated identical switch-expression bodies not grouped with || —
-    # see custom_lint block below
-    ungrouped_identical_switch_cases: error
 
 custom_lint:
   rules:

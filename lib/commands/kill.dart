@@ -7,6 +7,7 @@ import '../paths.dart';
 import '../registry.dart';
 import '../session/session_ops.dart';
 import '../session/session_state.dart';
+import '../util/string_utils.dart';
 import '../session/workspace_guard.dart';
 import '../ui/render.dart' as render;
 
@@ -52,9 +53,13 @@ Future<void> runKill({
   if (isLocked(workspace, io: fileIO)) {
     final op = interruptedOperation(workspace, io: fileIO) ?? 'unknown';
     print('\n⚠  Workspace is locked (interrupted during: $op).');
-    print('   Another operation may still be running, or a previous run crashed.');
+    print(
+      '   Another operation may still be running, or a previous run crashed.',
+    );
     if (!confirm_('Clear the lock and force kill?')) {
-      print('\nKill cancelled. Resolve the interrupted state before retrying.\n');
+      print(
+        '\nKill cancelled. Resolve the interrupted state before retrying.\n',
+      );
       exit_(0);
     }
     clearLock(workspace, io: fileIO);
@@ -74,7 +79,9 @@ Future<void> runKill({
 
   // 5 — Read and display session state.
   final handoffPath = handoffPathFor(workspace);
-  final handoff = fileIO.fileExists(handoffPath) ? fileIO.read(handoffPath) : '';
+  final handoff = fileIO.fileExists(handoffPath)
+      ? fileIO.read(handoffPath)
+      : '';
   if (handoff.isEmpty) {
     print('\n⚠  No handoff found in workspace: $workspace');
     if (!confirm_('Nothing to archive. Remove symlink only?')) {
@@ -87,7 +94,9 @@ Future<void> runKill({
   }
 
   // 6 — Final confirmation.
-  if (!confirm_('Kill this session? (archive will be saved, skills.md will NOT be updated)')) {
+  if (!confirm_(
+    'Kill this session? (archive will be saved, skills.md will NOT be updated)',
+  )) {
     print('\nKill cancelled.\n');
     exit_(0);
   }
@@ -99,7 +108,9 @@ Future<void> runKill({
     }, io: fileIO);
   } on SessionCloseException catch (e) {
     print('\n✗ Kill failed at step "${e.failedStep}": ${e.cause}');
-    print('  Workspace state has been rolled back. No partial changes remain.\n');
+    print(
+      '  Workspace state has been rolled back. No partial changes remain.\n',
+    );
     exit_(1);
   } on WorkspaceLockedException catch (e) {
     print('\n✗ ${e.toString()}\n');
@@ -125,10 +136,10 @@ void _printSessionSummary(String name, SessionState state, String? liveBranch) {
   print('  Bug    : ${_truncate(state.bug)}');
   if (state.hasActiveContent) {
     print('\n  Debug progress recorded — this work will be archived.');
-    if (!_isBlank(state.attempted)) {
+    if (!state.attempted.isBlank) {
       print('  Attempted : ${_truncate(state.attempted)}');
     }
-    if (!_isBlank(state.changed)) {
+    if (!state.changed.isBlank) {
       print('  Changed   : ${_truncate(state.changed)}');
     }
   } else {
@@ -139,7 +150,3 @@ void _printSessionSummary(String name, SessionState state, String? liveBranch) {
 
 String _truncate(String s, {int max = 72}) =>
     s.length > max ? '${s.substring(0, max)}…' : s;
-
-bool _isBlank(String s) =>
-    s.isEmpty || s.startsWith('_Not') || s.startsWith('_Nothing');
-

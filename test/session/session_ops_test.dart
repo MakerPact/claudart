@@ -148,7 +148,8 @@ void main() {
     test('archive is deleted when reset throws', () async {
       final io = _FailOnWriteIO(
         failPath: handoffPathFor(_workspace),
-        failAfter: 0, // archive writes to a different path; this fails the first write to handoffPath (reset)
+        failAfter:
+            0, // archive writes to a different path; this fails the first write to handoffPath (reset)
         delegate: _io(),
       );
       await expectLater(
@@ -183,7 +184,8 @@ void main() {
         closeSession(_workspace, _project, io: io),
         throwsA(isA<SessionCloseException>()),
       );
-      expect(io.delegate.read(handoffPathFor(_workspace)), equals(_activeHandoff));
+      expect(
+          io.delegate.read(handoffPathFor(_workspace)), equals(_activeHandoff));
     });
 
     test('archive is deleted when unlink throws', () async {
@@ -234,16 +236,28 @@ class _FailOnWriteIO implements FileIO {
     delegate.write(path, content);
   }
 
-  @override String read(String path) => delegate.read(path);
-  @override void delete(String path) => delegate.delete(path);
-  @override bool fileExists(String path) => delegate.fileExists(path);
-  @override bool dirExists(String path) => delegate.dirExists(path);
-  @override void createDir(String path) => delegate.createDir(path);
-  @override List<String> listFiles(String d, {String? extension}) =>
+  @override
+  void writeAtomic(String path, String content) => write(path, content);
+
+  @override
+  String read(String path) => delegate.read(path);
+  @override
+  void delete(String path) => delegate.delete(path);
+  @override
+  bool fileExists(String path) => delegate.fileExists(path);
+  @override
+  bool dirExists(String path) => delegate.dirExists(path);
+  @override
+  void createDir(String path) => delegate.createDir(path);
+  @override
+  List<String> listFiles(String d, {String? extension}) =>
       delegate.listFiles(d, extension: extension);
-  @override bool linkExists(String path) => delegate.linkExists(path);
-  @override void deleteLink(String path) => delegate.deleteLink(path);
-  @override void createLink(String linkPath, String targetPath) =>
+  @override
+  bool linkExists(String path) => delegate.linkExists(path);
+  @override
+  void deleteLink(String path) => delegate.deleteLink(path);
+  @override
+  void createLink(String linkPath, String targetPath) =>
       delegate.createLink(linkPath, targetPath);
 }
 
@@ -255,15 +269,27 @@ class _FailOnUnlinkIO implements FileIO {
   @override
   void deleteLink(String path) => throw Exception('simulated unlink failure');
 
-  @override String read(String path) => delegate.read(path);
-  @override void write(String path, String content) => delegate.write(path, content);
-  @override void delete(String path) => delegate.delete(path);
-  @override bool fileExists(String path) => delegate.fileExists(path);
-  @override bool dirExists(String path) => delegate.dirExists(path);
-  @override void createDir(String path) => delegate.createDir(path);
-  @override List<String> listFiles(String d, {String? extension}) =>
+  @override
+  String read(String path) => delegate.read(path);
+  @override
+  void write(String path, String content) => delegate.write(path, content);
+  @override
+  void writeAtomic(String path, String content) =>
+      delegate.writeAtomic(path, content);
+  @override
+  void delete(String path) => delegate.delete(path);
+  @override
+  bool fileExists(String path) => delegate.fileExists(path);
+  @override
+  bool dirExists(String path) => delegate.dirExists(path);
+  @override
+  void createDir(String path) => delegate.createDir(path);
+  @override
+  List<String> listFiles(String d, {String? extension}) =>
       delegate.listFiles(d, extension: extension);
-  @override bool linkExists(String path) => delegate.linkExists(path);
-  @override void createLink(String linkPath, String targetPath) =>
+  @override
+  bool linkExists(String path) => delegate.linkExists(path);
+  @override
+  void createLink(String linkPath, String targetPath) =>
       delegate.createLink(linkPath, targetPath);
 }

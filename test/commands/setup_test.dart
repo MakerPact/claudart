@@ -504,7 +504,7 @@ void main() {
   // ── File resolution ──────────────────────────────────────────────────────────
 
   group('setup — file resolution', () {
-    Future<String> _setupWithFiles(String filesInput, FileFinderFn finder) async {
+    Future<String> setupWithFiles(String filesInput, FileFinderFn finder) async {
       final io = _io();
       await runSetup(
         io: io,
@@ -525,7 +525,7 @@ void main() {
     }
 
     test('unique match → backtick-formatted relative path', () async {
-      final handoff = await _setupWithFiles(
+      final handoff = await setupWithFiles(
         'loader.dart',
         _uniqueFinder(_projectRoot),
       );
@@ -533,12 +533,12 @@ void main() {
     });
 
     test('not found → kept verbatim with not-found note', () async {
-      final handoff = await _setupWithFiles('missing.dart', _notFoundFinder);
+      final handoff = await setupWithFiles('missing.dart', _notFoundFinder);
       expect(handoff, contains('- `missing.dart` — (not found — verify path)'));
     });
 
     test('ambiguous match → all paths listed', () async {
-      final handoff = await _setupWithFiles(
+      final handoff = await setupWithFiles(
         'widget.dart',
         _ambiguousFinder(_projectRoot),
       );
@@ -551,7 +551,7 @@ void main() {
         'foo.dart': [p.join(_projectRoot, 'lib', 'foo.dart')],
         'bar.dart': [],
       });
-      final handoff = await _setupWithFiles('foo.dart, bar.dart', finder);
+      final handoff = await setupWithFiles('foo.dart, bar.dart', finder);
       expect(handoff, contains('- `lib/foo.dart` — (user-provided)'));
       expect(handoff, contains('- `bar.dart` — (not found — verify path)'));
     });
