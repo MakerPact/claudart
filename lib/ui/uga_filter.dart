@@ -4,29 +4,27 @@ import '../file_io.dart';
 class UgaFilter {
   static const int maxLevel = 5;
   static const int minLevel = 0;
-  static const String defaultWords = '''
-can you please if could i would appreciate thank you please would if could
-just really very so basically honestly actually definitely completely
-totally literally absolutely apparently seemingly arguably perhaps maybe
-somehow somewhat anyway moreover furthermore nevertheless nonetheless
-instead although however whereas otherwise basically essentially practically
-virtually roughly approximately nearly almost somewhat somehow anyway
-anyhow besides moreover furthermore nevertheless nonetheless instead
-although however whereas otherwise kinda sorta maybe probably hopefully
-definitely absolutely certainly surely clearly obviously apparently
-seemingly arguably perhaps maybe somehow somewhat anyway anyhow besides
-moreover furthermore nevertheless nonetheless instead although however
-whereas otherwise like you know i mean i guess i think i feel in my opinion
-to be honest to tell the truth as a matter of fact in fact as it happens
-it seems to me that from my point of view as far as i am concerned in my book
-personally speaking generally speaking broadly speaking practically speaking
-technically speaking theoretically speaking statistically speaking historically speaking
-geographically speaking politically speaking economically speaking socially speaking
-culturally speaking psychologically speaking philosophically speaking scientifically speaking
-mathematically speaking logically speaking rationally speaking reasonably speaking
-objectively speaking subjectively speaking relatively speaking absolutely speaking
-strictly speaking loosely speaking figuratively speaking literally speaking
-metaphorically speaking allegorically speaking symbolically speaking
+  static const String defaultWords =
+      '''can you please if could i would appreciate thank just
+really very so basically honestly actually definitely completely totally literally
+absolutely apparently seemingly arguably perhaps maybe somehow somewhat anyway moreover
+furthermore nevertheless nonetheless instead although however whereas otherwise essentially practically
+virtually roughly approximately nearly almost anyhow besides kinda sorta probably
+hopefully certainly surely clearly obviously like know mean guess think
+feel in my opinion to be honest tell the truth
+as a matter of fact it happens seems me that
+from point view far am concerned book personally speaking generally
+broadly technically theoretically statistically historically geographically politically economically socially culturally
+psychologically philosophically scientifically mathematically logically rationally reasonably objectively subjectively relatively
+strictly loosely figuratively metaphorically allegorically symbolically umm uhh seriously anyways
+well right okay ok yeah yes no sure fine alright
+cool whatever whoever whenever wherever sometimes always never possibly too
+quite rather fairly pretty slightly mostly mainly chiefly principally primarily
+largely typically usually customarily habitually routinely normally ordinarily frequently often
+regularly repeatedly constantly continually continuously perpetually forever ever rarely seldom
+infrequently hardly scarcely barely fundamentally stuff things thing something anything
+nothing everything someone anyone no-one everyone somebody anybody nobody everybody
+somewhere anywhere nowhere everywhere suppose believe understand see hear listen
 ''';
 
   late List<String> _words;
@@ -39,6 +37,7 @@ metaphorically speaking allegorically speaking symbolically speaking
         .map((w) => w.trim().toLowerCase())
         .where((w) => w.isNotEmpty)
         .toList();
+    _words = _words.toSet().toList(); // Deduplicate custom lists too
     // In a real implementation we would distinct them, but let's keep the exact list for now to allow user ordering.
     // _words = _words.toSet().toList(); // Wait, instructions said to let the user order them.
     // Ensure we have words
