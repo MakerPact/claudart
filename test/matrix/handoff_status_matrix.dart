@@ -17,7 +17,7 @@ import 'handoff_expectation.dart';
 import 'handoff_status_type.dart';
 
 final _matrix = Dartrix(
-  axes:     [HandoffStatusType.values],
+  axes: [HandoffStatusType.values],
   features: HandoffExpectation.values,
 );
 
@@ -33,9 +33,11 @@ void cover(HandoffStatusType variant, HandoffExpectation feature) {
 /// touched. Call once per test file, at the top of main().
 void assertNoGaps() {
   tearDownAll(() {
-    final gaps = _matrix.gaps().where((g) => _touched.contains(g.variant)).toList();
+    final gaps =
+        _matrix.gaps().where((g) => _touched.contains(g.variant)).toList();
     if (gaps.isEmpty) return;
-    final lines = gaps.map((g) => '  ${g.variant.description} × ${g.feature.description}');
+    final lines = gaps
+        .map((g) => '  ${g.variant.description} × ${g.feature.description}');
     fail('HandoffStatus coverage gaps:\n${lines.join('\n')}');
   });
 }

@@ -5,22 +5,22 @@ import 'package:test/test.dart';
 
 extension on DesignSurface {
   String get expectedTag => switch (this) {
-        DesignSurface.guiWidget   => 'widget',
-        DesignSurface.guiUi       => 'ui',
-        DesignSurface.guiPainter  => 'painter',
-        DesignSurface.guiTheme    => 'theme',
-        DesignSurface.logic       => 'logic',
+        DesignSurface.guiWidget => 'widget',
+        DesignSurface.guiUi => 'ui',
+        DesignSurface.guiPainter => 'painter',
+        DesignSurface.guiTheme => 'theme',
+        DesignSurface.logic => 'logic',
       };
 
   bool get expectedIsDesignSurface => this != DesignSurface.logic;
 
   /// A representative path the classifier must map back to this variant.
   String get exemplarPath => switch (this) {
-        DesignSurface.guiWidget   => 'lib/widgets/foo_widget.dart',
-        DesignSurface.guiUi       => 'lib/ui/home_screen.dart',
-        DesignSurface.guiPainter  => 'lib/painters/wave_painter.dart',
-        DesignSurface.guiTheme    => 'lib/theme/colors.dart',
-        DesignSurface.logic       => 'lib/services/repository.dart',
+        DesignSurface.guiWidget => 'lib/widgets/foo_widget.dart',
+        DesignSurface.guiUi => 'lib/ui/home_screen.dart',
+        DesignSurface.guiPainter => 'lib/painters/wave_painter.dart',
+        DesignSurface.guiTheme => 'lib/theme/colors.dart',
+        DesignSurface.logic => 'lib/services/repository.dart',
       };
 }
 
@@ -67,7 +67,8 @@ void main() {
     );
   });
 
-  test('classifyPath — non-dart files in painter dir still classify by dir', () {
+  test('classifyPath — non-dart files in painter dir still classify by dir',
+      () {
     // Directory hint wins even when basename has no `.dart`, since
     // the dir match precedes the basename gate inside `classifyPath`.
     expect(

@@ -79,7 +79,9 @@ void main() {
       expect(WorkspaceConfig.load(_workspaceDir, io: io), isNull);
     });
 
-    test('returns WorkspaceConfig(name: "unknown") when workspace.json is malformed json', () {
+    test(
+        'returns WorkspaceConfig(name: "unknown") when workspace.json is malformed json',
+        () {
       final io = MemoryFileIO(files: {
         _workspaceJsonPath: '{not valid json',
       });
@@ -88,7 +90,9 @@ void main() {
       expect(cfg!.name, equals('unknown'));
     });
 
-    test('returns WorkspaceConfig(name: "unknown") when Exception is thrown during load', () {
+    test(
+        'returns WorkspaceConfig(name: "unknown") when Exception is thrown during load',
+        () {
       final io = MemoryFileIO(files: {
         _workspaceJsonPath: 'invalid json strictly for exception test',
       });
@@ -97,7 +101,9 @@ void main() {
       expect(cfg!.name, equals('unknown'));
     });
 
-    test('returns WorkspaceConfig(name: "unknown") when workspace.json is completely invalid format to trigger FormatException', () {
+    test(
+        'returns WorkspaceConfig(name: "unknown") when workspace.json is completely invalid format to trigger FormatException',
+        () {
       final io = MemoryFileIO(files: {
         _workspaceJsonPath: '{ invalid-json ]',
       });
@@ -106,7 +112,9 @@ void main() {
       expect(cfg!.name, equals('unknown'));
     });
 
-    test('returns null when workspace.json is a valid JSON array instead of an object', () {
+    test(
+        'returns null when workspace.json is a valid JSON array instead of an object',
+        () {
       final io = MemoryFileIO(files: {
         _workspaceJsonPath: '["not", "an", "object"]',
       });

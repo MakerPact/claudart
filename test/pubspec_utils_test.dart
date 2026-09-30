@@ -11,7 +11,8 @@ void main() {
         );
 
     test('reads sdk constraint with caret syntax', () {
-      final env = readProjectEnv('/project', io: fs('environment:\n  sdk: ^3.8.0\n'));
+      final env =
+          readProjectEnv('/project', io: fs('environment:\n  sdk: ^3.8.0\n'));
       expect(env.sdk, '^3.8.0');
       expect(env.flutter, isNull);
     });
@@ -36,8 +37,8 @@ void main() {
     });
 
     test('returns nulls when no environment block', () {
-      final env = readProjectEnv('/project',
-          io: fs('name: my_app\nversion: 1.0.0\n'));
+      final env =
+          readProjectEnv('/project', io: fs('name: my_app\nversion: 1.0.0\n'));
       expect(env.sdk, isNull);
       expect(env.flutter, isNull);
     });

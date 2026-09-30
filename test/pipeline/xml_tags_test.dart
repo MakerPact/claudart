@@ -42,8 +42,7 @@ void main() {
       expect(tagOrNull('<x>hello</x>', 'X'), isNull);
     });
 
-    test('content with newlines + leading/trailing whitespace is trimmed',
-        () {
+    test('content with newlines + leading/trailing whitespace is trimmed', () {
       expect(
         tagOrNull('<X>\n  hello\n  </X>', 'X'),
         equals('hello'),

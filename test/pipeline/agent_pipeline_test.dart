@@ -23,18 +23,23 @@ String _fixture(String name) {
   return file.existsSync() ? file.readAsStringSync() : '';
 }
 
-final _readerXml   = _fixture('reader_output.xml');
+final _readerXml = _fixture('reader_output.xml');
 final _reasonerXml = _fixture('reasoner_output.xml');
-final _plannerXml  = _fixture('planner_output.xml');
-final _applierXml  = _fixture('applier_output.xml');
+final _plannerXml = _fixture('planner_output.xml');
+final _applierXml = _fixture('applier_output.xml');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 PipelineContext _baseCtx() => const PipelineContext(
       projectRoot: '/tmp/test_project',
-      bug:         'Label is null when not provided',
-      expected:    'Widget shows default label',
-      files:       [(relative: 'lib/example.dart', absolute: '/tmp/test_project/lib/example.dart')],
+      bug: 'Label is null when not provided',
+      expected: 'Widget shows default label',
+      files: [
+        (
+          relative: 'lib/example.dart',
+          absolute: '/tmp/test_project/lib/example.dart'
+        )
+      ],
     );
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -48,10 +53,10 @@ void main() {
     (sel) async {
       final mock = MockClaudeRunner({'reader': _readerXml});
       final exec = PipelineExecutor(runner: mock.runner);
-      final ctx  = await exec.runFuture(
-        steps:        [SuggestSteps.reader(1)],
-        ctx:          _baseCtx(),
-        displayStep:  1,
+      final ctx = await exec.runFuture(
+        steps: [SuggestSteps.reader(1)],
+        ctx: _baseCtx(),
+        displayStep: 1,
         displayTotal: 3,
       );
 
@@ -69,10 +74,10 @@ void main() {
     (sel) async {
       final mock = MockClaudeRunner({'reasoner': _reasonerXml});
       final exec = PipelineExecutor(runner: mock.runner);
-      final ctx  = await exec.runFuture(
-        steps:        [SuggestSteps.reasoner],
-        ctx:          _baseCtx().withSlot('reader', _readerXml),
-        displayStep:  2,
+      final ctx = await exec.runFuture(
+        steps: [SuggestSteps.reasoner],
+        ctx: _baseCtx().withSlot('reader', _readerXml),
+        displayStep: 2,
         displayTotal: 3,
       );
 
@@ -97,13 +102,13 @@ void main() {
         'Apply these changes': _applierXml,
       });
       final exec = PipelineExecutor(runner: mock.runner);
-      final ctx  = await exec.runFuture(
+      final ctx = await exec.runFuture(
         steps: SuggestSteps.refinement(1),
         ctx: _baseCtx()
-            .withSlot('reader',        _readerXml)
-            .withSlot('reasoner',      _reasonerXml)
+            .withSlot('reader', _readerXml)
+            .withSlot('reasoner', _reasonerXml)
             .withSlot('user_feedback', 'Add null safety check for label'),
-        displayStep:  2,
+        displayStep: 2,
         displayTotal: 3,
       );
 
@@ -126,41 +131,51 @@ void main() {
     PipelineFlowType.suggest.getSelector(PipelineFeature.lookup),
     (sel) async {
       // Planner emits QUESTION → lookup answers → planner runs again → CHANGES
-      const questionXml = '<QUESTION>What is the type of the label field?</QUESTION>';
-      const answerXml   = '<ANSWER>label is String? — nullable optional field</ANSWER>';
+      const questionXml =
+          '<QUESTION>What is the type of the label field?</QUESTION>';
+      const answerXml =
+          '<ANSWER>label is String? — nullable optional field</ANSWER>';
 
       // Second planner call produces CHANGES after receiving the answer
       var plannerCallCount = 0;
       final mock = MockClaudeRunner({});
       final exec = PipelineExecutor(
         runner: ({
-        required AgentModel model,
-        required String systemPrompt,
-        required String message,
-        required String workingDir,
-        StepMode mode = StepMode.project,
-      }) async {
-        mock.captured.add(CallRecord(model: model, systemPrompt: systemPrompt, message: message));
-        if (model == AgentModel.haiku) {
-          return const StepResult(text: answerXml, usage: Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0));
-        }
-        plannerCallCount++;
-        final text = plannerCallCount == 1 ? questionXml : _plannerXml;
-        return StepResult(text: text, usage: const Usage(input: 200, output: 80, cost: 0.002, cacheRead: 0));
-      },
+          required AgentModel model,
+          required String systemPrompt,
+          required String message,
+          required String workingDir,
+          StepMode mode = StepMode.project,
+        }) async {
+          mock.captured.add(CallRecord(
+              model: model, systemPrompt: systemPrompt, message: message));
+          if (model == AgentModel.haiku) {
+            return const StepResult(
+                text: answerXml,
+                usage:
+                    Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0));
+          }
+          plannerCallCount++;
+          final text = plannerCallCount == 1 ? questionXml : _plannerXml;
+          return StepResult(
+              text: text,
+              usage: const Usage(
+                  input: 200, output: 80, cost: 0.002, cacheRead: 0));
+        },
         prompter: (_) async => '', // no user escalation expected
       );
       final ctx = await exec.runFuture(
         steps: SuggestSteps.refinement(1),
         ctx: _baseCtx()
-            .withSlot('reader',        _readerXml)
-            .withSlot('reasoner',      _reasonerXml)
+            .withSlot('reader', _readerXml)
+            .withSlot('reasoner', _reasonerXml)
             .withSlot('user_feedback', 'Check label nullability'),
-        displayStep:  2,
+        displayStep: 2,
         displayTotal: 3,
       );
 
-      expect(plannerCallCount, equals(2), reason: 'planner should run twice: QUESTION then CHANGES');
+      expect(plannerCallCount, equals(2),
+          reason: 'planner should run twice: QUESTION then CHANGES');
       expect(ctx.usage.input, greaterThan(0));
     },
   );
@@ -175,30 +190,33 @@ void main() {
       var step = 0;
       final exec = PipelineExecutor(
         runner: ({
-        required AgentModel model,
-        required String systemPrompt,
-        required String message,
-        required String workingDir,
-        StepMode mode = StepMode.project,
-      }) async {
-        step++;
-        final text = step == 1 ? _plannerXml : _applierXml;
-        return StepResult(text: text, usage: const Usage(input: 100, output: 50, cost: 0.001, cacheRead: 0));
-      },
+          required AgentModel model,
+          required String systemPrompt,
+          required String message,
+          required String workingDir,
+          StepMode mode = StepMode.project,
+        }) async {
+          step++;
+          final text = step == 1 ? _plannerXml : _applierXml;
+          return StepResult(
+              text: text,
+              usage: const Usage(
+                  input: 100, output: 50, cost: 0.001, cacheRead: 0));
+        },
       );
-      final ctx  = await exec.runFuture(
+      final ctx = await exec.runFuture(
         steps: SuggestSteps.refinement(1),
         ctx: _baseCtx()
-            .withSlot('reader',        _readerXml)
-            .withSlot('reasoner',      _reasonerXml)
+            .withSlot('reader', _readerXml)
+            .withSlot('reasoner', _reasonerXml)
             .withSlot('user_feedback', 'Add null check'),
-        displayStep:  2,
+        displayStep: 2,
         displayTotal: 3,
       );
 
       expect(ctx.applierOut, contains('CONSTRAINTS'));
       expect(ctx.applierOut, contains('null check'));
-      expect(ctx.usage.input,  equals(200)); // 100 planner + 100 applier
+      expect(ctx.usage.input, equals(200)); // 100 planner + 100 applier
       expect(ctx.usage.output, equals(100));
     },
   );
@@ -207,18 +225,26 @@ void main() {
 
   test('usage accumulates across multiple steps', () async {
     final mock = MockClaudeRunner({
-      'reader':   _readerXml,
+      'reader': _readerXml,
       'reasoner': _reasonerXml,
     });
     final exec = PipelineExecutor(runner: mock.runner);
 
     var ctx = _baseCtx();
-    ctx = await exec.runFuture(steps: [SuggestSteps.reader(1)], ctx: ctx, displayStep: 1, displayTotal: 3);
-    ctx = await exec.runFuture(steps: [SuggestSteps.reasoner],  ctx: ctx, displayStep: 2, displayTotal: 3);
+    ctx = await exec.runFuture(
+        steps: [SuggestSteps.reader(1)],
+        ctx: ctx,
+        displayStep: 1,
+        displayTotal: 3);
+    ctx = await exec.runFuture(
+        steps: [SuggestSteps.reasoner],
+        ctx: ctx,
+        displayStep: 2,
+        displayTotal: 3);
 
-    expect(ctx.usage.input,  equals(200)); // 100 + 100
+    expect(ctx.usage.input, equals(200)); // 100 + 100
     expect(ctx.usage.output, equals(100)); // 50 + 50
-    expect(ctx.usage.cost,   closeTo(0.002, 0.0001));
+    expect(ctx.usage.cost, closeTo(0.002, 0.0001));
   });
 
   // ── flow × categorize ─────────────────────────────────────────────────────
@@ -227,17 +253,17 @@ void main() {
     claudartMatrix,
     PipelineFlowType.flow.getSelector(PipelineFeature.categorize),
     (sel) async {
-      const categorizeXml =
-          '<CATEGORY>feature</CATEGORY>'
+      const categorizeXml = '<CATEGORY>feature</CATEGORY>'
           '<INTENT>implement</INTENT>'
           '<COMPLEXITY>compound</COMPLEXITY>'
           '<MODEL>sonnet</MODEL>';
       final mock = MockClaudeRunner({'categorize': categorizeXml});
-      final exec = PipelineExecutor(runner: mock.runner, prompter: (_) async => 'y');
-      final ctx  = await exec.runFuture(
-        steps:        [FlowSteps.categorize],
-        ctx:          _baseCtx(),
-        displayStep:  1,
+      final exec =
+          PipelineExecutor(runner: mock.runner, prompter: (_) async => 'y');
+      final ctx = await exec.runFuture(
+        steps: [FlowSteps.categorize],
+        ctx: _baseCtx(),
+        displayStep: 1,
         displayTotal: 3,
       );
 
@@ -252,8 +278,7 @@ void main() {
     claudartMatrix,
     PipelineFlowType.flow.getSelector(PipelineFeature.planStep),
     (sel) async {
-      const planXml =
-          '<PLAN>1. Add null check\n2. Update tests</PLAN>';
+      const planXml = '<PLAN>1. Add null check\n2. Update tests</PLAN>';
       const constructXml =
           '<HANDOFF>## Status\nready-for-debug\n## Bug/Goal\nAdd null check</HANDOFF>';
       var callCount = 0;
@@ -266,17 +291,22 @@ void main() {
       }) async {
         callCount++;
         final text = callCount == 1 ? planXml : constructXml;
-        return StepResult(text: text, usage: const Usage(input: 100, output: 50, cost: 0.001, cacheRead: 0));
+        return StepResult(
+            text: text,
+            usage:
+                const Usage(input: 100, output: 50, cost: 0.001, cacheRead: 0));
       }
+
       final exec = PipelineExecutor(
-        runner:           twoStepRunner,
-        prompter:         (_) async => 'y',
-        approvalSelector: (_) async => 0, // approve — inject so the gate needs no TTY
+        runner: twoStepRunner,
+        prompter: (_) async => 'y',
+        approvalSelector: (_) async =>
+            0, // approve — inject so the gate needs no TTY
       );
-      final ctx  = await exec.runFuture(
-        steps:        [FlowSteps.plan, FlowSteps.construct],
-        ctx:          _baseCtx().withSlot('categorize', '<CATEGORY>feature</CATEGORY>'),
-        displayStep:  2,
+      final ctx = await exec.runFuture(
+        steps: [FlowSteps.plan, FlowSteps.construct],
+        ctx: _baseCtx().withSlot('categorize', '<CATEGORY>feature</CATEGORY>'),
+        displayStep: 2,
         displayTotal: 3,
       );
 
@@ -293,11 +323,12 @@ void main() {
       const handoffXml =
           '<HANDOFF>## Status\nready-for-debug\n## Bug/Goal\nFix null label</HANDOFF>';
       final mock = MockClaudeRunner({'construct': handoffXml});
-      final exec = PipelineExecutor(runner: mock.runner, prompter: (_) async => '');
-      final ctx  = await exec.runFuture(
-        steps:        [FlowSteps.construct],
-        ctx:          _baseCtx().withSlot('plan', '<PLAN>1. Fix label\n</PLAN>'),
-        displayStep:  3,
+      final exec =
+          PipelineExecutor(runner: mock.runner, prompter: (_) async => '');
+      final ctx = await exec.runFuture(
+        steps: [FlowSteps.construct],
+        ctx: _baseCtx().withSlot('plan', '<PLAN>1. Fix label\n</PLAN>'),
+        displayStep: 3,
         displayTotal: 3,
       );
 

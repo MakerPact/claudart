@@ -31,12 +31,12 @@ abstract final class TeardownSteps {
       'project-specific names</FIX_PATTERN>';
 
   static const AgentStep analyzer = AgentStep(
-    id:           slotKey,
-    label:        'Analyzing session (haiku)…',
-    model:        AgentModel.haiku,
+    id: slotKey,
+    label: 'Analyzing session (haiku)…',
+    model: AgentModel.haiku,
     systemPrompt: _analyzerSystem,
-    buildPrompt:  _buildPrompt,
-    routes:       {},
+    buildPrompt: _buildPrompt,
+    routes: {},
   );
 }
 

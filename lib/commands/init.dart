@@ -13,7 +13,8 @@ import '../ui/render.dart' as render;
 
 Future<void> runInit(List<String> args) async {
   final parser = ArgParser()
-    ..addOption('project', abbr: 'p', help: 'Add a project knowledge file to the workspace');
+    ..addOption('project',
+        abbr: 'p', help: 'Add a project knowledge file to the workspace');
 
   final parsed = parser.parse(args);
   final projectName = parsed['project'] as String?;
@@ -33,7 +34,8 @@ Future<void> _initWorkspace() async {
   if (Directory(genericKnowledgeDirFor(workspacesRoot)).existsSync()) {
     print('\n⚠  Workspace already initialized.');
     if (!confirm('Re-initialize and overwrite starter files?')) {
-      print('\nAborted. Run `claudart init --project <name>` to add a project.\n');
+      print(
+          '\nAborted. Run `claudart init --project <name>` to add a project.\n');
       exit(0);
     }
   }
@@ -52,23 +54,34 @@ Future<void> _initWorkspace() async {
   }
 
   // Write generic knowledge starters
-  _writeIfAbsent(p.join(genericKnowledgeDirFor(workspacesRoot), 'dart.md'), dartTemplate(dartVersion));
-  _writeIfAbsent(p.join(genericKnowledgeDirFor(workspacesRoot), 'testing.md'), testingTemplate);
+  _writeIfAbsent(p.join(genericKnowledgeDirFor(workspacesRoot), 'dart.md'),
+      dartTemplate(dartVersion));
+  _writeIfAbsent(p.join(genericKnowledgeDirFor(workspacesRoot), 'testing.md'),
+      testingTemplate);
 
   // Write Claude Code slash commands into workspace.
   // 'workspace' is the project label for global default commands — re-running
   // `claudart link` in a real project overrides these with the project name.
   const globalLabel = 'workspace';
-  writeFile(p.join(claudeCommandsDirFor(workspacesRoot), 'suggest-$globalLabel.md'), suggestCommandTemplate(workspacesRoot, globalLabel));
-  writeFile(p.join(claudeCommandsDirFor(workspacesRoot), 'debug-$globalLabel.md'), debugCommandTemplate(workspacesRoot, globalLabel));
-  writeFile(p.join(claudeCommandsDirFor(workspacesRoot), 'save-$globalLabel.md'), saveCommandTemplate(workspacesRoot, globalLabel));
-  writeFile(p.join(claudeCommandsDirFor(workspacesRoot), 'teardown-$globalLabel.md'), teardownCommandTemplate(workspacesRoot, globalLabel));
+  writeFile(
+      p.join(claudeCommandsDirFor(workspacesRoot), 'suggest-$globalLabel.md'),
+      suggestCommandTemplate(workspacesRoot, globalLabel));
+  writeFile(
+      p.join(claudeCommandsDirFor(workspacesRoot), 'debug-$globalLabel.md'),
+      debugCommandTemplate(workspacesRoot, globalLabel));
+  writeFile(
+      p.join(claudeCommandsDirFor(workspacesRoot), 'save-$globalLabel.md'),
+      saveCommandTemplate(workspacesRoot, globalLabel));
+  writeFile(
+      p.join(claudeCommandsDirFor(workspacesRoot), 'teardown-$globalLabel.md'),
+      teardownCommandTemplate(workspacesRoot, globalLabel));
 
   // Write blank handoff and skills if not present
   _writeIfAbsent(handoffPathFor(workspacesRoot), blankHandoff);
   _writeIfAbsent(skillsPathFor(workspacesRoot), _blankSkills);
 
-  print('\n✓ Generic knowledge files written to ${genericKnowledgeDirFor(workspacesRoot)}');
+  print(
+      '\n✓ Generic knowledge files written to ${genericKnowledgeDirFor(workspacesRoot)}');
   print('✓ Slash commands written to ${claudeCommandsDirFor(workspacesRoot)}');
   print('\nNext: register your project with:');
   print('  claudart init --project <your-project-name>\n');
@@ -82,7 +95,8 @@ Future<void> _initProject(String name) async {
     exit(1);
   }
 
-  final projectFile = p.join(projectsKnowledgeDirFor(workspacesRoot), '$name.md');
+  final projectFile =
+      p.join(projectsKnowledgeDirFor(workspacesRoot), '$name.md');
 
   if (File(projectFile).existsSync()) {
     print('\n⚠  Project knowledge file already exists: $projectFile');

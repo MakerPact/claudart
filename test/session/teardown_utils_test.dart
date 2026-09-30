@@ -49,7 +49,8 @@ my_feature.dart
 ''';
 
     test('extracts subsection content', () {
-      expect(readSubSection(section, 'What was attempted'), 'Tried adding a listener.');
+      expect(readSubSection(section, 'What was attempted'),
+          'Tried adding a listener.');
     });
 
     test('returns fallback when subsection missing', () {
@@ -68,7 +69,8 @@ content
 ''';
 
     test('replaces blank placeholder with first entry', () {
-      final result = appendToSection(doc, 'Root Cause Patterns', '- new pattern');
+      final result =
+          appendToSection(doc, 'Root Cause Patterns', '- new pattern');
       expect(result, contains('- new pattern'));
       expect(result, isNot(contains('_No patterns recorded yet._')));
     });
@@ -104,7 +106,8 @@ content
       expect(result, contains('> Confirmed facts from in-progress sessions.'));
     });
 
-    test('appends after existing entries when section has blockquote metadata', () {
+    test('appends after existing entries when section has blockquote metadata',
+        () {
       const withMetaAndEntry = '''## Pending
 
 > Confirmed facts from in-progress sessions.
@@ -115,7 +118,8 @@ content
 
 content
 ''';
-      final result = appendToSection(withMetaAndEntry, 'Pending', '- new entry');
+      final result =
+          appendToSection(withMetaAndEntry, 'Pending', '- new entry');
       expect(result, contains('- existing entry'));
       expect(result, contains('- new entry'));
       expect(result, contains('> Confirmed facts from in-progress sessions.'));
@@ -148,7 +152,8 @@ _None recorded yet._
 ''';
 
     test('adds a new entry for a branch with no prior entry', () {
-      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      final result =
+          upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
       expect(result, contains('`fix/bug`'));
       expect(result, contains('root cause — null ref'));
     });
@@ -164,20 +169,24 @@ _None recorded yet._
     });
 
     test('omits hot files entirely when not given', () {
-      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      final result =
+          upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
       expect(result, isNot(contains('hot files')));
     });
 
     test('a second upsert on the same branch replaces, does not duplicate', () {
-      var skills = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'first guess');
-      skills = upsertPendingEntry(skills, 'fix/bug', rootCause: 'confirmed cause');
+      var skills =
+          upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'first guess');
+      skills =
+          upsertPendingEntry(skills, 'fix/bug', rootCause: 'confirmed cause');
       expect('`fix/bug`'.allMatches(skills).length, equals(1));
       expect(skills, contains('confirmed cause'));
       expect(skills, isNot(contains('first guess')));
     });
 
     test('upserting a different branch adds a second, independent entry', () {
-      var skills = upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
+      var skills =
+          upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
       skills = upsertPendingEntry(skills, 'fix/bug-b', rootCause: 'cause b');
       expect(skills, contains('cause a'));
       expect(skills, contains('cause b'));
@@ -185,12 +194,14 @@ _None recorded yet._
 
     test('pendingHasBranch is true after upsert, false before', () {
       expect(pendingHasBranch(blankSkills, 'fix/bug'), isFalse);
-      final result = upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
+      final result =
+          upsertPendingEntry(blankSkills, 'fix/bug', rootCause: 'null ref');
       expect(pendingHasBranch(result, 'fix/bug'), isTrue);
     });
 
     test('removePendingEntry removes exactly that branch\'s entry', () {
-      var skills = upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
+      var skills =
+          upsertPendingEntry(blankSkills, 'fix/bug-a', rootCause: 'cause a');
       skills = upsertPendingEntry(skills, 'fix/bug-b', rootCause: 'cause b');
       skills = removePendingEntry(skills, 'fix/bug-a');
       expect(skills, isNot(contains('cause a')));
@@ -236,24 +247,24 @@ _None recorded yet._
 
   group('TeardownCategory.value', () {
     test('each value matches expected skills.md string', () {
-      expect(TeardownCategory.apiIntegration.value,  'api-integration');
-      expect(TeardownCategory.concurrency.value,     'concurrency');
-      expect(TeardownCategory.configuration.value,   'configuration');
-      expect(TeardownCategory.dataParsing.value,     'data-parsing');
-      expect(TeardownCategory.ioFilesystem.value,    'io-filesystem');
+      expect(TeardownCategory.apiIntegration.value, 'api-integration');
+      expect(TeardownCategory.concurrency.value, 'concurrency');
+      expect(TeardownCategory.configuration.value, 'configuration');
+      expect(TeardownCategory.dataParsing.value, 'data-parsing');
+      expect(TeardownCategory.ioFilesystem.value, 'io-filesystem');
       expect(TeardownCategory.stateManagement.value, 'state-management');
-      expect(TeardownCategory.general.value,         'general');
-      expect(TeardownCategory.other.value,           'other');
+      expect(TeardownCategory.general.value, 'general');
+      expect(TeardownCategory.other.value, 'other');
     });
 
     test('each label matches value for non-other variants', () {
-      expect(TeardownCategory.apiIntegration.label,  'api-integration');
-      expect(TeardownCategory.concurrency.label,     'concurrency');
-      expect(TeardownCategory.configuration.label,   'configuration');
-      expect(TeardownCategory.dataParsing.label,     'data-parsing');
-      expect(TeardownCategory.ioFilesystem.label,    'io-filesystem');
+      expect(TeardownCategory.apiIntegration.label, 'api-integration');
+      expect(TeardownCategory.concurrency.label, 'concurrency');
+      expect(TeardownCategory.configuration.label, 'configuration');
+      expect(TeardownCategory.dataParsing.label, 'data-parsing');
+      expect(TeardownCategory.ioFilesystem.label, 'io-filesystem');
       expect(TeardownCategory.stateManagement.label, 'state-management');
-      expect(TeardownCategory.general.label,         'general');
+      expect(TeardownCategory.general.label, 'general');
     });
 
     test('other label is distinct from value', () {
@@ -264,21 +275,24 @@ _None recorded yet._
 
   group('buildCommitMessage', () {
     test('formats message without root cause', () {
-      final msg = buildCommitMessage('api', 'Response not parsed correctly.', '_Not yet determined._', 'Added null check on response body');
+      final msg = buildCommitMessage('api', 'Response not parsed correctly.',
+          '_Not yet determined._', 'Added null check on response body');
       expect(msg, startsWith('fix(api): Response not parsed correctly'));
       expect(msg, contains('Added null check on response body'));
       expect(msg, isNot(contains('Root cause')));
     });
 
     test('includes root cause when known', () {
-      final msg = buildCommitMessage('io', 'File not written.', 'Directory not created first.', 'Fixed it');
+      final msg = buildCommitMessage('io', 'File not written.',
+          'Directory not created first.', 'Fixed it');
       expect(msg, contains('Root cause: Directory not created first'));
     });
   });
 
   group('firstSentence', () {
     test('returns up to first dot when short', () {
-      expect(firstSentence('Widget broken. More detail here.'), 'Widget broken');
+      expect(
+          firstSentence('Widget broken. More detail here.'), 'Widget broken');
     });
 
     test('truncates at 72 chars when no dot', () {

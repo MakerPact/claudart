@@ -25,11 +25,11 @@ void main() {
     for (final surface in DesignSurface.values) {
       test('${surface.name} counts the exemplar path', () {
         final exemplar = switch (surface) {
-          DesignSurface.guiWidget  => 'lib/widgets/a.dart',
-          DesignSurface.guiUi      => 'lib/ui/a.dart',
+          DesignSurface.guiWidget => 'lib/widgets/a.dart',
+          DesignSurface.guiUi => 'lib/ui/a.dart',
           DesignSurface.guiPainter => 'lib/painters/a.dart',
-          DesignSurface.guiTheme   => 'lib/theme/colors.dart',
-          DesignSurface.logic      => 'lib/services/a.dart',
+          DesignSurface.guiTheme => 'lib/theme/colors.dart',
+          DesignSurface.logic => 'lib/services/a.dart',
         };
         final tally = log.tallySurfaces([exemplar]);
         expect(tally[surface], equals(1));

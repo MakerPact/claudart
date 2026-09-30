@@ -97,7 +97,8 @@ void main() {
       // Override with a low-max logger by writing pre-existing entries
       final manyEntries = '${List.generate(
         502,
-        (i) => jsonEncode({'ts': 'x', 'command': 'setup', 'n': i, 'outcome': 'ok'}),
+        (i) => jsonEncode(
+            {'ts': 'x', 'command': 'setup', 'n': i, 'outcome': 'ok'}),
       ).join('\n')}\n';
       io.write(_interactionsPath, manyEntries);
 
@@ -142,10 +143,8 @@ void main() {
         logger.logPerformance(command: 'cmd_$i', outcome: 'ok');
       }
       final content = io.read(_performancePath);
-      final lines = content
-          .split('\n')
-          .where((l) => l.startsWith('|'))
-          .toList();
+      final lines =
+          content.split('\n').where((l) => l.startsWith('|')).toList();
       // 2 header lines + max 50 data lines
       expect(lines.length, lessThanOrEqualTo(52));
     });

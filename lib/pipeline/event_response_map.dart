@@ -23,28 +23,28 @@ AgentResponse? toResponse(
 
     case AgentCompleted(:final stepId, :final usage):
       return Result(
-        speaker:      speaker,
-        workspace:    workspace,
-        subtask:      stepId,
+        speaker: speaker,
+        workspace: workspace,
+        subtask: stepId,
         filesTouched: const [],
-        summary:      usage.format(),
+        summary: usage.format(),
       );
 
     case AgentFailed(:final stepId, :final reason):
       return Blocker(
-        speaker:   speaker,
+        speaker: speaker,
         workspace: workspace,
-        step:      stepId,
+        step: stepId,
         errorType: reason ?? 'step failed',
       );
 
     case AgentEscalating(:final question, :final unknownContext):
       return Question(
-        speaker:        speaker,
-        origin:         workspace,
-        workspace:      workspace,
+        speaker: speaker,
+        origin: workspace,
+        workspace: workspace,
         blockedSubtask: '',
-        question:       question,
+        question: question,
         options: (unknownContext == null || unknownContext.isEmpty)
             ? const []
             : ['not in files: $unknownContext'],

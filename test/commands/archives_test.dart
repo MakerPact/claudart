@@ -11,7 +11,7 @@ import 'package:claudart/workspace/workspace_index.dart';
 import '../helpers/mocks.dart';
 
 const _projectRoot = '/projects/my-app';
-const _workspace   = '/workspaces/my-app';
+const _workspace = '/workspaces/my-app';
 
 class _ExitException implements Exception {
   final int code;
@@ -42,13 +42,15 @@ final _entryTwo = ArchiveEntry(
 final _entryLongDescription = ArchiveEntry(
   id: 'e3',
   kind: ArchiveKind.archive,
-  description: 'this is a very long description that exceeds sixty characters in length to test the truncation formatting',
+  description:
+      'this is a very long description that exceeds sixty characters in length to test the truncation formatting',
   branch: 'main',
   createdAt: DateTime.utc(2026, 1, 3),
   handoffFile: 'handoff_e3.md',
 );
 
-MemoryFileIO _io({List<ArchiveEntry> entries = const [], bool withSnapshots = true}) {
+MemoryFileIO _io(
+    {List<ArchiveEntry> entries = const [], bool withSnapshots = true}) {
   const entry = RegistryEntry(
     name: 'my-app',
     projectRoot: _projectRoot,
@@ -84,7 +86,8 @@ void main() {
                 io: io,
                 exitFn: _throwExit,
               ),
-              throwsA(isA<_ExitException>().having((e) => e.code, 'code', equals(1))),
+              throwsA(isA<_ExitException>()
+                  .having((e) => e.code, 'code', equals(1))),
             );
           },
           getCurrentDirectory: () => tempDir,
@@ -155,7 +158,8 @@ void main() {
       );
       expect(
         capturedLabels![0],
-        contains('this is a very long description that exceeds sixty character…'),
+        contains(
+            'this is a very long description that exceeds sixty character…'),
       );
     });
 
@@ -221,7 +225,8 @@ void main() {
       expect(io.read(handoffPathFor(_workspace)), equals('# snapshot for e1'));
     });
 
-    test('reports a missing snapshot file instead of writing garbage', () async {
+    test('reports a missing snapshot file instead of writing garbage',
+        () async {
       final io = _io(entries: [_entryOne], withSnapshots: false);
       final output = <String>[];
       await runZoned(

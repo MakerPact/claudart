@@ -7,7 +7,8 @@ import 'package:claudart/pipeline/step_mode.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('implementer runs in StepMode.project, NOT StepMode.bare — verified '
+  test(
+      'implementer runs in StepMode.project, NOT StepMode.bare — verified '
       'live that --bare requires ANTHROPIC_API_KEY/apiKeyHelper and never '
       'reads OAuth or keychain, which is this pipeline\'s standard auth '
       'path (a normal OAuth session gets "Not logged in" under --bare); '

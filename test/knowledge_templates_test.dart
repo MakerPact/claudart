@@ -42,7 +42,8 @@ void main() {
     });
 
     test('contains enum capability decision table', () {
-      expect(codeTemplate, contains('## Dart Enhanced Enums — capability table'));
+      expect(
+          codeTemplate, contains('## Dart Enhanced Enums — capability table'));
       expect(codeTemplate, contains('Exhaustive switch'));
       expect(codeTemplate, contains('When-guard'));
       expect(codeTemplate, contains('Static factory'));

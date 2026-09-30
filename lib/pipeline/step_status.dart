@@ -66,9 +66,6 @@ extension StepStatusFromEvent on StepStatus {
         AgentCompleted() => StepStatus.done,
         AgentFailed() => StepStatus.failed,
         AgentEscalating() => StepStatus.waiting,
-        PlanDraft() ||
-        AwaitingApproval() ||
-        PipelineCompleted() =>
-          null,
+        PlanDraft() || AwaitingApproval() || PipelineCompleted() => null,
       };
 }

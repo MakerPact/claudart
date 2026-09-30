@@ -19,7 +19,8 @@ void runUnlink({FileIO? io, String? cwdOverride}) {
       print('✓ Removed symlink: $name');
       removed++;
     } else if (fileIO.fileExists(path) || fileIO.dirExists(path)) {
-      print('⚠  $name exists but is not a symlink — skipped (not safe to delete)');
+      print(
+          '⚠  $name exists but is not a symlink — skipped (not safe to delete)');
     }
   }
 

@@ -115,8 +115,8 @@ void main() {
       final logsPath = p.join(workspacesRoot, 'logs', 'interactions.jsonl');
       final raw = testIo.read(logsPath);
       expect(raw, isNotEmpty);
-      final entry = jsonDecode(raw.trim().split('\n').last)
-          as Map<String, dynamic>;
+      final entry =
+          jsonDecode(raw.trim().split('\n').last) as Map<String, dynamic>;
       expect(entry['command'], equals('scan'));
       expect(entry['outcome'], equals('ok'));
     });
@@ -129,7 +129,8 @@ void main() {
           'scanScope': 'lib',
           'projectRoot': projectRoot,
         }),
-        '$projectRoot/lib/buster.dart': 'class VolumeBloc extends Bloc<E, S> {}',
+        '$projectRoot/lib/buster.dart':
+            'class VolumeBloc extends Bloc<E, S> {}',
       });
       // Should run without throwing even with full scope
       await runScan(full: true, io: testIo);

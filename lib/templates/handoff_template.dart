@@ -121,7 +121,8 @@ String stampHandoffUpdated(String handoff) {
     );
   }
   // Fallback: prepend to the first `>` block.
-  return handoff.replaceFirst(RegExp(r'^(> )', multiLine: true), '$updatedLine\n> ');
+  return handoff.replaceFirst(
+      RegExp(r'^(> )', multiLine: true), '$updatedLine\n> ');
 }
 
 const String blankHandoff = '''# Agent Handoff

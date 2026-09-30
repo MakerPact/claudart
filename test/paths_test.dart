@@ -22,7 +22,9 @@ void main() {
       expect(skillsPathFor(ws), equals(expectedPath));
     });
 
-    test('pendingConfirmationPathFor joins workspace with pending_confirmation.json', () {
+    test(
+        'pendingConfirmationPathFor joins workspace with pending_confirmation.json',
+        () {
       const ws = '/fake/workspace';
       final expectedPath = p.join(ws, 'pending_confirmation.json');
       expect(pendingConfirmationPathFor(ws), equals(expectedPath));
@@ -100,5 +102,4 @@ void main() {
       expect(experimentsDirFor(ws), equals(expectedPath));
     });
   });
-
 }

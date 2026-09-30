@@ -12,10 +12,10 @@ enum ClaudartOperation {
   test;
 
   static ClaudartOperation fromString(String s) => switch (s) {
-    'debug' => debug,
-    'save' => save,
-    _ => test,
-  };
+        'debug' => debug,
+        'save' => save,
+        _ => test,
+      };
 }
 
 /// A single issue found during a preflight sync check.

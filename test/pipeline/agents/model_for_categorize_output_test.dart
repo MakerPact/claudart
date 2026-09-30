@@ -77,8 +77,7 @@ void main() {
     });
 
     test('missing CATEGORY tag returns fallback', () {
-      final raw =
-          '<${CategorizeTag.intent.wireTag}>${IntentClass.explore.name}'
+      final raw = '<${CategorizeTag.intent.wireTag}>${IntentClass.explore.name}'
           '</${CategorizeTag.intent.wireTag}>\n'
           '<${CategorizeTag.complexity.wireTag}>${ComplexityTier.atomic.name}'
           '</${CategorizeTag.complexity.wireTag}>\n';
@@ -135,8 +134,7 @@ void main() {
   group('modelForCategorizeOutput — tag-NAME case insensitivity', () {
     test('lower-case tag names parse (LLM may not honor upper-case prompt)',
         () {
-      const raw =
-          '<category>feature</category>\n'
+      const raw = '<category>feature</category>\n'
           '<intent>explore</intent>\n'
           '<complexity>atomic</complexity>\n';
       expect(
@@ -146,8 +144,7 @@ void main() {
     });
 
     test('mixed-case tag names parse', () {
-      const raw =
-          '<Category>feature</Category>\n'
+      const raw = '<Category>feature</Category>\n'
           '<Intent>explore</Intent>\n'
           '<Complexity>atomic</Complexity>\n';
       expect(

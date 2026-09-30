@@ -38,7 +38,9 @@ void main() {
       expect(result, contains('- #1 Example issue (open)'));
     });
 
-    test('falls back to empty-state text when githubTracking is true but no section given', () {
+    test(
+        'falls back to empty-state text when githubTracking is true but no section given',
+        () {
       final result = planStub(projectName: 'my-app', githubTracking: true);
       expect(result, contains('No issues tracked yet'));
     });

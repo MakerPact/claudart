@@ -44,13 +44,13 @@ String? archiveCurrentHandoff({
   appendToIndex(
     workspace,
     ArchiveEntry(
-      id:          '${branch}_${DateTime.now().millisecondsSinceEpoch}',
-      kind:        kind,
+      id: '${branch}_${DateTime.now().millisecondsSinceEpoch}',
+      kind: kind,
       description: state.bug.trim().isEmpty
           ? (description ?? 'session snapshot')
           : state.bug,
-      branch:      branch,
-      createdAt:   DateTime.now(),
+      branch: branch,
+      createdAt: DateTime.now(),
       handoffFile: fileName,
     ),
     io: fileIO,
@@ -134,7 +134,6 @@ class SessionCloseException implements Exception {
   const SessionCloseException(this.failedStep, {this.cause});
 
   @override
-  String toString() =>
-      'Session close failed at step "$failedStep"'
+  String toString() => 'Session close failed at step "$failedStep"'
       '${cause != null ? ': $cause' : ''}';
 }

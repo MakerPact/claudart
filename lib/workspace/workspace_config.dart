@@ -68,11 +68,9 @@ enum ProofNotation {
 
   /// Human-readable description loaded into scaffold.md.
   String get description => switch (this) {
-        dartGrounded =>
-          'Use ∀/∃/∧/∨/↔ with Dart expressions. '
-              'Never use iff — express bidirectional logic as ↔ with Dart on both sides.',
-        tsGrounded =>
-          'Use ∀/∃/∧/∨/↔ with TypeScript expressions.',
+        dartGrounded => 'Use ∀/∃/∧/∨/↔ with Dart expressions. '
+            'Never use iff — express bidirectional logic as ↔ with Dart on both sides.',
+        tsGrounded => 'Use ∀/∃/∧/∨/↔ with TypeScript expressions.',
         generic => 'Use plain English for invariants.',
       };
 }
@@ -86,6 +84,7 @@ class WorkspaceOwner {
   final String name;
   final String email;
   final String handle;
+
   /// When true, agents enforce strict architectural integrity:
   /// every output is validated against the declared XML schema;
   /// any violation escalates to the user rather than silently continuing.
@@ -125,10 +124,7 @@ class WorkspaceProject {
     final rawStack = (json['stack'] as List<dynamic>? ?? []).cast<String>();
     return WorkspaceProject(
       name: json['name'] as String,
-      stack: rawStack
-          .map(StackType.fromString)
-          .whereType<StackType>()
-          .toList(),
+      stack: rawStack.map(StackType.fromString).whereType<StackType>().toList(),
       role: WorkspaceRole.fromString(json['role'] as String? ?? 'contributor'),
       repo: json['repo'] as String?,
       org: json['org'] as String?,
@@ -152,12 +148,9 @@ class WorkspaceSession {
   factory WorkspaceSession.fromJson(Map<String, dynamic> json) {
     final rawAgents = (json['agents'] as List<dynamic>? ?? []).cast<String>();
     return WorkspaceSession(
-      agents: rawAgents
-          .map(AgentFlow.fromString)
-          .whereType<AgentFlow>()
-          .toList(),
-      knowledge:
-          (json['knowledge'] as List<dynamic>? ?? []).cast<String>(),
+      agents:
+          rawAgents.map(AgentFlow.fromString).whereType<AgentFlow>().toList(),
+      knowledge: (json['knowledge'] as List<dynamic>? ?? []).cast<String>(),
       proofNotation: ProofNotation.fromString(
           json['proofNotation'] as String? ?? 'generic'),
       sensitivityMode: json['sensitivityMode'] as bool? ?? false,
@@ -174,18 +167,22 @@ class WorkspaceConfig {
   const WorkspaceConfig({
     this.name,
     this.owner = const WorkspaceOwner(name: '', email: '', handle: ''),
-    this.project = const WorkspaceProject(name: '', stack: [], role: WorkspaceRole.contributor),
-    this.session = const WorkspaceSession(agents: [], knowledge: [], proofNotation: ProofNotation.generic, sensitivityMode: false),
+    this.project = const WorkspaceProject(
+        name: '', stack: [], role: WorkspaceRole.contributor),
+    this.session = const WorkspaceSession(
+        agents: [],
+        knowledge: [],
+        proofNotation: ProofNotation.generic,
+        sensitivityMode: false),
   });
 
   factory WorkspaceConfig.fromJson(Map<String, dynamic> json) =>
       WorkspaceConfig(
-        owner: WorkspaceOwner.fromJson(
-            json['owner'] as Map<String, dynamic>),
-        project: WorkspaceProject.fromJson(
-            json['project'] as Map<String, dynamic>),
-        session: WorkspaceSession.fromJson(
-            json['session'] as Map<String, dynamic>),
+        owner: WorkspaceOwner.fromJson(json['owner'] as Map<String, dynamic>),
+        project:
+            WorkspaceProject.fromJson(json['project'] as Map<String, dynamic>),
+        session:
+            WorkspaceSession.fromJson(json['session'] as Map<String, dynamic>),
       );
 
   /// Loads and parses workspace.json for the given workspace directory.

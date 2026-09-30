@@ -8,24 +8,24 @@ import 'package:test/test.dart';
 void main() {
   group('ChatCommand.parse — conversation is the default', () {
     const cases = <String, ChatCommand>{
-      'hello there':  ChatCommand.message, // plain text = conversation
-      'flow':         ChatCommand.message, // no slash = NOT the command
-      'what is flow?':ChatCommand.message,
-      '/flow':        ChatCommand.flow,
-      '/FLOW':        ChatCommand.flow,
-      '  /flow ':     ChatCommand.flow,
-      '/flow now':    ChatCommand.flow,
-      '/suggest':     ChatCommand.suggest,
-      '/uga':         ChatCommand.uga,
-      '/uga 2':       ChatCommand.uga,
-      '/uga2':        ChatCommand.uga,
-      '/uga on':      ChatCommand.uga,
-      '/quit':        ChatCommand.quit,
-      '/exit':        ChatCommand.quit,
-      '/q':           ChatCommand.quit,
-      '/help':        ChatCommand.help,
-      '/nope':        ChatCommand.help, // unrecognized command → help
-      '':             ChatCommand.help,
+      'hello there': ChatCommand.message, // plain text = conversation
+      'flow': ChatCommand.message, // no slash = NOT the command
+      'what is flow?': ChatCommand.message,
+      '/flow': ChatCommand.flow,
+      '/FLOW': ChatCommand.flow,
+      '  /flow ': ChatCommand.flow,
+      '/flow now': ChatCommand.flow,
+      '/suggest': ChatCommand.suggest,
+      '/uga': ChatCommand.uga,
+      '/uga 2': ChatCommand.uga,
+      '/uga2': ChatCommand.uga,
+      '/uga on': ChatCommand.uga,
+      '/quit': ChatCommand.quit,
+      '/exit': ChatCommand.quit,
+      '/q': ChatCommand.quit,
+      '/help': ChatCommand.help,
+      '/nope': ChatCommand.help, // unrecognized command → help
+      '': ChatCommand.help,
     };
 
     cases.forEach((input, expected) {
@@ -37,16 +37,24 @@ void main() {
 
   group('runChatLoop', () {
     test('plain text routes to onMessage; slash commands dispatch', () async {
-      final lines = ['hello', '/flow', '/uga 2', '/UGA3', 'bye', '/quit', 'never'].iterator;
+      final lines = [
+        'hello',
+        '/flow',
+        '/uga 2',
+        '/UGA3',
+        'bye',
+        '/quit',
+        'never'
+      ].iterator;
       final messages = <String>[];
       var flow = 0;
       final ugaArgs = <String>[];
       await runChatLoop(
-        readLine:  () => lines.moveNext() ? lines.current : null,
-        out:       (_) {},
-        onFlow:    () async => flow++,
+        readLine: () => lines.moveNext() ? lines.current : null,
+        out: (_) {},
+        onFlow: () async => flow++,
         onSuggest: () async {},
-        onUga:     (args) async => ugaArgs.add(args),
+        onUga: (args) async => ugaArgs.add(args),
         onMessage: (t) async => messages.add(t),
       );
       expect(messages, equals(['hello', 'bye']));
@@ -56,11 +64,11 @@ void main() {
 
     test('returns on EOF without hanging', () async {
       await runChatLoop(
-        readLine:  () => null,
-        out:       (_) {},
-        onFlow:    () async {},
+        readLine: () => null,
+        out: (_) {},
+        onFlow: () async {},
         onSuggest: () async {},
-        onUga:     (_) async {},
+        onUga: (_) async {},
         onMessage: (_) async {},
       );
     });
@@ -70,11 +78,11 @@ void main() {
       final out = <String>[];
       var touched = 0;
       await runChatLoop(
-        readLine:  () => lines.moveNext() ? lines.current : null,
-        out:       out.add,
-        onFlow:    () async => touched++,
+        readLine: () => lines.moveNext() ? lines.current : null,
+        out: out.add,
+        onFlow: () async => touched++,
         onSuggest: () async => touched++,
-        onUga:     (_) async => touched++,
+        onUga: (_) async => touched++,
         onMessage: (_) async => touched++,
       );
       expect(touched, equals(0));

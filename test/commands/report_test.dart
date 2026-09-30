@@ -32,7 +32,8 @@ void main() {
             })}\n',
       );
       // Should not throw
-      await runReport(io: io, runner: MockProcessRunner(), workspacePath: workspace);
+      await runReport(
+          io: io, runner: MockProcessRunner(), workspacePath: workspace);
     });
 
     test('report compiles command counts correctly', () async {
@@ -43,7 +44,8 @@ void main() {
       ].join('\n')}\n';
       io.write(interactionsPath, lines);
       // Should not throw
-      await runReport(io: io, runner: MockProcessRunner(), workspacePath: workspace);
+      await runReport(
+          io: io, runner: MockProcessRunner(), workspacePath: workspace);
     });
 
     test('fingerprint deduplication: same fingerprint not re-filed', () async {
@@ -64,7 +66,11 @@ void main() {
             })}\n',
       );
       // With filed=true and fileIssue=false, nothing should be filed
-      await runReport(fileIssue: false, io: io, runner: MockProcessRunner(), workspacePath: workspace);
+      await runReport(
+          fileIssue: false,
+          io: io,
+          runner: MockProcessRunner(),
+          workspacePath: workspace);
       // Error file should be unchanged
       final raw = io.read(errorsPath);
       final entry = jsonDecode(raw.trim()) as Map<String, dynamic>;
@@ -72,7 +78,8 @@ void main() {
     });
 
     test('report with empty logs prints clean state', () async {
-      await runReport(io: io, runner: MockProcessRunner(), workspacePath: workspace);
+      await runReport(
+          io: io, runner: MockProcessRunner(), workspacePath: workspace);
       // No errors — should complete without error
     });
 
@@ -93,7 +100,8 @@ void main() {
             })}\n',
       );
       // Should not throw and should include fingerprint in output
-      await runReport(io: io, runner: MockProcessRunner(), workspacePath: workspace);
+      await runReport(
+          io: io, runner: MockProcessRunner(), workspacePath: workspace);
     });
   });
 }

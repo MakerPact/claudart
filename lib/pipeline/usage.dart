@@ -30,22 +30,22 @@ class Usage {
   final int thinkingTokens;
 
   const Usage({
-    this.input        = 0,
-    this.output       = 0,
-    this.cacheRead    = 0,
+    this.input = 0,
+    this.output = 0,
+    this.cacheRead = 0,
     this.cacheCreation = 0,
-    this.cost         = 0,
+    this.cost = 0,
     this.thinkingTokens = 0,
   });
 
   Usage operator +(Usage o) => Usage(
-    input:          input          + o.input,
-    output:         output         + o.output,
-    cacheRead:      cacheRead      + o.cacheRead,
-    cacheCreation:  cacheCreation  + o.cacheCreation,
-    cost:           cost           + o.cost,
-    thinkingTokens: thinkingTokens + o.thinkingTokens,
-  );
+        input: input + o.input,
+        output: output + o.output,
+        cacheRead: cacheRead + o.cacheRead,
+        cacheCreation: cacheCreation + o.cacheCreation,
+        cost: cost + o.cost,
+        thinkingTokens: thinkingTokens + o.thinkingTokens,
+      );
 
   /// The `$X.XXXX` cost fragment shared by [format] and per-step cost
   /// badges (e.g. zedup's workflow pane) — one source for the format.
@@ -64,8 +64,7 @@ class Usage {
   }
 
   @override
-  String toString() =>
-      'Usage(in:$input, out:$output, cached:$cacheRead, '
+  String toString() => 'Usage(in:$input, out:$output, cached:$cacheRead, '
       'cacheWrite:$cacheCreation, thinking:$thinkingTokens, \$$cost)';
 }
 

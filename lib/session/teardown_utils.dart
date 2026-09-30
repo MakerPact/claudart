@@ -33,10 +33,8 @@ String appendToSection(String content, String header, String newEntry) {
   // must not prevent blank detection when they precede a placeholder.
   final lines = existing.split('\n');
   final metaLines = lines.where((l) => l.trimLeft().startsWith('>')).toList();
-  final contentOnly = lines
-      .where((l) => !l.trimLeft().startsWith('>'))
-      .join('\n')
-      .trim();
+  final contentOnly =
+      lines.where((l) => !l.trimLeft().startsWith('>')).join('\n').trim();
 
   final isBlank = contentOnly.isEmpty ||
       contentOnly.startsWith('_No') ||
@@ -64,7 +62,8 @@ String upsertPendingEntry(
 }) {
   final today = DateTime.now().toIso8601String().split('T').first;
   final hotFilesPart = hotFiles != null ? ' | hot files — $hotFiles' : '';
-  final entry = '- `$branchSlug` ($today): root cause — $rootCause$hotFilesPart';
+  final entry =
+      '- `$branchSlug` ($today): root cause — $rootCause$hotFilesPart';
 
   final pattern = _pendingEntryPattern(branchSlug);
   if (pattern.hasMatch(skills)) {
@@ -77,8 +76,9 @@ String upsertPendingEntry(
 /// has been promoted to Root Cause Patterns on a resolved teardown, so a
 /// closed session doesn't leave a stale pending bullet behind forever.
 String removePendingEntry(String skills, String branchSlug) {
-  final withoutLine =
-      skills.replaceFirst(_pendingEntryPattern(branchSlug), '').replaceAll('\n\n\n', '\n\n');
+  final withoutLine = skills
+      .replaceFirst(_pendingEntryPattern(branchSlug), '')
+      .replaceAll('\n\n\n', '\n\n');
   return withoutLine;
 }
 
@@ -101,8 +101,8 @@ String incrementHotPath(String skills, String area, String file) {
   return appendToSection(skills, 'Hot Paths', entry);
 }
 
-
-String buildCommitMessage(String area, String bug, String rootCause, String fix) {
+String buildCommitMessage(
+    String area, String bug, String rootCause, String fix) {
   final bugLine = bug.replaceAll('\n', ' ').trim();
   final rootLine = rootCause == '_Not yet determined._'
       ? ''
@@ -118,7 +118,8 @@ String firstSentence(String s) {
 }
 
 String archiveName(String branch) {
-  final date = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+  final date =
+      DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
   final safeBranch = branch.replaceAll('/', '_').replaceAll(' ', '_');
   return 'handoff_${safeBranch}_$date.md';
 }

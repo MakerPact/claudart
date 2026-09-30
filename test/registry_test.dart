@@ -138,9 +138,7 @@ void main() {
 
     test('replacing existing entry by name does not grow the registry', () {
       final updated = _entry('my-app').copyWith(lastSession: '2026-04-01');
-      final reg = Registry.empty()
-          .add(_entry('my-app'))
-          .add(updated);
+      final reg = Registry.empty().add(_entry('my-app')).add(updated);
       expect(reg.entries, hasLength(1));
       expect(reg.findByName('my-app')!.lastSession, equals('2026-04-01'));
     });
@@ -154,9 +152,7 @@ void main() {
 
   group('Registry.remove', () {
     test('removes entry by name', () {
-      final reg = Registry.empty()
-          .add(_entry('my-app'))
-          .remove('my-app');
+      final reg = Registry.empty().add(_entry('my-app')).remove('my-app');
       expect(reg.findByName('my-app'), isNull);
     });
 
@@ -177,9 +173,7 @@ void main() {
 
   group('Registry.touchSession', () {
     test('updates lastSession for named entry', () {
-      final reg = Registry.empty()
-          .add(_entry('my-app'))
-          .touchSession('my-app');
+      final reg = Registry.empty().add(_entry('my-app')).touchSession('my-app');
       final today = DateTime.now().toIso8601String().split('T').first;
       expect(reg.findByName('my-app')!.lastSession, equals(today));
     });

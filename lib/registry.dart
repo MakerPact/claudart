@@ -117,14 +117,14 @@ class Registry {
       Registry._(Map.of(_byName)..[entry.name] = entry);
 
   /// Returns a new Registry with the entry for [name] removed. O(1).
-  Registry remove(String name) =>
-      Registry._(Map.of(_byName)..remove(name));
+  Registry remove(String name) => Registry._(Map.of(_byName)..remove(name));
 
   /// Returns a new Registry with [name]'s lastSession updated to today. O(1).
   Registry touchSession(String name) {
     final existing = _byName[name];
     if (existing == null) return this;
     final today = DateTime.now().toIso8601String().split('T').first;
-    return Registry._(Map.of(_byName)..[name] = existing.copyWith(lastSession: today));
+    return Registry._(
+        Map.of(_byName)..[name] = existing.copyWith(lastSession: today));
   }
 }

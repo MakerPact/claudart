@@ -54,8 +54,8 @@ void main() {
   });
 
   test('plan step degrades to sonnet when categorize slot is empty', () {
-    expect(FlowSteps.plan.effectiveModel(_baseCtx()),
-        equals(AgentModel.sonnet));
+    expect(
+        FlowSteps.plan.effectiveModel(_baseCtx()), equals(AgentModel.sonnet));
   });
 
   test('plan step degrades to sonnet on malformed categorize output', () {

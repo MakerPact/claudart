@@ -24,9 +24,9 @@ Future<void> runArchives({
   Never Function(int code)? exitFn,
   int Function(List<String> items)? pickFn,
 }) async {
-  final fileIO = io    ?? const RealFileIO();
-  final exit_  = exitFn ?? exit;
-  final pick_  = pickFn ?? arrowMenu;
+  final fileIO = io ?? const RealFileIO();
+  final exit_ = exitFn ?? exit;
+  final pick_ = pickFn ?? arrowMenu;
 
   final projectRoot = projectRootOverride ?? detectGitContext()?.root;
   if (projectRoot == null) {
@@ -35,7 +35,7 @@ Future<void> runArchives({
   }
 
   final registry = Registry.load(io: fileIO);
-  final entry    = registry.findByProjectRoot(projectRoot);
+  final entry = registry.findByProjectRoot(projectRoot);
   if (entry == null) {
     print('✗ Project not registered. Run `claudart link` first.');
     exit_(1);
@@ -43,7 +43,7 @@ Future<void> runArchives({
   print('Project  : ${entry.name}');
 
   final workspace = entry.workspacePath;
-  final entries   = loadIndex(workspace, io: fileIO);
+  final entries = loadIndex(workspace, io: fileIO);
 
   if (entries.isEmpty) {
     print('\nNo archives found for this project.\n');
@@ -88,12 +88,12 @@ Future<void> runArchives({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 String _formatEntry(ArchiveEntry e) {
-  final badge  = e.kind == ArchiveKind.reminder
+  final badge = e.kind == ArchiveKind.reminder
       ? '${ansi.yellow}[reminder]${ansi.reset}'
       : '${ansi.cyan}[archive]${ansi.reset} ';
-  final date   = e.createdAt.toIso8601String().split('T').first;
+  final date = e.createdAt.toIso8601String().split('T').first;
   final branch = ansi.dim + e.branch + ansi.reset;
-  final desc   = e.description.length > 60
+  final desc = e.description.length > 60
       ? '${e.description.substring(0, 60)}…'
       : e.description;
   return '$badge  $date  $branch  $desc';
@@ -103,7 +103,7 @@ String _formatEntry(ArchiveEntry e) {
 /// Returns false (and prints an error) when the snapshot file is missing —
 /// callers must not report success in that case.
 bool _resume(FileIO fileIO, String workspace, ArchiveEntry e) {
-  final src  = p.join(archiveDirFor(workspace), e.handoffFile);
+  final src = p.join(archiveDirFor(workspace), e.handoffFile);
   final dest = handoffPathFor(workspace);
   if (!fileIO.fileExists(src)) {
     print('${ansi.red}✗${ansi.reset}  Snapshot file not found: $src');

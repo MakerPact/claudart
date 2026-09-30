@@ -13,7 +13,6 @@ class ScanThresholdException implements Exception {
   });
 
   @override
-  String toString() =>
-      'ScanThresholdException: found $filesFound files '
+  String toString() => 'ScanThresholdException: found $filesFound files '
       '(threshold $threshold). $reason';
 }

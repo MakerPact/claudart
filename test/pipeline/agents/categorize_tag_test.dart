@@ -11,10 +11,10 @@ extension on CategorizeTag {
   /// fixture catches a rename of the wire format that doesn't propagate
   /// to either side of the contract.
   String get expectedWireTag => switch (this) {
-        CategorizeTag.category   => 'CATEGORY',
-        CategorizeTag.intent     => 'INTENT',
+        CategorizeTag.category => 'CATEGORY',
+        CategorizeTag.intent => 'INTENT',
         CategorizeTag.complexity => 'COMPLEXITY',
-        CategorizeTag.model      => 'MODEL',
+        CategorizeTag.model => 'MODEL',
       };
 }
 
@@ -29,8 +29,7 @@ void main() {
 
   group('CategorizeTag.wireTag — names are unique across variants', () {
     test('no two variants share a wire name', () {
-      final wireNames =
-          CategorizeTag.values.map((t) => t.wireTag).toList();
+      final wireNames = CategorizeTag.values.map((t) => t.wireTag).toList();
       expect(wireNames.toSet().length, equals(wireNames.length));
     });
   });
@@ -63,8 +62,7 @@ void main() {
         expect(tag.extractFrom(otherTagged), isNull);
       });
 
-      test('${tag.name} extracts despite lower-case tag (LLM tolerance)',
-          () {
+      test('${tag.name} extracts despite lower-case tag (LLM tolerance)', () {
         const content = 'value';
         final raw =
             '<${tag.wireTag.toLowerCase()}>$content</${tag.wireTag.toLowerCase()}>';

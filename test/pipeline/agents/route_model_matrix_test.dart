@@ -65,8 +65,7 @@ void main() {
             expect(
               routeModel(category, intent, complexity),
               equals(_expectedFor(category, intent, complexity)),
-              reason:
-                  'τ(${category.name}, ${intent.name}, ${complexity.name}) '
+              reason: 'τ(${category.name}, ${intent.name}, ${complexity.name}) '
                   'diverged from spec — either the doc-comment in '
                   'routeModel is stale or the switch arm regressed',
             );
@@ -100,8 +99,7 @@ void main() {
           expect(
             models.length,
             greaterThanOrEqualTo(2),
-            reason:
-                '${intent.name} routes to the same model across all '
+            reason: '${intent.name} routes to the same model across all '
                 'three tiers — ComplexityTier wire is bypassed',
           );
         });
@@ -132,8 +130,7 @@ void main() {
           expect(
             models.length,
             equals(1),
-            reason:
-                '${intent.name} is documented as tier-invariant but '
+            reason: '${intent.name} is documented as tier-invariant but '
                 'now produces different models per ComplexityTier',
           );
         });

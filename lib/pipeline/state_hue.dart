@@ -34,11 +34,11 @@ enum StateHue {
   /// Short label rendered in legends and status hints.
   String get label => switch (this) {
         StateHue.inactive => 'inactive',
-        StateHue.loading  => 'loading',
-        StateHue.ready    => 'ready',
-        StateHue.active   => 'active',
-        StateHue.paused   => 'paused',
-        StateHue.error    => 'error',
-        StateHue.success  => 'success',
+        StateHue.loading => 'loading',
+        StateHue.ready => 'ready',
+        StateHue.active => 'active',
+        StateHue.paused => 'paused',
+        StateHue.error => 'error',
+        StateHue.success => 'success',
       };
 }

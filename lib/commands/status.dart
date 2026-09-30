@@ -61,14 +61,14 @@ Future<void> runStatus({
     return;
   }
 
-  final unresolved =
-      readSubSection(extractSection(content, 'Debug Progress'),
-          'What is still unresolved');
+  final unresolved = readSubSection(
+      extractSection(content, 'Debug Progress'), 'What is still unresolved');
 
   print(render.header('CLAUDART SESSION STATUS'));
   print('Project  : ${entry.name}');
   print('Branch   : ${currentBranch ?? state.branch}');
-  print('Status   : ${ansi.c(_statusColour(state.status), state.status.value)}');
+  print(
+      'Status   : ${ansi.c(_statusColour(state.status), state.status.value)}');
   print('Bug      : ${_truncate(state.bug)}');
   print('Root cause: ${_truncate(state.rootCause)}');
   if (state.status == HandoffStatus.debugInProgress ||
@@ -92,7 +92,8 @@ Future<void> runStatus({
   if (currentBranch != null &&
       state.branch != 'unknown' &&
       currentBranch != state.branch) {
-    print('\n${ansi.c(ansi.yellow, '⚠️  Current branch "$currentBranch" differs from handoff branch "${state.branch}".')}');
+    print(
+        '\n${ansi.c(ansi.yellow, '⚠️  Current branch "$currentBranch" differs from handoff branch "${state.branch}".')}');
   }
 
   print('');
@@ -126,11 +127,12 @@ String _truncate(String s, {int max = 80}) {
 
 String _statusColour(HandoffStatus s) => switch (s) {
       HandoffStatus.suggestInvestigating ||
-      HandoffStatus.readyForSuggest      => ansi.cyan,
-      HandoffStatus.readyForDebug        => ansi.yellow,
+      HandoffStatus.readyForSuggest =>
+        ansi.cyan,
+      HandoffStatus.readyForDebug => ansi.yellow,
       HandoffStatus.debugInProgress ||
-      HandoffStatus.debugComplete        => ansi.green,
-      HandoffStatus.needsSuggest         => ansi.red,
-      HandoffStatus.unknown ||
-      HandoffStatus.noHandoff            => ansi.dim,
+      HandoffStatus.debugComplete =>
+        ansi.green,
+      HandoffStatus.needsSuggest => ansi.red,
+      HandoffStatus.unknown || HandoffStatus.noHandoff => ansi.dim,
     };

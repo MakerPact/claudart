@@ -14,7 +14,7 @@ String? readLine({bool optional = false}) {
   stdout.write(_prompt);
   if (!stdin.hasTerminal) {
     final raw = stdin.readLineSync()?.trim();
-    if (raw == null) return null;   // EOF — stdin closed, don't recurse
+    if (raw == null) return null; // EOF — stdin closed, don't recurse
     if (raw.isEmpty) return optional ? null : readLine(optional: optional);
     return raw;
   }
@@ -35,7 +35,8 @@ String? _editLine({required bool optional}) {
     } on UnsupportedError {
       termWidth = 80;
     }
-    final linesUsed = wrappedLineCount(_prompt.length, lastDrawnLength, termWidth);
+    final linesUsed =
+        wrappedLineCount(_prompt.length, lastDrawnLength, termWidth);
     if (linesUsed > 1) stdout.write('\x1b[${linesUsed - 1}A');
     final text = buf.join();
     stdout.write('\r\x1b[J$_prompt$text');
@@ -156,8 +157,8 @@ _Key _readKey() {
   if (b == 3) return const _Key(_KeyType.ctrlC);
   if (b == 127 || b == 8) return const _Key(_KeyType.backspace);
   if (b == 21) return const _Key(_KeyType.ctrlU);
-  if (b == 1) return const _Key(_KeyType.home);    // Ctrl+A
-  if (b == 5) return const _Key(_KeyType.end);     // Ctrl+E
+  if (b == 1) return const _Key(_KeyType.home); // Ctrl+A
+  if (b == 5) return const _Key(_KeyType.end); // Ctrl+E
 
   // ESC sequence
   if (b == 27) {
@@ -167,25 +168,25 @@ _Key _readKey() {
       final b3 = stdin.readByteSync();
       switch (b3) {
         case 65:
-          return const _Key(_KeyType.other);   // up arrow — not used in prompts
+          return const _Key(_KeyType.other); // up arrow — not used in prompts
         case 66:
-          return const _Key(_KeyType.other);   // down arrow
+          return const _Key(_KeyType.other); // down arrow
         case 67:
-          return const _Key(_KeyType.right);   // →
+          return const _Key(_KeyType.right); // →
         case 68:
-          return const _Key(_KeyType.left);    // ←
+          return const _Key(_KeyType.left); // ←
         case 72:
-          return const _Key(_KeyType.home);    // Home (xterm)
+          return const _Key(_KeyType.home); // Home (xterm)
         case 70:
-          return const _Key(_KeyType.end);     // End (xterm)
+          return const _Key(_KeyType.end); // End (xterm)
         case 51:
-          stdin.readByteSync();                // ESC[3~ = Delete, consume ~
+          stdin.readByteSync(); // ESC[3~ = Delete, consume ~
           return const _Key(_KeyType.delete);
         case 49:
-          stdin.readByteSync();                // ESC[1~ = Home (vt), consume ~
+          stdin.readByteSync(); // ESC[1~ = Home (vt), consume ~
           return const _Key(_KeyType.home);
         case 52:
-          stdin.readByteSync();                // ESC[4~ = End (vt), consume ~
+          stdin.readByteSync(); // ESC[4~ = End (vt), consume ~
           return const _Key(_KeyType.end);
       }
     }

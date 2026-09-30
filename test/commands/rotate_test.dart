@@ -325,7 +325,8 @@ void main() {
   });
 
   group('runRotate — build gate fails', () {
-    test('returns buildFailed, archives handoff, does not seed new one', () async {
+    test('returns buildFailed, archives handoff, does not seed new one',
+        () async {
       final io = _io();
       final handoffFile = handoffPathFor(_workspace);
       final originalContent = io.files[handoffFile];
@@ -384,7 +385,8 @@ void main() {
       );
 
       final newHandoff = io.files[handoffFile]!;
-      expect(newHandoff, contains('Stream fires before connection established'));
+      expect(
+          newHandoff, contains('Stream fires before connection established'));
     });
 
     test('remaining issues carried to new Pending Issues section', () async {
@@ -401,11 +403,14 @@ void main() {
 
       final newHandoff = io.files[handoffFile]!;
       expect(newHandoff, contains('Missing await on async initialiser'));
-      expect(newHandoff, isNot(contains('Stream fires before connection established\n'
-          '- [ ] Missing await')));
+      expect(
+          newHandoff,
+          isNot(contains('Stream fires before connection established\n'
+              '- [ ] Missing await')));
     });
 
-    test('first issue consumed — not in Pending Issues of new handoff', () async {
+    test('first issue consumed — not in Pending Issues of new handoff',
+        () async {
       final io = _io();
       final handoffFile = handoffPathFor(_workspace);
 

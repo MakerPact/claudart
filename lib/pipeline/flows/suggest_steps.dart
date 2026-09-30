@@ -43,26 +43,26 @@ abstract final class SuggestSteps {
   /// Phase 1: haiku reads every scope file and reports findings.
   /// The label includes the file count, so it's built dynamically.
   static AgentStep reader(int fileCount) => AgentStep(
-    id:           'reader',
-    label:        'Reading $fileCount scope files (haiku)…',
-    model:        AgentModel.haiku,
-    systemPrompt: _readerSystem,
-    buildPrompt:  _readerPrompt,
-    routes:       const {}, // falls through to reasoner
-  );
+        id: 'reader',
+        label: 'Reading $fileCount scope files (haiku)…',
+        model: AgentModel.haiku,
+        systemPrompt: _readerSystem,
+        buildPrompt: _readerPrompt,
+        routes: const {}, // falls through to reasoner
+      );
 
   /// Phase 2: reasons over findings, produces full XML analysis. Model
   /// is dynamic — [_reasonerModelSelector] consults the categorize
   /// step's output (Phase 0) via [routeModel], so a `gui × design`
   /// session gets opus reasoning instead of the sonnet default.
   static const AgentStep reasoner = AgentStep(
-    id:            'reasoner',
-    label:         'Reasoning over findings…',
-    model:         AgentModel.sonnet,
+    id: 'reasoner',
+    label: 'Reasoning over findings…',
+    model: AgentModel.sonnet,
     modelSelector: _reasonerModelSelector,
-    systemPrompt:  _reasonerSystem,
-    buildPrompt:   _reasonerPrompt,
-    routes:        {}, // no routing — executor returns after this
+    systemPrompt: _reasonerSystem,
+    buildPrompt: _reasonerPrompt,
+    routes: {}, // no routing — executor returns after this
   );
 
   /// Reads the categorize step's `<CATEGORY>`/`<INTENT>`/`<COMPLEXITY>`
@@ -81,42 +81,42 @@ abstract final class SuggestSteps {
   /// Planner: given the current analysis + user feedback, determines what to change.
   /// Emits `CHANGES` when clear; emits `QUESTION` when it needs codebase information.
   static AgentStep planner(int pass) => AgentStep(
-    id:           'planner',
-    label:        'Planning changes (sonnet)… pass $pass',
-    model:        AgentModel.sonnet,
-    systemPrompt: _reasonerSystem,
-    buildPrompt:  _plannerPrompt,
-    routes: const {
-      RouteTag.changes:  GoTo('applier'),
-      RouteTag.question: QuestionBranch('lookup'),
-    },
-  );
+        id: 'planner',
+        label: 'Planning changes (sonnet)… pass $pass',
+        model: AgentModel.sonnet,
+        systemPrompt: _reasonerSystem,
+        buildPrompt: _plannerPrompt,
+        routes: const {
+          RouteTag.changes: GoTo('applier'),
+          RouteTag.question: QuestionBranch('lookup'),
+        },
+      );
 
   /// Lookup: searches phase1 findings to answer the planner's question.
   /// Emits `ANSWER` when found; emits `UNKNOWN` when not determinable.
   static AgentStep lookup(int pass) => AgentStep(
-    id:           'lookup',
-    label:        'Looking up in scope files (haiku)… pass $pass',
-    model:        AgentModel.haiku,
-    systemPrompt: _readerSystem,
-    buildPrompt:  _lookupPrompt,
-    routes: const {
-      RouteTag.answer:  FeedBackTo('planner'),
-      RouteTag.unknown: EscalateUser('planner'),
-    },
-  );
+        id: 'lookup',
+        label: 'Looking up in scope files (haiku)… pass $pass',
+        model: AgentModel.haiku,
+        systemPrompt: _readerSystem,
+        buildPrompt: _lookupPrompt,
+        routes: const {
+          RouteTag.answer: FeedBackTo('planner'),
+          RouteTag.unknown: EscalateUser('planner'),
+        },
+      );
 
   /// Applier: receives the change plan and surgically updates XML sections.
   /// No routes — executor returns updated ctx after this runs.
   static AgentStep applier(int pass) => AgentStep(
-    id:           'applier',
-    label:        'Applying changes (haiku)… pass $pass',
-    model:        AgentModel.haiku,
-    systemPrompt: _reasonerSystem,
-    buildPrompt:  _applierPrompt,
-    routes:       const {}, // terminal
-    postProcess:  _mergeAnalysis,
-  );
+        id: 'applier',
+        label: 'Applying changes (haiku)… pass $pass',
+        model: AgentModel.haiku,
+        systemPrompt: _reasonerSystem,
+        buildPrompt: _applierPrompt,
+        routes: const {}, // terminal
+        postProcess: _mergeAnalysis,
+      );
 
   // ── Convenience builders ────────────────────────────────────────────────────
 
@@ -125,10 +125,10 @@ abstract final class SuggestSteps {
 
   /// The three refinement steps for a given [pass] number.
   static List<AgentStep> refinement(int pass) => [
-    planner(pass),
-    lookup(pass),
-    applier(pass),
-  ];
+        planner(pass),
+        lookup(pass),
+        applier(pass),
+      ];
 }
 
 // ── Prompt builders ───────────────────────────────────────────────────────────
@@ -185,12 +185,11 @@ Constraints on how the fix must be implemented.
 ''';
 
 String _plannerPrompt(PipelineContext ctx) {
-  final analysis      = _latestAnalysis(ctx);
-  final feedback      = ctx[PipelineSlot.userFeedback] ?? '';
+  final analysis = _latestAnalysis(ctx);
+  final feedback = ctx[PipelineSlot.userFeedback] ?? '';
   final clarification = ctx.clarification;
-  final planContext   = clarification != null
-      ? '$feedback\n\n$clarification'
-      : feedback;
+  final planContext =
+      clarification != null ? '$feedback\n\n$clarification' : feedback;
 
   return '''
 Current analysis:
@@ -244,16 +243,15 @@ String _applierPrompt(PipelineContext ctx) {
   final changePlan = ctx[PipelineSlot.planner] != null
       ? _extractChanges(ctx[PipelineSlot.planner]!)
       : '';
-  final analysis   = _latestAnalysis(ctx);
-  final targets    = _parseTargetSections(changePlan);
-  final extracted  = targets.map((t) => _extractSection(analysis, t)).toList();
+  final analysis = _latestAnalysis(ctx);
+  final targets = _parseTargetSections(changePlan);
+  final extracted = targets.map((t) => _extractSection(analysis, t)).toList();
   // Fall back to the full analysis if any targeted tag failed to extract
   // (e.g. the model forgot to emit it) — silently dropping just that
   // section would ask the applier to update a section it never sees.
   final missingTarget = targets.isNotEmpty && extracted.any((s) => s.isEmpty);
-  final sections = targets.isEmpty || missingTarget
-      ? analysis
-      : extracted.join('\n\n');
+  final sections =
+      targets.isEmpty || missingTarget ? analysis : extracted.join('\n\n');
 
   // When a targeted section is missing, the plain "don't output anything
   // not shown above" instruction would forbid the applier from ever
@@ -262,11 +260,11 @@ String _applierPrompt(PipelineContext ctx) {
   // allowed to output one.
   final outputConstraint = missingTarget
       ? 'Output ONLY the sections targeted by the change plan '
-        '(${targets.join(', ')}), using their exact XML tags — including '
-        'any of those tags not shown in the analysis above, since they '
-        'need to be added. Do not output any other section.'
+          '(${targets.join(', ')}), using their exact XML tags — including '
+          'any of those tags not shown in the analysis above, since they '
+          'need to be added. Do not output any other section.'
       : 'Output ONLY the sections listed above using their exact XML tags.\n'
-        'Do not output any section not shown above.';
+          'Do not output any section not shown above.';
 
   return '''
 Apply these changes:
@@ -285,8 +283,12 @@ No prose outside the tags.
 // ── Applier helpers ───────────────────────────────────────────────────────────
 
 const _kSections = {
-  'ROOT_CAUSE', 'SCOPE_FILES', 'SCOPE_ENTRIES',
-  'SCOPE_CLASSES', 'MUST_NOT_TOUCH', 'CONSTRAINTS',
+  'ROOT_CAUSE',
+  'SCOPE_FILES',
+  'SCOPE_ENTRIES',
+  'SCOPE_CLASSES',
+  'MUST_NOT_TOUCH',
+  'CONSTRAINTS',
 };
 
 // Returns the latest full analysis: applier output supersedes reasoner output.
@@ -325,6 +327,7 @@ String _mergeAnalysis(String partial, PipelineContext ctx) {
 }
 
 String _extractChanges(String plannerOutput) {
-  final match = RegExp('<CHANGES>([\\s\\S]*?)</CHANGES>').firstMatch(plannerOutput);
+  final match =
+      RegExp('<CHANGES>([\\s\\S]*?)</CHANGES>').firstMatch(plannerOutput);
   return match?.group(1)?.trim() ?? plannerOutput;
 }

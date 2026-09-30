@@ -89,10 +89,12 @@ Future<void> runAdd({
   final defaultSdk = _detectDartSdkConstraint(pubspecContent);
   final defaultUsesDartrix = _detectsDartrixDependency(pubspecContent);
 
-  print('\n  Author  : ${author.name ?? '(not set)'} <${author.email ?? '(not set)'}>');
+  print(
+      '\n  Author  : ${author.name ?? '(not set)'} <${author.email ?? '(not set)'}>');
 
   // 3 — Questionnaire.
-  final projectName = prompt_('Project name', defaultValue: defaultName) ?? defaultName;
+  final projectName =
+      prompt_('Project name', defaultValue: defaultName) ?? defaultName;
   final sdkAnswer = prompt_('Dart SDK constraint', defaultValue: defaultSdk);
   final usesDartrix = defaultUsesDartrix || confirm_('Uses dartrix?');
   final githubTracking = confirm_('GitHub issue tracking?');
@@ -164,8 +166,9 @@ Future<void> runAdd({
         .toList()
       ..sort(),
     sdkConstraint: answers.dartSdkConstraint,
-    flutterConstraint:
-        answers.projectType == ProjectType.flutter ? answers.dartSdkConstraint : null,
+    flutterConstraint: answers.projectType == ProjectType.flutter
+        ? answers.dartSdkConstraint
+        : null,
   );
   fileIO.write(claudeMdPath, '# CLAUDE.md\n\n$claudeMdBody');
 
@@ -177,16 +180,18 @@ Future<void> runAdd({
 
   // 9 — Register in Claude Code's own auto-memory so a session started
   // here already knows the project exists.
-  final memoryRoot = claudeMemoryRootOverride ??
-      p.join(homeDir(), '.claude', 'projects');
+  final memoryRoot =
+      claudeMemoryRootOverride ?? p.join(homeDir(), '.claude', 'projects');
   final projectHash = projectRoot.replaceAll('/', '-');
   final memoryDir = p.join(memoryRoot, projectHash, 'memory');
   fileIO.createDir(memoryDir);
   final memoryFilePath = p.join(memoryDir, 'project_${answers.projectName}.md');
-  fileIO.write(memoryFilePath, _projectMemoryFile(answers, projectRoot, planPath));
+  fileIO.write(
+      memoryFilePath, _projectMemoryFile(answers, projectRoot, planPath));
   final memoryIndexPath = p.join(memoryDir, 'MEMORY.md');
-  final existingIndex =
-      fileIO.fileExists(memoryIndexPath) ? fileIO.read(memoryIndexPath) : '# Memory Index\n';
+  final existingIndex = fileIO.fileExists(memoryIndexPath)
+      ? fileIO.read(memoryIndexPath)
+      : '# Memory Index\n';
   final indexLine =
       '- [${answers.projectName}](project_${answers.projectName}.md) — scaffolded by `claudart add`';
   if (!existingIndex.contains(indexLine)) {
@@ -206,8 +211,7 @@ Future<void> runAdd({
 
 // ── pubspec.yaml detection — plain string/regex, no yaml package dep ────────
 
-final RegExp _sdkConstraintPattern =
-    RegExp('''sdk:\\s*['"]([^'"]+)['"]''');
+final RegExp _sdkConstraintPattern = RegExp('''sdk:\\s*['"]([^'"]+)['"]''');
 
 String? _detectDartSdkConstraint(String pubspecContent) =>
     _sdkConstraintPattern.firstMatch(pubspecContent)?.group(1);
@@ -231,7 +235,9 @@ See `PLAN.md`'s "GitHub archive convention" for the full entry format.
 
 // ── Memory file content ──────────────────────────────────────────────────────
 
-String _projectMemoryFile(AddAnswers answers, String projectRoot, String planPath) => '''---
+String _projectMemoryFile(
+        AddAnswers answers, String projectRoot, String planPath) =>
+    '''---
 name: project-${answers.projectName}
 description: ${answers.projectName} — scaffolded by claudart add, a ${answers.projectType.label} project at $projectRoot
 metadata:

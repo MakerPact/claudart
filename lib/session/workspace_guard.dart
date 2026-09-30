@@ -64,7 +64,6 @@ class WorkspaceLockedException implements Exception {
   const WorkspaceLockedException(this.workspacePath, this.interruptedOperation);
 
   @override
-  String toString() =>
-      'Workspace locked at $workspacePath '
+  String toString() => 'Workspace locked at $workspacePath '
       '(interrupted during: $interruptedOperation)';
 }

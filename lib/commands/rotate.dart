@@ -35,7 +35,7 @@ enum RotateResult {
 /// Gate: runs [buildFn] (defaults to the workspace `afterFixCommand`) between
 /// archiving and seeding. If the build fails the rotation is aborted — the
 /// archive already written remains, but the live handoff is not overwritten.
-Future<RotateResult>  runRotate({
+Future<RotateResult> runRotate({
   FileIO? io,
   String? projectRootOverride,
   Never Function(int code)? exitFn,

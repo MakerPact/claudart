@@ -4,11 +4,11 @@ import 'package:path/path.dart' as p;
 // ── Filename constants ─────────────────────────────────────────────────────
 // Single source of truth for all file/dir names used across claudart + consumers.
 
-const String handoffFileName          = 'handoff.md';
-const String skillsFileName           = 'skills.md';
-const String archivesDirName          = 'archive';
-const String archiveIndexFileName     = 'index.json';
-const String flowCheckpointFileName   = 'flow_checkpoint.json';
+const String handoffFileName = 'handoff.md';
+const String skillsFileName = 'skills.md';
+const String archivesDirName = 'archive';
+const String archiveIndexFileName = 'index.json';
+const String flowCheckpointFileName = 'flow_checkpoint.json';
 const String pendingConfirmationFileName = 'pending_confirmation.json';
 
 /// Extracts the workspace directory from `claudart status` output.
@@ -65,7 +65,8 @@ String archiveDirFor(String ws) => p.join(ws, 'archive');
 String configPathFor(String ws) => p.join(ws, 'config.json');
 String knowledgeDirFor(String ws) => p.join(ws, 'knowledge');
 String genericKnowledgeDirFor(String ws) => p.join(ws, 'knowledge', 'generic');
-String projectsKnowledgeDirFor(String ws) => p.join(ws, 'knowledge', 'projects');
+String projectsKnowledgeDirFor(String ws) =>
+    p.join(ws, 'knowledge', 'projects');
 String claudeCommandsDirFor(String ws) => p.join(ws, '.claude', 'commands');
 String tokenMapPathFor(String ws) => p.join(ws, 'token_map.json');
 String logsDirFor(String ws) => p.join(ws, 'logs');

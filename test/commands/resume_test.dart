@@ -85,7 +85,8 @@ MemoryFileIO _io({bool withArchive = true}) {
       handoffFile: 'handoff_e1.md',
     );
     appendToIndex(_workspace, archiveEntry, io: io);
-    io.write(p.join(archiveDirFor(_workspace), 'handoff_e1.md'), _archivedHandoff);
+    io.write(
+        p.join(archiveDirFor(_workspace), 'handoff_e1.md'), _archivedHandoff);
   }
   return io;
 }
@@ -116,7 +117,8 @@ void main() {
       );
     });
 
-    test('writes a handoff pre-filled from the archived Bug/Expected/Files', () async {
+    test('writes a handoff pre-filled from the archived Bug/Expected/Files',
+        () async {
       final io = _io();
       await runResume(
         io: io,
@@ -132,7 +134,8 @@ void main() {
       expect(handoff, contains('Config loads regardless of spaces in path.'));
     });
 
-    test('does not disable live git branch detection when run for real', () async {
+    test('does not disable live git branch detection when run for real',
+        () async {
       // Regression: runResume used to pass its own *resolved* projectRoot to
       // runSetup as projectRootOverride, which makes runSetup skip live git
       // detection entirely (the test-bypass convention every command uses) —
@@ -162,7 +165,8 @@ void main() {
         ),
         io: io,
       );
-      io.write(p.join(archiveDirFor(_workspace), 'handoff_e1.md'), _archivedHandoff);
+      io.write(
+          p.join(archiveDirFor(_workspace), 'handoff_e1.md'), _archivedHandoff);
 
       final output = <String>[];
       await runZoned(

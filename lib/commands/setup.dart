@@ -20,7 +20,8 @@ import '../util/prompt_with_default.dart';
 
 /// Returns absolute paths of files named [basename] under [projectRoot].
 /// Injectable for tests — default uses the OS `find` command.
-typedef FileFinderFn = List<String> Function(String projectRoot, String basename);
+typedef FileFinderFn = List<String> Function(
+    String projectRoot, String basename);
 
 Future<void> runSetup({
   FileIO? io,
@@ -99,7 +100,8 @@ Future<void> runSetup({
         exit_(0);
       }
       assert(choice == _SetupMenu.startFresh);
-      final archivedName = archiveCurrentHandoff(workspace: workspace, io: fileIO);
+      final archivedName =
+          archiveCurrentHandoff(workspace: workspace, io: fileIO);
       if (archivedName != null) {
         print(ansi.c(ansi.dim, '  Previous session archived → $archivedName'));
       }
@@ -116,25 +118,27 @@ Future<void> runSetup({
 
   // Surface skills context.
   final skillsFile = skillsPathFor(workspace);
-  final skills =
-      fileIO.fileExists(skillsFile) ? fileIO.read(skillsFile) : '';
+  final skills = fileIO.fileExists(skillsFile) ? fileIO.read(skillsFile) : '';
   if (skills.isNotEmpty && !skills.contains('_No sessions recorded yet._')) {
     print('\n📚 Skills loaded — relevant patterns will inform /suggest.');
   }
 
   // Prompt for session context.
-  print('\nAnswer the following. Be specific — this seeds the handoff for /suggest.\n');
+  print(
+      '\nAnswer the following. Be specific — this seeds the handoff for /suggest.\n');
 
-  final bug = promptWithDefault(prompt_, '1. What is the bug? (actual behavior)', defaultBug);
-  final expected = promptWithDefault(
-      prompt_, '2. What should be happening? (expected behavior)', defaultExpected);
+  final bug = promptWithDefault(
+      prompt_, '1. What is the bug? (actual behavior)', defaultBug);
+  final expected = promptWithDefault(prompt_,
+      '2. What should be happening? (expected behavior)', defaultExpected);
 
   if (bug == null || expected == null) {
     print('\n✗ Setup requires an interactive terminal.');
     exit_(1);
   }
 
-  final files = promptWithDefault(prompt_, '3. Any files already in mind?', defaultFiles,
+  final files = promptWithDefault(
+      prompt_, '3. Any files already in mind?', defaultFiles,
       optional: true);
   final entryPoints = promptWithDefault(
     prompt_,
@@ -160,7 +164,10 @@ Future<void> runSetup({
 
   // Run sensitivity scan if enabled.
   if (entry.sensitivityMode) {
-    await runScan(scope: null, projectRootOverride: projectRoot, workspacePath: workspace);
+    await runScan(
+        scope: null,
+        projectRootOverride: projectRoot,
+        workspacePath: workspace);
   }
 
   // Build handoff content.
@@ -171,7 +178,8 @@ Future<void> runSetup({
     bug: bug,
     expected: expected,
     projectName: entry.name,
-    files: files != null ? _resolveFilePaths(files, projectRoot, finder_) : null,
+    files:
+        files != null ? _resolveFilePaths(files, projectRoot, finder_) : null,
     entryPoints: entryPoints,
   );
 
@@ -188,7 +196,10 @@ Future<void> runSetup({
   fileIO.write(handoffFile, content);
 
   // Log the setup interaction.
-  final logger = SessionLogger(io: fileIO, sensitivityMode: entry.sensitivityMode, workspacePath: workspace);
+  final logger = SessionLogger(
+      io: fileIO,
+      sensitivityMode: entry.sensitivityMode,
+      workspacePath: workspace);
   logger.logInteraction(
     command: 'setup',
     outcome: 'ok',
@@ -212,13 +223,14 @@ abstract final class _SetupMenu {
 
 String _statusColour(HandoffStatus s) => switch (s) {
       HandoffStatus.suggestInvestigating ||
-      HandoffStatus.readyForSuggest      => ansi.cyan,
-      HandoffStatus.readyForDebug        => ansi.yellow,
+      HandoffStatus.readyForSuggest =>
+        ansi.cyan,
+      HandoffStatus.readyForDebug => ansi.yellow,
       HandoffStatus.debugInProgress ||
-      HandoffStatus.debugComplete        => ansi.green,
-      HandoffStatus.needsSuggest         => ansi.red,
-      HandoffStatus.unknown ||
-      HandoffStatus.noHandoff            => ansi.dim,
+      HandoffStatus.debugComplete =>
+        ansi.green,
+      HandoffStatus.needsSuggest => ansi.red,
+      HandoffStatus.unknown || HandoffStatus.noHandoff => ansi.dim,
     };
 
 String _truncate(String s, {int max = 60}) =>
@@ -299,8 +311,7 @@ String _resolveFilePaths(String raw, String projectRoot, FileFinderFn finder) {
     return switch (_resolveToken(token, projectRoot, finder)) {
       _Resolved(:final relativePaths) =>
         relativePaths.map((rel) => '- `$rel` — (user-provided)'),
-      _NotFound(:final token) =>
-        ['- `$token` — (not found — verify path)'],
+      _NotFound(:final token) => ['- `$token` — (not found — verify path)'],
     };
   }).join('\n');
 }

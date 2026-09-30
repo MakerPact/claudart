@@ -9,19 +9,19 @@ import 'package:claudart/pipeline/usage.dart';
 import 'package:test/test.dart';
 
 const _fieldLabelCacheWrite = 'cache-wr';
-const _fieldLabelCached     = 'cached';
-const _fieldLabelOut        = 'out';
-const _fieldLabelIn         = 'in';
+const _fieldLabelCached = 'cached';
+const _fieldLabelOut = 'out';
+const _fieldLabelIn = 'in';
 
 void main() {
   group('Usage zero value', () {
     test('all counters are zero by default', () {
       const usage = Usage();
-      expect(usage.input,         equals(0));
-      expect(usage.output,        equals(0));
-      expect(usage.cacheRead,     equals(0));
+      expect(usage.input, equals(0));
+      expect(usage.output, equals(0));
+      expect(usage.cacheRead, equals(0));
       expect(usage.cacheCreation, equals(0));
-      expect(usage.cost,          equals(0));
+      expect(usage.cost, equals(0));
       expect(usage.thinkingTokens, equals(0));
     });
   });
@@ -43,8 +43,8 @@ void main() {
     });
 
     test('cacheCreation + cacheCreation', () {
-      final sum = const Usage(cacheCreation: 800) +
-          const Usage(cacheCreation: 150);
+      final sum =
+          const Usage(cacheCreation: 800) + const Usage(cacheCreation: 150);
       expect(sum.cacheCreation, equals(950));
     });
 
@@ -54,7 +54,8 @@ void main() {
     });
 
     test('thinkingTokens + thinkingTokens', () {
-      final sum = const Usage(thinkingTokens: 178) + const Usage(thinkingTokens: 42);
+      final sum =
+          const Usage(thinkingTokens: 178) + const Usage(thinkingTokens: 42);
       expect(sum.thinkingTokens, equals(220));
     });
 
@@ -76,11 +77,11 @@ void main() {
         thinkingTokens: 5,
       );
       final sum = a + b;
-      expect(sum.input,          equals(111));
-      expect(sum.output,         equals(222));
-      expect(sum.cacheRead,      equals(333));
-      expect(sum.cacheCreation,  equals(444));
-      expect(sum.cost,           closeTo(2.0, 1e-9));
+      expect(sum.input, equals(111));
+      expect(sum.output, equals(222));
+      expect(sum.cacheRead, equals(333));
+      expect(sum.cacheCreation, equals(444));
+      expect(sum.cost, closeTo(2.0, 1e-9));
       expect(sum.thinkingTokens, equals(55));
     });
   });

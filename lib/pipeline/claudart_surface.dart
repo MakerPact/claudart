@@ -20,7 +20,7 @@ enum ClaudartSurface {
   const ClaudartSurface({required this.label, required this.usesStdout});
 
   final String label;
-  final bool   usesStdout;
+  final bool usesStdout;
 }
 
 // ── SurfaceExecutorConfig ─────────────────────────────────────────────────────
@@ -31,37 +31,37 @@ enum ClaudartSurface {
 class SurfaceExecutorConfig {
   SurfaceExecutorConfig.cli({
     ClaudeRunner? runner,
-    bool          strict = false,
-  })  : surface           = ClaudartSurface.cli,
-        _runner           = runner,
-        _prompter         = null,
+    bool strict = false,
+  })  : surface = ClaudartSurface.cli,
+        _runner = runner,
+        _prompter = null,
         _approvalSelector = null,
-        _strict           = strict;
+        _strict = strict;
 
   /// [approvalSelector] is required only when pipeline steps contain an
   /// [ApprovalGate] route. Screens that manage approval externally (e.g.
   /// SuggestScreen, where the gate is in the screen state machine) may omit it.
   SurfaceExecutorConfig.tui({
-    required UserPrompter     prompter,
-    ApprovalSelector?         approvalSelector,
-    ClaudeRunner?             runner,
-    bool                      strict = false,
-  })  : surface           = ClaudartSurface.tui,
-        _runner           = runner,
-        _prompter         = prompter,
+    required UserPrompter prompter,
+    ApprovalSelector? approvalSelector,
+    ClaudeRunner? runner,
+    bool strict = false,
+  })  : surface = ClaudartSurface.tui,
+        _runner = runner,
+        _prompter = prompter,
         _approvalSelector = approvalSelector,
-        _strict           = strict;
+        _strict = strict;
 
-  final ClaudartSurface   surface;
-  final ClaudeRunner?     _runner;
-  final UserPrompter?     _prompter;
+  final ClaudartSurface surface;
+  final ClaudeRunner? _runner;
+  final UserPrompter? _prompter;
   final ApprovalSelector? _approvalSelector;
-  final bool              _strict;
+  final bool _strict;
 
   PipelineExecutor build() => PipelineExecutor(
-        runner:           _runner,
-        prompter:         _prompter,
+        runner: _runner,
+        prompter: _prompter,
         approvalSelector: _approvalSelector,
-        strict:           _strict,
+        strict: _strict,
       );
 }

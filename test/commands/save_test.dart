@@ -304,57 +304,69 @@ void main() {
   group('save — checkpoint writing', () {
     test('writes exactly one checkpoint file', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io), hasLength(1));
-      handoff_matrix.cover(HandoffStatusType.readyForDebug, HandoffExpectation.debug);
+      handoff_matrix.cover(
+          HandoffStatusType.readyForDebug, HandoffExpectation.debug);
     });
 
     test('checkpoint filename has checkpoint_ prefix', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(p.basename(_checkpoints(io).first), startsWith('checkpoint_'));
     });
 
     test('checkpoint filename contains sanitised branch name', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       // fix/null-ref → fix_null-ref
       expect(p.basename(_checkpoints(io).first), contains('fix_null-ref'));
     });
 
     test('checkpoint filename ends with .md', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io).first, endsWith('.md'));
     });
 
-    test('checkpoint content contains handoff data and updated timestamp', () async {
+    test('checkpoint content contains handoff data and updated timestamp',
+        () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final content = io.read(_checkpoints(io).first);
       // Checkpoint is the stamped handoff — verify key content is present and
       // an Updated: timestamp was injected.
       expect(content, contains('# Agent Handoff — my-app'));
       expect(content, contains('ready-for-debug'));
-      expect(content, contains('ConfigLoader splits path on spaces before resolving.'));
+      expect(content,
+          contains('ConfigLoader splits path on spaces before resolving.'));
       expect(content, contains('> Updated: '));
     });
 
     test('multiple saves write multiple distinct checkpoints', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       // Small pause ensures distinct timestamp in filename.
       await Future<void>.delayed(const Duration(seconds: 1));
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io), hasLength(2));
     });
 
     test('writes checkpoint even when root cause not confirmed (audit trail)',
         () async {
       final io = _io(handoff: _unconfirmedHandoff);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(_checkpoints(io), hasLength(1));
-      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
+      handoff_matrix.cover(
+          HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
   });
 
@@ -371,13 +383,15 @@ void main() {
     test('creates skills.md when missing', () async {
       final io = _io();
       expect(io.fileExists(skillsPathFor(_workspace)), isFalse);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(io.fileExists(skillsPathFor(_workspace)), isTrue);
     });
 
     test('pending entry contains branch name', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       // Branch name in skills entries is the real branch — not sanitized.
       expect(skills, contains('fix/null-ref'));
@@ -385,7 +399,8 @@ void main() {
 
     test('pending entry contains root cause text', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       expect(skills, contains('ConfigLoader splits path on spaces'));
     });
@@ -393,7 +408,8 @@ void main() {
     test('pending entry contains hot files when changed files are named',
         () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       expect(skills, contains('loader.dart'));
     });
@@ -401,7 +417,8 @@ void main() {
     test('root cause entry without changed files writes only one pending entry',
         () async {
       final io = _io(handoff: _confirmedNoFilesHandoff);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       // Only one pending entry (root cause). No hot files entry.
       final pendingEntries =
@@ -415,17 +432,21 @@ void main() {
         skillsPathFor(_workspace),
         '# Accumulated Skills\n\n## Hot Paths\n\nexisting entry\n',
       );
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       expect(skills, contains('existing entry'));
       expect(skills, contains('ConfigLoader'));
     });
 
-    test('multiple saves on the same branch upsert one Pending entry, not duplicates',
+    test(
+        'multiple saves on the same branch upsert one Pending entry, not duplicates',
         () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       // One entry, keyed by branch — repeated /save on the same branch
       // updates in place instead of accumulating duplicate bullets.
@@ -436,8 +457,10 @@ void main() {
 
     test('Pending section header appears exactly once', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final skills = io.read(skillsPathFor(_workspace));
       expect('## Pending'.allMatches(skills).length, equals(1));
     });
@@ -455,7 +478,8 @@ void main() {
 
     test('does not create skills.md when root cause unconfirmed', () async {
       final io = _io(handoff: _unconfirmedHandoff);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(io.fileExists(skillsPathFor(_workspace)), isFalse);
     });
 
@@ -464,7 +488,8 @@ void main() {
       final io = _io(handoff: _unconfirmedHandoff);
       const existing = '# Accumulated Skills\n\n## Hot Paths\n\nsome entry\n';
       io.write(skillsPathFor(_workspace), existing);
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       expect(io.read(skillsPathFor(_workspace)), equals(existing));
     });
   });
@@ -474,7 +499,8 @@ void main() {
   group('save — registry', () {
     test('touches lastSession in registry', () async {
       final io = _io();
-      await runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
+      await runSave(
+          io: io, projectRootOverride: _projectRoot, exitFn: _throwExit);
       final entry = Registry.load(io: io).findByName('my-app')!;
       final today = DateTime.now().toIso8601String().substring(0, 10);
       expect(entry.lastSession, equals(today));
@@ -484,7 +510,8 @@ void main() {
       final io = _io();
       final output = <String>[];
       await runZoned(
-        () => runSave(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
+        () => runSave(
+            io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
         zoneSpecification: ZoneSpecification(
           print: (_, __, ___, line) => output.add(line),
         ),

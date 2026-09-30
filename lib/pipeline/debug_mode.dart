@@ -33,31 +33,31 @@ const String kClaudartDebugEnabledValue = '1';
 // test/tooling that parses the log MUST reference these — never inline
 // string literals.
 
-const String kTraceLabelStep        = 'STEP';
-const String kTraceLabelStream      = 'STREAM';
-const String kTraceLabelExit        = 'EXIT';
-const String kTraceLabelSummary     = 'SUMMARY';
+const String kTraceLabelStep = 'STEP';
+const String kTraceLabelStream = 'STREAM';
+const String kTraceLabelExit = 'EXIT';
+const String kTraceLabelSummary = 'SUMMARY';
 const String kTraceLabelOutputBytes = 'OUTPUT-TEXT-BYTES';
-const String kTraceLabelException   = 'EXCEPTION';
+const String kTraceLabelException = 'EXCEPTION';
 
-const String kTraceFieldModel      = 'model';
+const String kTraceFieldModel = 'model';
 const String kTraceFieldWorkingDir = 'workingDir';
-const String kTraceFieldSysBytes   = 'sysBytes';
-const String kTraceFieldMsgBytes   = 'msgBytes';
-const String kTraceFieldInput      = 'in';
-const String kTraceFieldCached     = 'cached';
+const String kTraceFieldSysBytes = 'sysBytes';
+const String kTraceFieldMsgBytes = 'msgBytes';
+const String kTraceFieldInput = 'in';
+const String kTraceFieldCached = 'cached';
 const String kTraceFieldCacheWrite = 'cacheWrite';
-const String kTraceFieldOutput     = 'out';
-const String kTraceFieldElapsedMs  = 'elapsedMs';
-const String kTraceFieldStderr     = 'stderr';
-const String kTraceStderrEmpty     = '(none)';
+const String kTraceFieldOutput = 'out';
+const String kTraceFieldElapsedMs = 'elapsedMs';
+const String kTraceFieldStderr = 'stderr';
+const String kTraceStderrEmpty = '(none)';
 
-const String kTraceDividerSystemOpen   = '--- SYSTEM PROMPT';
-const String kTraceDividerMessageOpen  = '--- MESSAGE';
+const String kTraceDividerSystemOpen = '--- SYSTEM PROMPT';
+const String kTraceDividerMessageOpen = '--- MESSAGE';
 const String kTraceDividerSectionClose = '---';
-const String kTraceDividerEndInput     = '--- END INPUT ---';
-const String kTraceByteCountSuffix     = 'bytes';
-const String kTraceMessageFullSuffix   = 'full';
+const String kTraceDividerEndInput = '--- END INPUT ---';
+const String kTraceByteCountSuffix = 'bytes';
+const String kTraceMessageFullSuffix = 'full';
 
 // ── Toggle ────────────────────────────────────────────────────────────────
 

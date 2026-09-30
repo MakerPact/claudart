@@ -52,15 +52,49 @@ void main() {
     });
 
     test('calculates correct chunks based on levels', () {
-      final filter = UgaFilter('one two three four five six seven eight nine ten');
+      final filter =
+          UgaFilter('one two three four five six seven eight nine ten');
 
       expect(filter.getWordsForLevel(0), isEmpty);
       expect(filter.getWordsForLevel(1), ['one', 'two']); // 10 * 1 / 5 = 2
-      expect(filter.getWordsForLevel(2), ['one', 'two', 'three', 'four']); // 10 * 2 / 5 = 4
-      expect(filter.getWordsForLevel(3), ['one', 'two', 'three', 'four', 'five', 'six']); // 10 * 3 / 5 = 6
-      expect(filter.getWordsForLevel(4), ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']); // 10 * 4 / 5 = 8
-      expect(filter.getWordsForLevel(5), ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']); // 10
-      expect(filter.getWordsForLevel(6), ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']); // max
+      expect(filter.getWordsForLevel(2),
+          ['one', 'two', 'three', 'four']); // 10 * 2 / 5 = 4
+      expect(filter.getWordsForLevel(3),
+          ['one', 'two', 'three', 'four', 'five', 'six']); // 10 * 3 / 5 = 6
+      expect(filter.getWordsForLevel(4), [
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight'
+      ]); // 10 * 4 / 5 = 8
+      expect(filter.getWordsForLevel(5), [
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+        'ten'
+      ]); // 10
+      expect(filter.getWordsForLevel(6), [
+        'one',
+        'two',
+        'three',
+        'four',
+        'five',
+        'six',
+        'seven',
+        'eight',
+        'nine',
+        'ten'
+      ]); // max
     });
 
     test('filters text correctly', () {
@@ -75,19 +109,19 @@ void main() {
     });
 
     test('filters words regardless of case', () {
-       final filter = UgaFilter('HELLO world');
-       expect(filter.applyFilter('hello WORLD and universe', 5), 'and universe');
+      final filter = UgaFilter('HELLO world');
+      expect(filter.applyFilter('hello WORLD and universe', 5), 'and universe');
     });
 
     test('loads and saves using FileIO', () {
-       final io = MockFileIO();
-       io.write('uga.txt', 'custom word list');
+      final io = MockFileIO();
+      io.write('uga.txt', 'custom word list');
 
-       final filter = UgaFilter.load(io, 'uga.txt');
-       expect(filter.getWords(), ['custom', 'word', 'list']);
+      final filter = UgaFilter.load(io, 'uga.txt');
+      expect(filter.getWords(), ['custom', 'word', 'list']);
 
-       filter.save(io, 'uga2.txt');
-       expect(io.read('uga2.txt'), 'custom word list');
+      filter.save(io, 'uga2.txt');
+      expect(io.read('uga2.txt'), 'custom word list');
     });
   });
 }

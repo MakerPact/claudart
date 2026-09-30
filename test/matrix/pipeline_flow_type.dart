@@ -11,7 +11,8 @@ import 'pipeline_feature.dart';
 
 enum PipelineFlowType implements AppType {
   suggest(
-    description: 'Suggest flow — deep exploration, root cause, scope, constraints',
+    description:
+        'Suggest flow — deep exploration, root cause, scope, constraints',
     features: {
       PipelineFeature.reader,
       PipelineFeature.reasoner,
@@ -33,7 +34,8 @@ enum PipelineFlowType implements AppType {
     features: {},
   ),
   flow(
-    description: 'Flow flow — agent-constructed session: classify → plan → construct',
+    description:
+        'Flow flow — agent-constructed session: classify → plan → construct',
     features: {
       PipelineFeature.categorize,
       PipelineFeature.planStep,

@@ -1,7 +1,6 @@
 import '../pipeline/agents/confirmation.dart';
 
-String saveCommandTemplate(String workspacePath, String projectName) =>
-    '''---
+String saveCommandTemplate(String workspacePath, String projectName) => '''---
 description: Checkpoint session — $projectName
 ---
 

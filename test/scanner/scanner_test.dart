@@ -44,7 +44,8 @@ void main() {
 
     test('detects Extension correctly', () {
       final io = buildIo({
-        'volume_ext.dart': 'extension VolumeBlocX on VolumeBloc { void stop() {} }',
+        'volume_ext.dart':
+            'extension VolumeBlocX on VolumeBloc { void stop() {} }',
       });
       final result = scanProject(projectRoot, io: io);
       expect(result.entities.containsKey('VolumeBlocX'), isTrue);
@@ -125,7 +126,8 @@ void main() {
 
     test('filesScanned reflects actual scanned count', () {
       final io = buildIo({
-        'volume_bloc.dart': 'class VolumeBloc extends Bloc<VolumeEvent, VolumeState> {}',
+        'volume_bloc.dart':
+            'class VolumeBloc extends Bloc<VolumeEvent, VolumeState> {}',
         'volume_repository.dart': 'class VolumeRepository {}',
       });
       final result = scanProject(projectRoot, io: io);
@@ -135,7 +137,8 @@ void main() {
     test('custom ignore rules respected', () {
       final io = MemoryFileIO(files: {
         '$projectRoot/lib/audio.g.dart': 'class Generated {}',
-        '$projectRoot/lib/buster.dart': 'class VolumeBloc extends Bloc<E, S> {}',
+        '$projectRoot/lib/buster.dart':
+            'class VolumeBloc extends Bloc<E, S> {}',
       });
       final rules = loadIgnoreRules(projectRoot, io: io);
       final result = scanProject(projectRoot, ignoreRules: rules, io: io);

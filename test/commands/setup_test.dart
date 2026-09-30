@@ -25,14 +25,13 @@ FileFinderFn _uniqueFinder(String projectRoot) =>
 FileFinderFn get _notFoundFinder => (_, __) => [];
 
 /// Finder that returns two matches for any basename.
-FileFinderFn _ambiguousFinder(String projectRoot) =>
-    (root, basename) => [
-          p.join(root, 'lib', 'a', basename),
-          p.join(root, 'lib', 'b', basename),
-        ];
+FileFinderFn _ambiguousFinder(String projectRoot) => (root, basename) => [
+      p.join(root, 'lib', 'a', basename),
+      p.join(root, 'lib', 'b', basename),
+    ];
 
 const _projectRoot = '/projects/my-app';
-const _workspace   = '/workspaces/my-app';
+const _workspace = '/workspaces/my-app';
 const _projectName = 'my-app';
 
 // ── Exit helper ───────────────────────────────────────────────────────────────
@@ -47,9 +46,9 @@ Never _throwExit(int code) => throw _ExitException(code);
 // ── Menu constants ────────────────────────────────────────────────────────────
 // _SetupMenu is private in setup.dart — reproduced here so tests use named
 // values, not magic numbers.
-const _menuResume     = 0;
+const _menuResume = 0;
 const _menuStartFresh = 1;
-const _menuBack       = 2;
+const _menuBack = 2;
 
 // ── Active handoff fixture ────────────────────────────────────────────────────
 
@@ -297,7 +296,8 @@ void main() {
         ),
         throwsA(isA<_ExitException>().having((e) => e.code, 'code', 0)),
       );
-      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
+      handoff_matrix.cover(
+          HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
 
     test('handoff unchanged', () async {
@@ -495,7 +495,8 @@ void main() {
       final logsPath = p.join(logsDirFor(_workspace), 'interactions.jsonl');
       final raw = io.read(logsPath);
       expect(raw, isNotEmpty);
-      final entry = jsonDecode(raw.trim().split('\n').last) as Map<String, dynamic>;
+      final entry =
+          jsonDecode(raw.trim().split('\n').last) as Map<String, dynamic>;
       expect(entry['command'], equals('setup'));
       expect(entry['outcome'], equals('ok'));
     });
@@ -504,7 +505,8 @@ void main() {
   // ── File resolution ──────────────────────────────────────────────────────────
 
   group('setup — file resolution', () {
-    Future<String> setupWithFiles(String filesInput, FileFinderFn finder) async {
+    Future<String> setupWithFiles(
+        String filesInput, FileFinderFn finder) async {
       final io = _io();
       await runSetup(
         io: io,

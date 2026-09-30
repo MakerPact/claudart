@@ -41,7 +41,6 @@ The reading order for a new session:
 | `docs/design.md` | Formal FSA proofs | Mathematical spec for state machine |
 | `docs/session_log.md` | Design decision record | Running log of why decisions were made |
 | `experiments/` | Archived reasoning sessions | Historical context — not current state |
-| `README_v1.md` | **Superseded** | Do not reference — README.md is current |
 
 ---
 

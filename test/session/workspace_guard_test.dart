@@ -51,7 +51,8 @@ void main() {
       );
     });
 
-    test('WorkspaceLockedException carries the interrupted operation', () async {
+    test('WorkspaceLockedException carries the interrupted operation',
+        () async {
       final io = MemoryFileIO(
         files: {lockFilePath(_workspace): 'scan'},
       );
@@ -97,7 +98,8 @@ void main() {
 
     test('returns fn result on success', () async {
       final io = MemoryFileIO();
-      final result = await withGuard(_workspace, 'setup', () async => 42, io: io);
+      final result =
+          await withGuard(_workspace, 'setup', () async => 42, io: io);
       expect(result, equals(42));
     });
   });

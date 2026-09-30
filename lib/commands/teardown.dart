@@ -66,9 +66,8 @@ Future<void> runTeardown({
 
   final workspace = entry.workspacePath;
   final handoffFile = handoffPathFor(workspace);
-  final handoff = fileIO.fileExists(handoffFile)
-      ? fileIO.read(handoffFile)
-      : '';
+  final handoff =
+      fileIO.fileExists(handoffFile) ? fileIO.read(handoffFile) : '';
 
   if (handoff.isEmpty) {
     print('\nNo active handoff found. Nothing to tear down.\n');
@@ -113,13 +112,12 @@ Future<void> runTeardown({
       final description = headless
           ? bug
           : prompt_(
-                  "Brief description (what's still pending)",
-                  optional: true,
-                ) ??
-                '';
-      final resolvedDescription = description.trim().isEmpty
-          ? bug
-          : description.trim();
+                "Brief description (what's still pending)",
+                optional: true,
+              ) ??
+              '';
+      final resolvedDescription =
+          description.trim().isEmpty ? bug : description.trim();
       if (headless) {
         // Same "verify before trusting the archive" contract as the
         // resolved path's fuller Headless decisions block below — this
@@ -237,8 +235,8 @@ Future<void> runTeardown({
   final hotFilesDefault = agentHotFiles?.isNotEmpty == true
       ? agentHotFiles
       : (changedFiles.isBlank
-            ? null
-            : changedFiles.replaceAll('\n', ', ').trim());
+          ? null
+          : changedFiles.replaceAll('\n', ', ').trim());
   final hotFiles = headless
       ? hotFilesDefault
       : promptWithDefault(
@@ -247,9 +245,8 @@ Future<void> runTeardown({
           hotFilesDefault,
         );
 
-  final coldDefault = agentColdFiles?.toLowerCase() == 'none'
-      ? null
-      : agentColdFiles;
+  final coldDefault =
+      agentColdFiles?.toLowerCase() == 'none' ? null : agentColdFiles;
   final coldFiles = headless
       ? coldDefault
       : promptWithDefault(
@@ -378,21 +375,19 @@ void _updateSkills({
   );
 
   if (hotFiles != null && hotFiles.toLowerCase() != 'none') {
-    for (final file
-        in hotFiles
-            .split(',')
-            .map((f) => f.trim())
-            .where((f) => f.isNotEmpty)) {
+    for (final file in hotFiles
+        .split(',')
+        .map((f) => f.trim())
+        .where((f) => f.isNotEmpty)) {
       skills = incrementHotPath(skills, category, file);
     }
   }
 
   if (coldFiles != null && coldFiles.toLowerCase() != 'none') {
-    for (final file
-        in coldFiles
-            .split(',')
-            .map((f) => f.trim())
-            .where((f) => f.isNotEmpty)) {
+    for (final file in coldFiles
+        .split(',')
+        .map((f) => f.trim())
+        .where((f) => f.isNotEmpty)) {
       skills = appendToSection(
         skills,
         'Anti-patterns',
@@ -430,26 +425,26 @@ enum TeardownCategory {
 
   /// Canonical string written to skills.md.
   String get value => switch (this) {
-    apiIntegration => 'api-integration',
-    concurrency => 'concurrency',
-    configuration => 'configuration',
-    dataParsing => 'data-parsing',
-    ioFilesystem => 'io-filesystem',
-    stateManagement => 'state-management',
-    general => 'general',
-    other => 'other',
-  };
+        apiIntegration => 'api-integration',
+        concurrency => 'concurrency',
+        configuration => 'configuration',
+        dataParsing => 'data-parsing',
+        ioFilesystem => 'io-filesystem',
+        stateManagement => 'state-management',
+        general => 'general',
+        other => 'other',
+      };
 
   /// Commit area label for buildCommitMessage.
   String get area => switch (this) {
-    apiIntegration => 'api',
-    concurrency => 'async',
-    configuration => 'config',
-    ioFilesystem => 'io',
-    stateManagement => 'state',
-    dataParsing => 'data',
-    general || other => 'fix',
-  };
+        apiIntegration => 'api',
+        concurrency => 'async',
+        configuration => 'config',
+        ioFilesystem => 'io',
+        stateManagement => 'state',
+        dataParsing => 'data',
+        general || other => 'fix',
+      };
 
   /// Display label shown in the interactive menu.
   String get label => this == other ? 'other (type manually)' : value;

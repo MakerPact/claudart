@@ -50,7 +50,8 @@ void main() {
   group('SuggestSteps.reasoner — modelSelector', () {
     test('gui × design categorize routes to opus', () {
       final ctx = _ctxWithCategorize(_guiDesign);
-      expect(SuggestSteps.reasoner.effectiveModel(ctx), equals(AgentModel.opus));
+      expect(
+          SuggestSteps.reasoner.effectiveModel(ctx), equals(AgentModel.opus));
     });
 
     test('degrades to sonnet when categorize slot is empty', () {
@@ -60,14 +61,16 @@ void main() {
 
     test('degrades to sonnet on malformed categorize output', () {
       final ctx = _ctxWithCategorize('garbage with no xml tags');
-      expect(SuggestSteps.reasoner.effectiveModel(ctx), equals(AgentModel.sonnet));
+      expect(
+          SuggestSteps.reasoner.effectiveModel(ctx), equals(AgentModel.sonnet));
     });
   });
 
   group('DebugSteps.implementer — modelSelector', () {
     test('gui × design categorize routes to opus', () {
       final ctx = _ctxWithCategorize(_guiDesign);
-      expect(DebugSteps.implementer.effectiveModel(ctx), equals(AgentModel.opus));
+      expect(
+          DebugSteps.implementer.effectiveModel(ctx), equals(AgentModel.opus));
     });
 
     test('degrades to sonnet when categorize slot is empty', () {
@@ -77,7 +80,8 @@ void main() {
 
     test('degrades to sonnet on malformed categorize output', () {
       final ctx = _ctxWithCategorize('garbage with no xml tags');
-      expect(DebugSteps.implementer.effectiveModel(ctx), equals(AgentModel.sonnet));
+      expect(DebugSteps.implementer.effectiveModel(ctx),
+          equals(AgentModel.sonnet));
     });
   });
 }

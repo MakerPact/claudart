@@ -236,12 +236,23 @@ ProjectLinks createProjectLinks({
     fileIO.deleteLink(symlinkPath);
   }
 
-  final symlinkSkipped = fileIO.dirExists(symlinkPath);
+  var symlinkSkipped = fileIO.dirExists(symlinkPath);
   if (symlinkSkipped) {
     print('\n⚠  .claude/ is a real directory — symlink skipped.');
     print('  Slash commands in .claude/commands/ are already available.');
   } else {
-    fileIO.createLink(symlinkPath, symlinkTarget);
+    // Symlink creation can fail on Windows without Developer Mode/admin
+    // rights (Link.createSync throws FileSystemException). Degrade to the
+    // same real-directory path used when .claude/ already existed — the
+    // commands are synced there instead, so functionality is preserved.
+    try {
+      fileIO.createLink(symlinkPath, symlinkTarget);
+    } on FileSystemException {
+      symlinkSkipped = true;
+      print('\n⚠  Symlink creation failed (no symlink permission?).');
+      print('  Falling back to a real .claude/ directory — commands will');
+      print('  be synced there instead of linked.');
+    }
   }
 
   // Write all agent command templates to the workspace .claude/commands/.
@@ -281,7 +292,17 @@ ProjectLinks createProjectLinks({
   fileIO.createDir(cursorDir);
   if (fileIO.linkExists(cursorCmdsLink)) fileIO.deleteLink(cursorCmdsLink);
   if (!fileIO.dirExists(cursorCmdsLink)) {
-    fileIO.createLink(cursorCmdsLink, workspaceCmdsDir);
+    try {
+      fileIO.createLink(cursorCmdsLink, workspaceCmdsDir);
+    } on FileSystemException {
+      // No symlink permission — sync a real directory instead.
+      fileIO.createDir(cursorCmdsLink);
+      for (final flow in AgentFlow.values.where((f) => f.hasCommandFile)) {
+        final template = flow.commandTemplate(workspace, effectiveName);
+        fileIO.write(
+            p.join(cursorCmdsLink, flow.fileName(effectiveName)), template);
+      }
+    }
   }
 
   // Auto-add .claude and .cursor/ to .gitignore.

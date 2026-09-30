@@ -20,7 +20,8 @@ String updateSection(String content, String header, String newContent) {
     r'(## ' + RegExp.escape(header) + r'\n+)([\s\S]*?)(?=\n## |\s*$)',
   );
   if (pattern.hasMatch(content)) {
-    return content.replaceFirstMapped(pattern, (m) => '${m.group(1)}$newContent\n');
+    return content.replaceFirstMapped(
+        pattern, (m) => '${m.group(1)}$newContent\n');
   }
   // Section not found — append it
   return '$content\n## $header\n\n$newContent\n';
@@ -49,11 +50,14 @@ String readFile(String path) {
 /// Line format: `- \`relative/path\` — description`
 /// Returns a list of [ScopeFile] with absolute paths resolved via [projectRoot].
 List<ScopeFile> parseScopeFiles(String scopeSection, String projectRoot) {
-  final result  = <ScopeFile>[];
-  var   inFiles = false;
+  final result = <ScopeFile>[];
+  var inFiles = false;
   final fileMatchRegex = RegExp(r'^-\s+`([^`]+)`');
   for (final line in scopeSection.split('\n')) {
-    if (line.startsWith('### Files in play')) { inFiles = true; continue; }
+    if (line.startsWith('### Files in play')) {
+      inFiles = true;
+      continue;
+    }
     if (inFiles && line.startsWith('###')) break;
     if (!inFiles) continue;
     final match = fileMatchRegex.firstMatch(line.trim());
@@ -79,7 +83,7 @@ String? prompt(String question, {bool optional = false}) {
     if (optional) stdout.write(' (press enter to skip)');
     stdout.write('\n');
     final input = editor.readLine(optional: optional);
-    if (input == null && !optional) return null;  // EOF/non-TTY — can't prompt
+    if (input == null && !optional) return null; // EOF/non-TTY — can't prompt
     if (optional) return input?.isEmpty == true ? null : input;
     if (input != null && input.isNotEmpty) return input;
     // Non-optional and empty — re-prompt once with hint, don't recurse.

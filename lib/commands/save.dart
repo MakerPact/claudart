@@ -142,11 +142,8 @@ SkillsUpdateResult _updatePendingSkills({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 String _checkpointName(String branch) {
-  final ts = DateTime.now()
-      .toIso8601String()
-      .replaceAll(':', '-')
-      .split('.')
-      .first;
+  final ts =
+      DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
   final safeBranch = branch.replaceAll('/', '_').replaceAll(' ', '_');
   return 'checkpoint_${safeBranch}_$ts.md';
 }
@@ -184,8 +181,8 @@ void _printReport(
     case HandoffStatus.debugComplete:
       print('Debug complete. Verify with dart test, then claudart teardown.');
     case HandoffStatus.needsSuggest ||
-        HandoffStatus.unknown ||
-        HandoffStatus.noHandoff:
+          HandoffStatus.unknown ||
+          HandoffStatus.noHandoff:
       print('Run /suggest or /debug to continue.');
   }
   print('');

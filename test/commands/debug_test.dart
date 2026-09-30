@@ -20,7 +20,7 @@ import '../helpers/mocks.dart';
 // with realistic EDIT_FILE-tagged output — out of scope for this pass).
 
 const _projectRoot = '/projects/my-app';
-const _workspace   = '/workspaces/my-app';
+const _workspace = '/workspaces/my-app';
 
 class _ExitException implements Exception {
   final int code;
@@ -99,8 +99,14 @@ MemoryFileIO _io({String? handoff = _handoffReadyWithScope}) {
   return io;
 }
 
-PipelineExecutor _executorWithNoOutput() =>
-    PipelineExecutor(runner: ({required model, required systemPrompt, required message, required workingDir, StepMode mode = StepMode.project}) async => null);
+PipelineExecutor _executorWithNoOutput() => PipelineExecutor(
+    runner: (
+            {required model,
+            required systemPrompt,
+            required message,
+            required workingDir,
+            StepMode mode = StepMode.project}) async =>
+        null);
 
 void main() {
   group('runDebug — validation', () {
@@ -142,7 +148,8 @@ void main() {
   });
 
   group('runDebug — status confirmation gate', () {
-    test('status != ready-for-debug: confirming "no" aborts with exit 0', () async {
+    test('status != ready-for-debug: confirming "no" aborts with exit 0',
+        () async {
       final io = _io(handoff: _handoffNotReady);
       var askedQuestion = '';
       await expectLater(
@@ -160,7 +167,8 @@ void main() {
       expect(askedQuestion, equals('Run debug anyway?'));
     });
 
-    test('status != ready-for-debug: confirming "yes" proceeds past the gate', () async {
+    test('status != ready-for-debug: confirming "yes" proceeds past the gate',
+        () async {
       final io = _io(handoff: _handoffNotReady);
       await expectLater(
         runDebug(
@@ -176,7 +184,8 @@ void main() {
       );
     });
 
-    test('status is already ready-for-debug: gate is skipped entirely', () async {
+    test('status is already ready-for-debug: gate is skipped entirely',
+        () async {
       final io = _io();
       var confirmWasCalled = false;
       await expectLater(
@@ -210,7 +219,8 @@ void main() {
       );
     });
 
-    test('handoff is left untouched — no partial write on reader failure', () async {
+    test('handoff is left untouched — no partial write on reader failure',
+        () async {
       final io = _io();
       try {
         await runDebug(
@@ -222,7 +232,8 @@ void main() {
       } on _ExitException {
         // expected
       }
-      expect(io.read(handoffPathFor(_workspace)), equals(_handoffReadyWithScope));
+      expect(
+          io.read(handoffPathFor(_workspace)), equals(_handoffReadyWithScope));
     });
 
     test('prints which project it resolved before doing anything', () async {

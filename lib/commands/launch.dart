@@ -48,9 +48,8 @@ Future<void> runLauncher({
     exit_(0);
   }
 
-  final currentEntry = currentRoot != null
-      ? registry.findByProjectRoot(currentRoot)
-      : null;
+  final currentEntry =
+      currentRoot != null ? registry.findByProjectRoot(currentRoot) : null;
 
   final entries = registry.entries;
   final canRegister = currentRoot != null && currentEntry == null;
@@ -94,8 +93,8 @@ Future<void> runLauncher({
   print('\n─── ${selected.name} ${'─' * dashCount}');
 
   if (state != null) {
-    final isCurrentProject =
-        currentEntry != null && selected.workspacePath == currentEntry.workspacePath;
+    final isCurrentProject = currentEntry != null &&
+        selected.workspacePath == currentEntry.workspacePath;
     final branch = (isCurrentProject ? currentBranch : null) ?? state.branch;
     print('  Branch : $branch');
     final statusColour = _statusColour(state.status);
@@ -211,7 +210,8 @@ List<String> _buildProjectItems({
     // when link.dart couldn't symlink it — both mean "linked". Same fix
     // as link.dart/kill.dart's own symlink-only checks on this branch.
     final claudePath = p.join(e.projectRoot, '.claude');
-    final linked = fileIO.linkExists(claudePath) || fileIO.dirExists(claudePath);
+    final linked =
+        fileIO.linkExists(claudePath) || fileIO.dirExists(claudePath);
 
     final dot = locked
         ? ansi.c(ansi.yellow, '⚠')
@@ -259,13 +259,14 @@ void _printResumeInstructions(HandoffStatus status) {
 
 String _statusColour(HandoffStatus s) => switch (s) {
       HandoffStatus.suggestInvestigating ||
-      HandoffStatus.readyForSuggest      => ansi.cyan,
-      HandoffStatus.readyForDebug        => ansi.yellow,
+      HandoffStatus.readyForSuggest =>
+        ansi.cyan,
+      HandoffStatus.readyForDebug => ansi.yellow,
       HandoffStatus.debugInProgress ||
-      HandoffStatus.debugComplete        => ansi.green,
-      HandoffStatus.needsSuggest         => ansi.red,
-      HandoffStatus.unknown ||
-      HandoffStatus.noHandoff            => ansi.dim,
+      HandoffStatus.debugComplete =>
+        ansi.green,
+      HandoffStatus.needsSuggest => ansi.red,
+      HandoffStatus.unknown || HandoffStatus.noHandoff => ansi.dim,
     };
 
 String _truncate(String s, {int max = 60}) =>

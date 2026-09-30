@@ -47,9 +47,9 @@ enum ModelTier {
   capable;
 
   String get label => switch (this) {
-        ModelTier.fast     => 'fast',
+        ModelTier.fast => 'fast',
         ModelTier.balanced => 'balanced',
-        ModelTier.capable  => 'capable',
+        ModelTier.capable => 'capable',
       };
 }
 
@@ -59,34 +59,34 @@ enum AgentModel {
   /// claude-haiku — fastest, lowest cost.
   /// Pipeline roles: reader (file scan), lookup (targeted search), applier (XML surgery).
   haiku(
-    alias:           'haiku',
-    slug:            'claude-haiku-4-5-20251001',
-    shortName:       'haiku-4.5',
-    contextWindow:   200000,
+    alias: 'haiku',
+    slug: 'claude-haiku-4-5-20251001',
+    shortName: 'haiku-4.5',
+    contextWindow: 200000,
     maxOutputTokens: 8192,
-    tier:            ModelTier.fast,
+    tier: ModelTier.fast,
   ),
 
   /// claude-sonnet — balanced speed and precision.
   /// Pipeline roles: reasoner (analysis), planner (change planning), debug.
   sonnet(
-    alias:           'sonnet',
-    slug:            'claude-sonnet-5',
-    shortName:       'sonnet-5',
-    contextWindow:   200000,
+    alias: 'sonnet',
+    slug: 'claude-sonnet-5',
+    shortName: 'sonnet-5',
+    contextWindow: 200000,
     maxOutputTokens: 16000,
-    tier:            ModelTier.balanced,
+    tier: ModelTier.balanced,
   ),
 
   /// claude-opus — most capable.
   /// Pipeline roles: suggest (deep root cause), complex multi-file reasoning.
   opus(
-    alias:           'opus',
-    slug:            'claude-opus-5-5',
-    shortName:       'opus-5.5',
-    contextWindow:   200000,
+    alias: 'opus',
+    slug: 'claude-opus-5-5',
+    shortName: 'opus-5.5',
+    contextWindow: 200000,
     maxOutputTokens: 32000,
-    tier:            ModelTier.capable,
+    tier: ModelTier.capable,
   ),
 
   /// claude-fable — a design-oriented model. Same general capability
@@ -100,12 +100,12 @@ enum AgentModel {
   /// registry but is not the default route for anything today; use it
   /// only when explicitly requested by name.
   fable(
-    alias:           'fable',
-    slug:            'claude-fable-5-1',
-    shortName:       'fable-5.1',
-    contextWindow:   200000,
+    alias: 'fable',
+    slug: 'claude-fable-5-1',
+    shortName: 'fable-5.1',
+    contextWindow: 200000,
     maxOutputTokens: 32000,
-    tier:            ModelTier.capable,
+    tier: ModelTier.capable,
   );
 
   const AgentModel({
@@ -143,9 +143,9 @@ enum AgentModel {
   // design branch instead. Deriving these from tier would make fable
   // falsely bestForExplore alongside opus, breaking the "exactly one
   // model per task" invariant these predicates exist to guarantee.
-  bool get bestForLookup    => this == AgentModel.haiku;
-  bool get bestForAnalysis  => this == AgentModel.sonnet;
-  bool get bestForExplore   => this == AgentModel.opus;
+  bool get bestForLookup => this == AgentModel.haiku;
+  bool get bestForAnalysis => this == AgentModel.sonnet;
+  bool get bestForExplore => this == AgentModel.opus;
 
   // ── Parsing ──────────────────────────────────────────────────────────────────
 

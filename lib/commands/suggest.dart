@@ -24,11 +24,11 @@ Future<void> runSuggest({
   String? Function(String question, {bool optional})? promptFn,
   int Function(List<String> items)? pickFn,
 }) async {
-  final fileIO   = io       ?? const RealFileIO();
-  final exit_    = exitFn   ?? exit;
+  final fileIO = io ?? const RealFileIO();
+  final exit_ = exitFn ?? exit;
   final confirm_ = confirmFn ?? confirm;
-  final prompt_  = promptFn ?? prompt;
-  final pick_    = pickFn   ?? arrowMenu;
+  final prompt_ = promptFn ?? prompt;
+  final pick_ = pickFn ?? arrowMenu;
 
   // ── Locate project ─────────────────────────────────────────────────────────
 
@@ -39,18 +39,18 @@ Future<void> runSuggest({
   }
 
   final registry = Registry.load(io: fileIO);
-  final entry    = registry.findByProjectRoot(projectRoot);
+  final entry = registry.findByProjectRoot(projectRoot);
   if (entry == null) {
     print('✗ Project not registered. Run `claudart link` first.');
     exit_(1);
   }
   print('Project  : ${entry.name}');
 
-  final workspace    = entry.workspacePath;
-  final wsConfig     = WorkspaceConfig.load(workspace, io: fileIO);
-  final strictMode   = wsConfig?.owner.strict ?? false;
-  final exec         = executor ?? PipelineExecutor(strict: strictMode);
-  final handoffFile  = handoffPathFor(workspace);
+  final workspace = entry.workspacePath;
+  final wsConfig = WorkspaceConfig.load(workspace, io: fileIO);
+  final strictMode = wsConfig?.owner.strict ?? false;
+  final exec = executor ?? PipelineExecutor(strict: strictMode);
+  final handoffFile = handoffPathFor(workspace);
 
   if (!fileIO.fileExists(handoffFile)) {
     print('✗ No handoff found. Run `claudart setup` first.');
@@ -58,10 +58,11 @@ Future<void> runSuggest({
   }
 
   final handoff = fileIO.read(handoffFile);
-  final status  = readStatus(handoff);
+  final status = readStatus(handoff);
 
   if (status == 'ready-for-debug' || status == 'debug-in-progress') {
-    print('\n  ${ansi.bold}⚠${ansi.reset}  Handoff status is ${ansi.bold}$status${ansi.reset} — suggest already ran.');
+    print(
+        '\n  ${ansi.bold}⚠${ansi.reset}  Handoff status is ${ansi.bold}$status${ansi.reset} — suggest already ran.');
     if (!confirm_('Re-run suggest and overwrite?')) {
       print('Aborted.');
       exit_(0);
@@ -72,10 +73,10 @@ Future<void> runSuggest({
 
   // ── Parse handoff ──────────────────────────────────────────────────────────
 
-  final bug      = readSection(handoff, 'Bug');
+  final bug = readSection(handoff, 'Bug');
   final expected = readSection(handoff, 'Expected Behavior');
-  final scope    = readSection(handoff, 'Scope');
-  final files    = parseScopeFiles(scope, projectRoot);
+  final scope = readSection(handoff, 'Scope');
+  final files = parseScopeFiles(scope, projectRoot);
 
   if (files.isEmpty) {
     print(
@@ -109,24 +110,24 @@ Future<void> runSuggest({
 
   var ctx = PipelineContext(
     projectRoot: projectRoot,
-    bug:         bug,
-    expected:    expected,
-    files:       files,
+    bug: bug,
+    expected: expected,
+    files: files,
   );
 
   ctx = await exec.runFuture(
-    steps:        [FlowSteps.categorize],
-    ctx:          ctx,
-    displayStep:  1,
+    steps: [FlowSteps.categorize],
+    ctx: ctx,
+    displayStep: 1,
     displayTotal: 4,
   );
 
   // ── Phase 1: reader ────────────────────────────────────────────────────────
 
   ctx = await exec.runFuture(
-    steps:        [SuggestSteps.reader(files.length)],
-    ctx:          ctx,
-    displayStep:  2,
+    steps: [SuggestSteps.reader(files.length)],
+    ctx: ctx,
+    displayStep: 2,
     displayTotal: 4,
   );
 
@@ -138,9 +139,9 @@ Future<void> runSuggest({
   // ── Phase 2: reasoner ──────────────────────────────────────────────────────
 
   ctx = await exec.runFuture(
-    steps:        [SuggestSteps.reasoner],
-    ctx:          ctx,
-    displayStep:  3,
+    steps: [SuggestSteps.reasoner],
+    ctx: ctx,
+    displayStep: 3,
     displayTotal: 4,
   );
 
@@ -154,16 +155,17 @@ Future<void> runSuggest({
 
   while (true) {
     // Always use the most recent analysis: applier output if it exists, else reasoner.
-    final analysisOut = ctx.applierOut.isNotEmpty ? ctx.applierOut : ctx.reasonerOut;
+    final analysisOut =
+        ctx.applierOut.isNotEmpty ? ctx.applierOut : ctx.reasonerOut;
 
     print('\n  ${ansi.dim}──────────────────────────────────────${ansi.reset}');
     print('  ${ansi.dim}  Total  ${ctx.usage.format()}${ansi.reset}\n');
 
     print(render.header('SUGGEST FINDINGS — REVIEW BEFORE SAVE'));
-    _printSection('ROOT CAUSE',     tagOr(analysisOut, 'ROOT_CAUSE'));
-    _printSection('SCOPE FILES',    tagOr(analysisOut, 'SCOPE_FILES'));
+    _printSection('ROOT CAUSE', tagOr(analysisOut, 'ROOT_CAUSE'));
+    _printSection('SCOPE FILES', tagOr(analysisOut, 'SCOPE_FILES'));
     _printSection('MUST NOT TOUCH', tagOr(analysisOut, 'MUST_NOT_TOUCH'));
-    _printSection('CONSTRAINTS',    tagOr(analysisOut, 'CONSTRAINTS'));
+    _printSection('CONSTRAINTS', tagOr(analysisOut, 'CONSTRAINTS'));
     print('${ansi.dim}${'─' * 44}${ansi.reset}\n');
 
     final choice = pick_([
@@ -181,7 +183,8 @@ Future<void> runSuggest({
 
     // ── Refine ────────────────────────────────────────────────────────────────
 
-    final feedback = prompt_('What needs to change?', optional: true)?.trim() ?? '';
+    final feedback =
+        prompt_('What needs to change?', optional: true)?.trim() ?? '';
     if (feedback.isEmpty) continue;
 
     print('');
@@ -191,37 +194,39 @@ Future<void> runSuggest({
     // but preserves step outputs and accumulated usage.
     ctx = PipelineContext(
       projectRoot: projectRoot,
-      bug:         bug,
-      expected:    expected,
-      files:       files,
-      usage:       ctx.usage,
+      bug: bug,
+      expected: expected,
+      files: files,
+      usage: ctx.usage,
       slots: {
-        'reader':        ctx.readerOut,
-        'reasoner':      ctx.reasonerOut,
+        'reader': ctx.readerOut,
+        'reasoner': ctx.reasonerOut,
         if (ctx.applierOut.isNotEmpty) 'applier': ctx.applierOut,
         'user_feedback': feedback,
       },
     );
 
     ctx = await exec.runFuture(
-      steps:        SuggestSteps.refinement(refinePass),
-      ctx:          ctx,
-      displayStep:  2,
+      steps: SuggestSteps.refinement(refinePass),
+      ctx: ctx,
+      displayStep: 2,
       displayTotal: 3,
     );
   }
 
   // ── Phase 3: write to handoff ──────────────────────────────────────────────
 
-  stdout.write('\n  ${ansi.cyan}·${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Writing handoff…');
+  stdout.write(
+      '\n  ${ansi.cyan}·${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Writing handoff…');
 
-  final analysisOut  = ctx.applierOut.isNotEmpty ? ctx.applierOut : ctx.reasonerOut;
-  final rootCause    = tagOr(analysisOut, 'ROOT_CAUSE');
-  final scopeFiles   = tagOr(analysisOut, 'SCOPE_FILES');
+  final analysisOut =
+      ctx.applierOut.isNotEmpty ? ctx.applierOut : ctx.reasonerOut;
+  final rootCause = tagOr(analysisOut, 'ROOT_CAUSE');
+  final scopeFiles = tagOr(analysisOut, 'SCOPE_FILES');
   final scopeEntries = tagOr(analysisOut, 'SCOPE_ENTRIES');
   final scopeClasses = tagOr(analysisOut, 'SCOPE_CLASSES');
   final mustNotTouch = tagOr(analysisOut, 'MUST_NOT_TOUCH');
-  final constraints  = tagOr(analysisOut, 'CONSTRAINTS');
+  final constraints = tagOr(analysisOut, 'CONSTRAINTS');
 
   final newScope = '''### Files in play
 $scopeFiles
@@ -236,9 +241,9 @@ $scopeClasses
 $mustNotTouch''';
 
   var updated = handoff;
-  updated = updateSection(updated, 'Root Cause',  rootCause.trim());
-  updated = updateSection(updated, 'Scope',        newScope.trim());
-  updated = updateSection(updated, 'Constraints',  constraints.trim());
+  updated = updateSection(updated, 'Root Cause', rootCause.trim());
+  updated = updateSection(updated, 'Scope', newScope.trim());
+  updated = updateSection(updated, 'Constraints', constraints.trim());
   updated = updateStatus(updated, 'ready-for-debug');
   updated = updated.replaceFirst(
     RegExp(r'> Updated: [^\n]+'),
@@ -247,8 +252,10 @@ $mustNotTouch''';
 
   fileIO.write(handoffFile, updated);
 
-  stdout.write('\x1B[2K\r  ${ansi.green}✓${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Handoff written  ${ansi.dim}→${ansi.reset}  status: ready-for-debug\n\n');
-  print('  Next:  ${ansi.bold}claudart save${ansi.reset}  ${ansi.dim}→${ansi.reset}  then /debug in Zed\n');
+  stdout.write(
+      '\x1B[2K\r  ${ansi.green}✓${ansi.reset}  ${ansi.dim}[4/4]${ansi.reset}  Handoff written  ${ansi.dim}→${ansi.reset}  status: ready-for-debug\n\n');
+  print(
+      '  Next:  ${ansi.bold}claudart save${ansi.reset}  ${ansi.dim}→${ansi.reset}  then /debug in Zed\n');
 }
 
 // ── Display helpers ───────────────────────────────────────────────────────────
@@ -262,4 +269,3 @@ void _printSection(String title, String body) {
   }
   print('');
 }
-

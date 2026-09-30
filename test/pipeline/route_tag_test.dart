@@ -13,12 +13,12 @@ extension on RouteTag {
   /// this fixture catches a rename of the wire format that doesn't
   /// propagate to either side of the contract.
   String get expectedWireTag => switch (this) {
-        RouteTag.plan     => 'PLAN',
+        RouteTag.plan => 'PLAN',
         RouteTag.question => 'QUESTION',
-        RouteTag.answer   => 'ANSWER',
-        RouteTag.unknown  => 'UNKNOWN',
-        RouteTag.handoff  => 'HANDOFF',
-        RouteTag.changes  => 'CHANGES',
+        RouteTag.answer => 'ANSWER',
+        RouteTag.unknown => 'UNKNOWN',
+        RouteTag.handoff => 'HANDOFF',
+        RouteTag.changes => 'CHANGES',
       };
 }
 

@@ -37,11 +37,11 @@ Future<void> runFlow({
   String? Function(String question, {bool optional})? promptFn,
   int Function(List<String> items)? pickFn,
 }) async {
-  final fileIO  = io       ?? const RealFileIO();
-  final exit_   = exitFn   ?? exit;
+  final fileIO = io ?? const RealFileIO();
+  final exit_ = exitFn ?? exit;
   final planner = plannerLog ?? PlannerLog();
   final prompt_ = promptFn ?? prompt;
-  final pick_   = pickFn   ?? arrowMenu;
+  final pick_ = pickFn ?? arrowMenu;
 
   // ── Locate project ─────────────────────────────────────────────────────────
 
@@ -52,16 +52,16 @@ Future<void> runFlow({
   }
 
   final registry = Registry.load(io: fileIO);
-  final entry    = registry.findByProjectRoot(projectRoot);
+  final entry = registry.findByProjectRoot(projectRoot);
   if (entry == null) {
     print('✗ Project not registered. Run `claudart link` first.');
     exit_(1);
   }
   print('Project  : ${entry.name}');
 
-  final workspace    = entry.workspacePath;
-  final wsConfig     = WorkspaceConfig.load(workspace, io: fileIO);
-  final strictMode   = wsConfig?.owner.strict ?? false;
+  final workspace = entry.workspacePath;
+  final wsConfig = WorkspaceConfig.load(workspace, io: fileIO);
+  final strictMode = wsConfig?.owner.strict ?? false;
   // verbose defaults to false (no CLI flag plumbs an opt-in/out yet) — an
   // unconditional true here would put pipeline-internal trace lines in
   // every user's stdout with no way to silence them.
@@ -77,7 +77,8 @@ Future<void> runFlow({
     print('  A saved checkpoint was found from a previous session.\n');
 
     try {
-      final json    = jsonDecode(checkpointFile.readAsStringSync()) as Map<String, dynamic>;
+      final json =
+          jsonDecode(checkpointFile.readAsStringSync()) as Map<String, dynamic>;
       final savedCtx = PipelineContext.fromCheckpointJson(json);
       final savedPlan = savedCtx['plan'] ?? '';
 
@@ -93,7 +94,8 @@ Future<void> runFlow({
       ]);
 
       if (resumeChoice == 2) {
-        print('\n  Checkpoint kept at:\n  ${ansi.dim}$checkpointPath${ansi.reset}\n');
+        print(
+            '\n  Checkpoint kept at:\n  ${ansi.dim}$checkpointPath${ansi.reset}\n');
         exit_(0);
       }
 
@@ -103,9 +105,9 @@ Future<void> runFlow({
         // Skip phases 1+2; go straight to construct with the saved plan
         var ctx = savedCtx.withSlot(PipelineSlot.approved, 'true');
         ctx = await resolvedExec.runFuture(
-          steps:        [FlowSteps.construct],
-          ctx:          ctx,
-          displayStep:  3,
+          steps: [FlowSteps.construct],
+          ctx: ctx,
+          displayStep: 3,
           displayTotal: 3,
         );
         await _writeHandoff(ctx, workspace, fileIO, exit_);
@@ -120,15 +122,16 @@ Future<void> runFlow({
 
       ctx = await _runPhase2(resolvedExec, ctx, checkpointPath, exit_);
       ctx = await resolvedExec.runFuture(
-        steps:        [FlowSteps.construct],
-        ctx:          ctx,
-        displayStep:  3,
+        steps: [FlowSteps.construct],
+        ctx: ctx,
+        displayStep: 3,
         displayTotal: 3,
       );
       await _writeHandoff(ctx, workspace, fileIO, exit_);
       return;
     } on FormatException {
-      print('  ${ansi.dim}Checkpoint unreadable — starting fresh.${ansi.reset}\n');
+      print(
+          '  ${ansi.dim}Checkpoint unreadable — starting fresh.${ansi.reset}\n');
       checkpointFile.deleteSync();
     }
   }
@@ -151,16 +154,16 @@ Future<void> runFlow({
 
   var ctx = PipelineContext(
     projectRoot: projectRoot,
-    bug:         taskPrompt,
-    expected:    '',
-    files:       [],
+    bug: taskPrompt,
+    expected: '',
+    files: [],
   );
 
   // Phase 1: categorize (haiku)
   ctx = await resolvedExec.runFuture(
-    steps:        [FlowSteps.categorize],
-    ctx:          ctx,
-    displayStep:  1,
+    steps: [FlowSteps.categorize],
+    ctx: ctx,
+    displayStep: 1,
     displayTotal: 3,
   );
 
@@ -179,9 +182,9 @@ Future<void> runFlow({
 
   // Phase 3: construct (sonnet)
   ctx = await resolvedExec.runFuture(
-    steps:        [FlowSteps.construct],
-    ctx:          ctx,
-    displayStep:  3,
+    steps: [FlowSteps.construct],
+    ctx: ctx,
+    displayStep: 3,
     displayTotal: 3,
   );
 
@@ -221,10 +224,10 @@ void _printClassification(PipelineContext ctx) {
   final routed = routeModel(category, intent, complexity);
   print(
     '${render.classification(
-      category:   category.name,
-      intent:     intent.name,
+      category: category.name,
+      intent: intent.name,
       complexity: complexity.name,
-      model:      routed.shortName,
+      model: routed.shortName,
     )}\n',
   );
 }
@@ -264,14 +267,14 @@ void _recordClassification(PipelineContext ctx, PlannerLog planner) {
 
 Future<PipelineContext> _runPhase2(
   PipelineExecutor exec,
-  PipelineContext  ctx,
-  String           checkpointPath,
+  PipelineContext ctx,
+  String checkpointPath,
   Never Function(int) exit_,
 ) async {
   final result = await exec.runFuture(
-    steps:        [FlowSteps.plan, FlowSteps.clarify],
-    ctx:          ctx,
-    displayStep:  2,
+    steps: [FlowSteps.plan, FlowSteps.clarify],
+    ctx: ctx,
+    displayStep: 2,
     displayTotal: 3,
   );
 
@@ -296,10 +299,10 @@ Future<PipelineContext> _runPhase2(
 // ── Handoff write helper ──────────────────────────────────────────────────────
 
 Future<void> _writeHandoff(
-  PipelineContext       ctx,
-  String                workspace,
-  FileIO                fileIO,
-  Never Function(int)   exit_,
+  PipelineContext ctx,
+  String workspace,
+  FileIO fileIO,
+  Never Function(int) exit_,
 ) async {
   final handoffContent =
       tagOrNull(ctx[PipelineSlot.construct] ?? '', RouteTag.handoff.wireTag);
@@ -311,14 +314,14 @@ Future<void> _writeHandoff(
     exit_(1);
   }
 
-  final handoffPath  = handoffPathFor(workspace);
-  final branch       = detectGitContext()?.branch ?? 'unknown';
-  final date         = DateTime.now().toIso8601String().split('T').first;
+  final handoffPath = handoffPathFor(workspace);
+  final branch = detectGitContext()?.branch ?? 'unknown';
+  final date = DateTime.now().toIso8601String().split('T').first;
   // Matches handoff_template.dart's established format (project name in the
   // title) so a flow-generated handoff isn't distinguishable-by-omission
   // from one save/setup would have written — matters when several
   // workspaces' handoffs are open side by side.
-  final projectName  = p.basename(workspace);
+  final projectName = p.basename(workspace);
   final header = '# Agent Handoff — $projectName\n\n'
       '> Session started: $date | Branch: $branch\n\n---\n\n';
 
@@ -328,7 +331,8 @@ Future<void> _writeHandoff(
     '\x1B[2K\r  ${ansi.green}✓${ansi.reset}  Handoff written  '
     '${ansi.dim}→${ansi.reset}  $handoffPath\n\n',
   );
-  print('  Next:  ${ansi.bold}claudart save${ansi.reset}  ${ansi.dim}→${ansi.reset}  then /suggest in Zed\n');
+  print(
+      '  Next:  ${ansi.bold}claudart save${ansi.reset}  ${ansi.dim}→${ansi.reset}  then /suggest in Zed\n');
 }
 
 // ── Checkpoint I/O ────────────────────────────────────────────────────────────
@@ -340,4 +344,3 @@ void _saveCheckpoint(PipelineContext ctx, String path) {
   });
   File(path).writeAsStringSync(json);
 }
-

@@ -131,7 +131,8 @@ class SessionLogger {
     if (lines.isEmpty) {
       lines.add(
           '| timestamp | command | filesScanned | duration | tokensNew | outcome |');
-      lines.add('|-----------|---------|-------------|----------|-----------|--------|');
+      lines.add(
+          '|-----------|---------|-------------|----------|-----------|--------|');
     }
 
     // Data lines start after the 2-line header

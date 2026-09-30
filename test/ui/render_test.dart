@@ -15,56 +15,56 @@ import 'package:test/test.dart';
 
 AgentResponse _sample(ResponseKind kind) => switch (kind) {
       ResponseKind.plan => const Plan(
-          speaker:  Speaker.agent,
-          goal:     'ship it',
+          speaker: Speaker.agent,
+          goal: 'ship it',
           subtasks: [Subtask(id: 'a', workspace: 'w', priority: 1)],
         ),
       ResponseKind.progress => const Progress(
-          speaker:   Speaker.agent,
+          speaker: Speaker.agent,
           workspace: 'w',
-          subtask:   't',
-          flow:      AgentFlow.flow,
-          blocked:   false,
+          subtask: 't',
+          flow: AgentFlow.flow,
+          blocked: false,
         ),
       ResponseKind.question => const Question(
-          speaker:        Speaker.subagent,
-          origin:         'b',
-          workspace:      'w',
+          speaker: Speaker.subagent,
+          origin: 'b',
+          workspace: 'w',
           blockedSubtask: 't',
-          question:       'q?',
+          question: 'q?',
         ),
       ResponseKind.result => const Result(
-          speaker:      Speaker.subagent,
-          workspace:    'w',
-          subtask:      't',
+          speaker: Speaker.subagent,
+          workspace: 'w',
+          subtask: 't',
           filesTouched: [],
-          summary:      'done',
+          summary: 'done',
         ),
       ResponseKind.blocker => const Blocker(
-          speaker:   Speaker.subagent,
+          speaker: Speaker.subagent,
           workspace: 'w',
-          step:      'compile',
+          step: 'compile',
           errorType: 'boom',
         ),
       ResponseKind.handoff => const Handoff(
-          speaker:      Speaker.agent,
-          from:         'a',
-          to:           'b',
+          speaker: Speaker.agent,
+          from: 'a',
+          to: 'b',
           resolvedInfo: 'use X',
         ),
       ResponseKind.replan => const Replan(
-          speaker:  Speaker.agent,
-          reason:   'answer changed priority',
+          speaker: Speaker.agent,
+          reason: 'answer changed priority',
           oldOrder: ['a', 'b'],
           newOrder: ['b', 'a'],
         ),
       ResponseKind.action => const Action(
-          speaker:   Speaker.subagent,
+          speaker: Speaker.subagent,
           workspace: 'w',
-          subtask:   't',
-          verb:      ActionVerb.created,
-          target:    'lib/x.dart',
-          summary:   'new file',
+          subtask: 't',
+          verb: ActionVerb.created,
+          target: 'lib/x.dart',
+          summary: 'new file',
         ),
     };
 
@@ -75,8 +75,8 @@ void main() {
   group('render — header first, no ANSI in non-TTY', () {
     for (final kind in ResponseKind.values) {
       test(kind.name, () {
-        final response  = _sample(kind);
-        final out       = render.render(response);
+        final response = _sample(kind);
+        final out = render.render(response);
         final firstLine = out.split('\n').first;
         expect(firstLine, contains(kind.label));
         expect(firstLine, contains(response.speaker.label));
@@ -93,12 +93,12 @@ void main() {
 
     test('Question with options lists them', () {
       final out = render.render(const Question(
-        speaker:        Speaker.subagent,
-        origin:         'b',
-        workspace:      'w',
+        speaker: Speaker.subagent,
+        origin: 'b',
+        workspace: 'w',
         blockedSubtask: 't',
-        question:       'q?',
-        options:        ['yes', 'no'],
+        question: 'q?',
+        options: ['yes', 'no'],
       ));
       expect(out, contains('  - yes'));
       expect(out, contains('  - no'));
@@ -113,18 +113,18 @@ void main() {
   group('render — speaker lanes distinct', () {
     test('same kind, different speaker → different header label', () {
       final claudart = render.render(const Progress(
-        speaker:   Speaker.claudart,
+        speaker: Speaker.claudart,
         workspace: 'w',
-        subtask:   't',
-        flow:      AgentFlow.flow,
-        blocked:   false,
+        subtask: 't',
+        flow: AgentFlow.flow,
+        blocked: false,
       ));
       final agent = render.render(const Progress(
-        speaker:   Speaker.agent,
+        speaker: Speaker.agent,
         workspace: 'w',
-        subtask:   't',
-        flow:      AgentFlow.flow,
-        blocked:   false,
+        subtask: 't',
+        flow: AgentFlow.flow,
+        blocked: false,
       ));
       expect(claudart.split('\n').first, contains('claudart'));
       expect(agent.split('\n').first, contains('agent'));
@@ -151,10 +151,11 @@ void main() {
     test('Plan renders dependencies before dependents with a done count', () {
       final out = render.render(const Plan(
         speaker: Speaker.agent,
-        goal:    'ship',
+        goal: 'ship',
         subtasks: [
           Subtask(id: 'b', workspace: 'w', priority: 1, dependsOn: ['a']),
-          Subtask(id: 'a', workspace: 'w', priority: 2, state: SubtaskState.done),
+          Subtask(
+              id: 'a', workspace: 'w', priority: 2, state: SubtaskState.done),
         ],
       ));
       expect(out, contains('1/2 done'));

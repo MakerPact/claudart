@@ -34,5 +34,6 @@ class RealProcessRunner implements ProcessRunner {
     List<String> arguments, {
     String? workingDirectory,
   }) =>
-      Process.runSync(executable, arguments, workingDirectory: workingDirectory);
+      Process.runSync(executable, arguments,
+          workingDirectory: workingDirectory);
 }

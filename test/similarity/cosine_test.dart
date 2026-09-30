@@ -95,7 +95,8 @@ void main() {
       ];
       final corpus = buildIdfCorpus(docs);
       final query = tfidfVector('buster rover issue', corpus);
-      final scores = docs.map((d) => cosineSimilarity(query, tfidfVector(d, corpus)));
+      final scores =
+          docs.map((d) => cosineSimilarity(query, tfidfVector(d, corpus)));
       expect(scores.first, greaterThan(scores.last));
     });
   });

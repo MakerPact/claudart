@@ -78,12 +78,11 @@ abstract final class FlowSteps {
   // ── Steps ─────────────────────────────────────────────────────────────────
 
   static final AgentStep categorize = AgentStep(
-    id:    'categorize',
+    id: 'categorize',
     label: 'Categorizing intent',
     model: AgentModel.haiku,
     systemPrompt: _categorizeSystem,
-    buildPrompt: (PipelineContext ctx) =>
-        'Classify this task:\n\n${ctx.bug}',
+    buildPrompt: (PipelineContext ctx) => 'Classify this task:\n\n${ctx.bug}',
     routes: const {},
   );
 
@@ -104,15 +103,15 @@ abstract final class FlowSteps {
       );
 
   static final AgentStep plan = AgentStep(
-    id:    'plan',
+    id: 'plan',
     label: 'Generating plan',
     model: _planFallbackModel,
     modelSelector: _planModelSelector,
     systemPrompt: _planSystem,
     buildPrompt: (PipelineContext ctx) {
       final classification = ctx[PipelineSlot.categorize] ?? '';
-      final clarification  = ctx.clarification ?? '';
-      final index          = _projectIndex(ctx.projectRoot);
+      final clarification = ctx.clarification ?? '';
+      final index = _projectIndex(ctx.projectRoot);
       return [
         'Classification:\n$classification',
         'Task:\n${ctx.bug}',
@@ -130,14 +129,14 @@ abstract final class FlowSteps {
   );
 
   static final AgentStep clarify = AgentStep(
-    id:    'clarify',
+    id: 'clarify',
     label: 'Resolving question',
     model: AgentModel.haiku,
     systemPrompt: _clarifySystem,
     buildPrompt: (PipelineContext ctx) =>
         'Question: ${ctx[PipelineSlot.question] ?? ''}\n\nOriginal input: ${ctx.bug}',
     routes: const {
-      RouteTag.answer:  FeedBackTo('plan'),
+      RouteTag.answer: FeedBackTo('plan'),
       RouteTag.unknown: EscalateUser('plan'),
     },
     // If clarify produces prose without tags, treat the full output as an
@@ -152,7 +151,7 @@ abstract final class FlowSteps {
   );
 
   static final AgentStep construct = AgentStep(
-    id:    'construct',
+    id: 'construct',
     label: 'Constructing handoff',
     model: _planFallbackModel,
     // Reuses the same modelSelector as [plan] — same categorize slot,
@@ -163,7 +162,7 @@ abstract final class FlowSteps {
     modelSelector: _planModelSelector,
     systemPrompt: _constructSystem,
     buildPrompt: (PipelineContext ctx) {
-      final plan  = ctx[PipelineSlot.plan] ?? '';
+      final plan = ctx[PipelineSlot.plan] ?? '';
       final index = _projectIndex(ctx.projectRoot);
       return [
         'Approved plan:\n$plan',
@@ -201,7 +200,8 @@ const _maxIndexEntries = 300;
 // ran out of directories to visit — the only way a caller can tell "there
 // may be more" from "that's everything," since [out] itself is capped at
 // [limit] either way and can't answer that question on its own.
-bool _walkDirsSortedBounded(Directory dir, String projectRoot, List<String> out, int limit) {
+bool _walkDirsSortedBounded(
+    Directory dir, String projectRoot, List<String> out, int limit) {
   if (out.length >= limit) return true;
   List<Directory> children;
   try {
@@ -247,7 +247,8 @@ String _projectIndex(String projectRoot) {
   }
   if (dirs.isNotEmpty) {
     lines
-      ..add('Existing directories (use only these as parent paths for new files):')
+      ..add(
+          'Existing directories (use only these as parent paths for new files):')
       ..addAll(dirs.map((d) => '  $d'));
     if (truncated) {
       lines.add('  … stopped after $_maxIndexEntries entries (more exist)');
@@ -262,7 +263,8 @@ String _projectIndex(String projectRoot) {
     final names = <String>[];
     List<File> enumFiles;
     try {
-      enumFiles = enumDir.listSync(followLinks: false).whereType<File>().toList();
+      enumFiles =
+          enumDir.listSync(followLinks: false).whereType<File>().toList();
     } on FileSystemException {
       enumFiles = const [];
     }

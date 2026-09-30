@@ -124,7 +124,8 @@ _Nothing yet.
       );
       // Handoff must be unchanged — status is read-only.
       expect(io.read(handoffPathFor(workspace)), equals(handoffBefore));
-      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
+      handoff_matrix.cover(
+          HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
 
     test('displays handoff branch when git detection unavailable', () async {
@@ -224,7 +225,8 @@ _Nothing yet.
       );
       // Status is read-only — handoff must not be mutated.
       expect(io.read(handoffPathFor(workspace)), equals(handoffBefore));
-      handoff_matrix.cover(HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
+      handoff_matrix.cover(
+          HandoffStatusType.suggestInvestigating, HandoffExpectation.suggest);
     });
   });
 
@@ -256,7 +258,8 @@ _Nothing yet.
     Future<List<String>> statusOutput(MemoryFileIO io) async {
       final output = <String>[];
       await runZoned(
-        () => runStatus(io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
+        () => runStatus(
+            io: io, projectRootOverride: _projectRoot, exitFn: _throwExit),
         zoneSpecification: ZoneSpecification(
           print: (_, __, ___, line) => output.add(line),
         ),
@@ -292,9 +295,11 @@ $bug
       return io;
     }
 
-    test('shows the most relevant pattern when skills.md has a match', () async {
+    test('shows the most relevant pattern when skills.md has a match',
+        () async {
       final io = ioWith(
-        bug: 'symlink creation crashes when the target already exists as a real directory',
+        bug:
+            'symlink creation crashes when the target already exists as a real directory',
         skills: '''
 ## Root Cause Patterns
 
@@ -316,7 +321,8 @@ $bug
     test('omits the section when the bug is still a placeholder', () async {
       final io = ioWith(
         bug: '_Not yet determined._',
-        skills: '## Root Cause Patterns\n\n- **general**: some pattern. → Fix: something.\n',
+        skills:
+            '## Root Cause Patterns\n\n- **general**: some pattern. → Fix: something.\n',
       );
       final output = await statusOutput(io);
       expect(output.join('\n'), isNot(contains('Relevant past patterns')));

@@ -88,8 +88,7 @@ void main() {
           expect(
             prompt,
             contains(value),
-            reason:
-                '${tag.wireTag} value "$value" missing from prompt — '
+            reason: '${tag.wireTag} value "$value" missing from prompt — '
                 'prompt/parser would drift if LLM emitted it',
           );
         });
@@ -127,8 +126,7 @@ void main() {
       expect(
         prompt,
         contains('${CategorizeTag.values.length} XML tags'),
-        reason:
-            'prompt should reference ${CategorizeTag.values.length} '
+        reason: 'prompt should reference ${CategorizeTag.values.length} '
             'tags, derived from CategorizeTag.values.length',
       );
     });

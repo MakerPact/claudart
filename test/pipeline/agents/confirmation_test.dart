@@ -61,7 +61,8 @@ void main() {
     );
   });
 
-  test('confirmationProtocolInstructions demonstrates a wire format that '
+  test(
+      'confirmationProtocolInstructions demonstrates a wire format that '
       'actually parses — not an ambiguous schema-in-tag example', () {
     // Regression: the instructions once told the model to emit
     // <CONFIRMATION>one of: confirm, modify, clarify, reject</CONFIRMATION>

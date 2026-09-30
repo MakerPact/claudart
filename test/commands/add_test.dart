@@ -20,7 +20,8 @@ MemoryFileIO _emptyIO() => MemoryFileIO();
 
 /// Returns canned answers in call order: project name, SDK constraint,
 /// project type. `null` means "accept the default".
-String? Function(String, {String? defaultValue}) _prompts(List<String?> answers) {
+String? Function(String, {String? defaultValue}) _prompts(
+    List<String?> answers) {
   var i = 0;
   return (q, {defaultValue}) {
     final a = i < answers.length ? answers[i] : null;
@@ -122,7 +123,8 @@ void main() {
         confirmFn: _confirms([false, false, false, false]),
         exitFn: _throwExit,
       );
-      expect(io.fileExists(p.join(_projectRoot, 'archive', '.gitkeep')), isTrue);
+      expect(
+          io.fileExists(p.join(_projectRoot, 'archive', '.gitkeep')), isTrue);
       final readme = io.read(p.join(_projectRoot, 'archive', 'README.md'));
       expect(readme, contains('delta record'));
     });
@@ -140,7 +142,8 @@ void main() {
       expect(io.linkExists(p.join(_projectRoot, '.claude')), isTrue);
     });
 
-    test('includes the dartrix coverage-gaps section when usesDartrix is confirmed',
+    test(
+        'includes the dartrix coverage-gaps section when usesDartrix is confirmed',
         () async {
       final io = _emptyIO();
       await runAdd(
@@ -155,7 +158,8 @@ void main() {
       expect(plan, contains('dartrix coverage gaps'));
     });
 
-    test('registers a memory file under the (overridden) Claude Code memory root',
+    test(
+        'registers a memory file under the (overridden) Claude Code memory root',
         () async {
       final io = _emptyIO();
       await runAdd(

@@ -84,9 +84,13 @@ Future<void> runReport({
       // Add a comment to existing issue
       final body = _buildComment(entry);
       final result = proc.runSync('gh', [
-        'issue', 'comment', '$existingId',
-        '--repo', _ghRepo,
-        '--body', body,
+        'issue',
+        'comment',
+        '$existingId',
+        '--repo',
+        _ghRepo,
+        '--body',
+        body,
       ]);
       if (result.exitCode == 0) {
         print('  ↺ Updated #$existingId ($fp)');
@@ -101,12 +105,18 @@ Future<void> runReport({
       final body = _buildIssueBody(entry);
       final errorType = entry['outcome'] as String? ?? 'error';
       final result = proc.runSync('gh', [
-        'issue', 'create',
-        '--repo', _ghRepo,
-        '--title', title,
-        '--body', body,
-        '--label', _issueLabelBase,
-        '--label', errorType,
+        'issue',
+        'create',
+        '--repo',
+        _ghRepo,
+        '--title',
+        title,
+        '--body',
+        body,
+        '--label',
+        _issueLabelBase,
+        '--label',
+        errorType,
       ]);
       if (result.exitCode == 0) {
         final issueUrl = (result.stdout as String).trim();

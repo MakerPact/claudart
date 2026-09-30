@@ -14,9 +14,10 @@ import 'file_io.dart';
   final content = fileIO.read(pubspecPath);
 
   final envBlock = RegExp(
-    r'^environment\s*:\s*\n((?:[ \t]+\S[^\n]*\n?)+)',
-    multiLine: true,
-  ).firstMatch(content)?.group(1) ?? '';
+        r'^environment\s*:\s*\n((?:[ \t]+\S[^\n]*\n?)+)',
+        multiLine: true,
+      ).firstMatch(content)?.group(1) ??
+      '';
 
   String? extract(String key) {
     final m = RegExp(

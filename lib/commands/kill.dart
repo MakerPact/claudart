@@ -79,9 +79,8 @@ Future<void> runKill({
 
   // 5 — Read and display session state.
   final handoffPath = handoffPathFor(workspace);
-  final handoff = fileIO.fileExists(handoffPath)
-      ? fileIO.read(handoffPath)
-      : '';
+  final handoff =
+      fileIO.fileExists(handoffPath) ? fileIO.read(handoffPath) : '';
   if (handoff.isEmpty) {
     print('\n⚠  No handoff found in workspace: $workspace');
     if (!confirm_('Nothing to archive. Remove symlink only?')) {

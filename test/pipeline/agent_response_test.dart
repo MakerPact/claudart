@@ -10,25 +10,25 @@ import 'package:test/test.dart';
 
 extension on ResponseKind {
   String get expectedLabel => switch (this) {
-        ResponseKind.plan     => 'Plan',
+        ResponseKind.plan => 'Plan',
         ResponseKind.progress => 'Progress',
         ResponseKind.question => 'Question',
-        ResponseKind.result   => 'Result',
-        ResponseKind.blocker  => 'Blocker',
-        ResponseKind.handoff  => 'Handoff',
-        ResponseKind.replan   => 'Replan',
-        ResponseKind.action   => 'Action',
+        ResponseKind.result => 'Result',
+        ResponseKind.blocker => 'Blocker',
+        ResponseKind.handoff => 'Handoff',
+        ResponseKind.replan => 'Replan',
+        ResponseKind.action => 'Action',
       };
 }
 
 extension on SubtaskState {
   StateHue get expectedHue => switch (this) {
-        SubtaskState.ready          => StateHue.ready,
-        SubtaskState.blocked        => StateHue.inactive,
+        SubtaskState.ready => StateHue.ready,
+        SubtaskState.blocked => StateHue.inactive,
         SubtaskState.awaitingAnswer => StateHue.paused,
-        SubtaskState.running        => StateHue.active,
-        SubtaskState.done           => StateHue.success,
-        SubtaskState.failed         => StateHue.error,
+        SubtaskState.running => StateHue.active,
+        SubtaskState.done => StateHue.success,
+        SubtaskState.failed => StateHue.error,
       };
 }
 
@@ -44,7 +44,8 @@ void main() {
 
   group('ResponseKind.sortPriority', () {
     test('unique across variants', () {
-      final priorities = ResponseKind.values.map((k) => k.sortPriority).toList();
+      final priorities =
+          ResponseKind.values.map((k) => k.sortPriority).toList();
       expect(priorities.toSet().length, equals(priorities.length));
     });
 
@@ -80,17 +81,17 @@ void main() {
   group('never-guess invariant', () {
     test('Result.forSubtask throws when the subtask awaits an answer', () {
       const subtask = Subtask(
-        id:        'a',
+        id: 'a',
         workspace: 'w',
-        priority:  1,
-        state:     SubtaskState.awaitingAnswer,
+        priority: 1,
+        state: SubtaskState.awaitingAnswer,
       );
       expect(
         () => Result.forSubtask(
           subtask,
-          speaker:      Speaker.subagent,
+          speaker: Speaker.subagent,
           filesTouched: const [],
-          summary:      's',
+          summary: 's',
         ),
         throwsStateError,
       );
@@ -100,9 +101,9 @@ void main() {
       const subtask = Subtask(id: 'a', workspace: 'w', priority: 1);
       final result = Result.forSubtask(
         subtask,
-        speaker:      Speaker.subagent,
+        speaker: Speaker.subagent,
         filesTouched: const ['f'],
-        summary:      's',
+        summary: 's',
       );
       expect(result.subtask, equals('a'));
       expect(result.workspace, equals('w'));
@@ -113,25 +114,25 @@ void main() {
     test('questions sort to the front, others keep arrival order', () {
       final responses = <AgentResponse>[
         const Progress(
-          speaker:   Speaker.agent,
+          speaker: Speaker.agent,
           workspace: 'w',
-          subtask:   't1',
-          flow:      AgentFlow.flow,
-          blocked:   false,
+          subtask: 't1',
+          flow: AgentFlow.flow,
+          blocked: false,
         ),
         const Question(
-          speaker:        Speaker.subagent,
-          origin:         'b',
-          workspace:      'w',
+          speaker: Speaker.subagent,
+          origin: 'b',
+          workspace: 'w',
           blockedSubtask: 't2',
-          question:       'q',
+          question: 'q',
         ),
         const Result(
-          speaker:      Speaker.subagent,
-          workspace:    'w',
-          subtask:      't3',
+          speaker: Speaker.subagent,
+          workspace: 'w',
+          subtask: 't3',
           filesTouched: [],
-          summary:      'done',
+          summary: 'done',
         ),
       ];
       final ordered = floatQuestions(responses);

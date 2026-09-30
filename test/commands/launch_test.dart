@@ -159,10 +159,12 @@ void main() {
         exitFn: _throwExit,
       );
       expect(pickCall, equals(2));
-      handoff_matrix.cover(HandoffStatusType.readyForDebug, HandoffExpectation.debug);
+      handoff_matrix.cover(
+          HandoffStatusType.readyForDebug, HandoffExpectation.debug);
     });
 
-    test('a real .claude/ directory (symlink was never possible) shows as '
+    test(
+        'a real .claude/ directory (symlink was never possible) shows as '
         'linked, not unlinked', () async {
       final io = _io(withHandoff: true, withLink: false, withRealDir: true);
       List<String>? capturedItems;
@@ -287,7 +289,8 @@ void main() {
   });
 
   group('launch — register unregistered project', () {
-    test('routes to runLink with injected io when user picks Register', () async {
+    test('routes to runLink with injected io when user picks Register',
+        () async {
       final io = _io();
       const unregisteredRoot = '/projects/other-app';
 
@@ -334,7 +337,8 @@ void main() {
 
   group('launch — sensitivity mode display', () {
     test('does not crash when sensitivity mode is on', () async {
-      final io = _io(withHandoff: false, withLink: false, sensitivityMode: true);
+      final io =
+          _io(withHandoff: false, withLink: false, sensitivityMode: true);
       var pickCall = 0;
       await runLauncher(
         io: io,
@@ -350,7 +354,9 @@ void main() {
   });
 
   group('launch — branch display', () {
-    test('prefers live git branch over stale handoff branch for the cwd project', () async {
+    test(
+        'prefers live git branch over stale handoff branch for the cwd project',
+        () async {
       final realGit = detectGitContext();
       // Only meaningful inside a real git checkout — skip otherwise.
       if (realGit == null) return;
@@ -392,7 +398,9 @@ void main() {
       expect(printed, isNot(contains('Branch : feat/fix')));
     });
 
-    test('falls back to handoff branch for a project that is not the cwd project', () async {
+    test(
+        'falls back to handoff branch for a project that is not the cwd project',
+        () async {
       final io = _io(withHandoff: true, withLink: false);
       final output = <String>[];
       var pickCall = 0;

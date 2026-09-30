@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:path/path.dart' as p;
-import 'package:claudart/commands/teardown.dart' show runTeardown, TeardownCategory;
+import 'package:claudart/commands/teardown.dart'
+    show runTeardown, TeardownCategory;
 import 'package:claudart/md_io.dart' show readSection;
 import 'package:claudart/paths.dart';
 import 'package:claudart/registry.dart';
@@ -215,21 +216,21 @@ int Function(List<String>, {int startIndex}) _pick(TeardownCategory cat) =>
 /// Prompt order: fixSummary, hotFiles, coldFiles, pattern, fixPattern.
 /// Category is supplied via pickFn (index 5 = state-management).
 List<String?> get _richAnswers => [
-      'Quoted path before passing to ConfigLoader.',  // fixSummary
-      null,    // hotFiles — accept pre-populated default
-      null,    // coldFiles — skip (optional)
-      null,    // pattern — accept pre-populated default
-      'Always quote paths that may contain spaces.',  // fixPattern
+      'Quoted path before passing to ConfigLoader.', // fixSummary
+      null, // hotFiles — accept pre-populated default
+      null, // coldFiles — skip (optional)
+      null, // pattern — accept pre-populated default
+      'Always quote paths that may contain spaces.', // fixPattern
     ];
 
 /// Full set of answers for a successful teardown against [_bareHandoff].
 /// Category supplied via pickFn (index 5 = provider-state).
 List<String?> get _bareAnswers => [
-      'Added null guard before JSON decode.',        // fixSummary
-      'lib/parser.dart',                            // hotFiles — no default, must enter
-      null,                                         // coldFiles — skip
-      'Parser crashes on malformed input.',         // pattern — no default, must enter
-      'Always guard before decode with null check.',// fixPattern
+      'Added null guard before JSON decode.', // fixSummary
+      'lib/parser.dart', // hotFiles — no default, must enter
+      null, // coldFiles — skip
+      'Parser crashes on malformed input.', // pattern — no default, must enter
+      'Always guard before decode with null check.', // fixPattern
     ];
 
 void main() {
@@ -397,7 +398,8 @@ void main() {
         exitFn: _throwExit,
       );
       final handoff = io.read(handoffPathFor(_workspace));
-      expect(handoff, isNot(contains('Config not loaded when path has spaces')));
+      expect(
+          handoff, isNot(contains('Config not loaded when path has spaces')));
     });
   });
 
@@ -490,10 +492,10 @@ _None recorded yet._
     test('appends cold file anti-pattern entry when provided', () async {
       final io = _io(handoff: _richHandoff);
       final answers = [
-        'Fixed it.',                     // fixSummary
-        null,                            // hotFiles default
-        'lib/config/validator.dart',     // coldFiles — explore but not the cause
-        null,                            // pattern default
+        'Fixed it.', // fixSummary
+        null, // hotFiles default
+        'lib/config/validator.dart', // coldFiles — explore but not the cause
+        null, // pattern default
         'Validate path before loading.', // fixPattern
       ];
       await runTeardown(
@@ -545,7 +547,8 @@ _None recorded yet._
         io: io,
         projectRootOverride: _projectRoot,
         confirmFn: (_) => true,
-        promptFn: _prompts(_richAnswers), // hotFiles answer is null → use default
+        promptFn:
+            _prompts(_richAnswers), // hotFiles answer is null → use default
         pickFn: _pick(TeardownCategory.stateManagement),
         exitFn: _throwExit,
       );
@@ -558,9 +561,9 @@ _None recorded yet._
       final io = _io(handoff: _richHandoff);
       final answers = [
         'Fixed it.',
-        'lib/config/resolver.dart',  // override hotFiles
+        'lib/config/resolver.dart', // override hotFiles
         null,
-        null,                        // accept pattern default
+        null, // accept pattern default
         'Always resolve before load.',
       ];
       await runTeardown(
@@ -581,7 +584,8 @@ _None recorded yet._
         io: io,
         projectRootOverride: _projectRoot,
         confirmFn: (_) => true,
-        promptFn: _prompts(_richAnswers), // pattern answer is null → use root cause
+        promptFn:
+            _prompts(_richAnswers), // pattern answer is null → use root cause
         pickFn: _pick(TeardownCategory.stateManagement),
         exitFn: _throwExit,
       );
@@ -595,7 +599,7 @@ _None recorded yet._
         'Fixed it.',
         null,
         null,
-        'Custom pattern override.',  // override pattern
+        'Custom pattern override.', // override pattern
         'Re-attach listener.',
       ];
       await runTeardown(
@@ -650,7 +654,8 @@ _None recorded yet._
     Never Function(String) throwOnCall(String label) =>
         (_) => throw StateError('headless must never call $label');
 
-    test('debugComplete status archives without asking anything — every '
+    test(
+        'debugComplete status archives without asking anything — every '
         'human touchpoint would throw if called', () async {
       final completeHandoff = _richHandoff.replaceFirst(
         'debug-in-progress',
@@ -662,7 +667,8 @@ _None recorded yet._
         io: io,
         projectRootOverride: _projectRoot,
         mode: RunMode.headless,
-        confirmFn: (q) => throw StateError('headless must never call confirmFn: $q'),
+        confirmFn: (q) =>
+            throw StateError('headless must never call confirmFn: $q'),
         promptFn: (q, {optional = false}) =>
             throw StateError('headless must never call promptFn: $q'),
         pickFn: (items, {startIndex = 0}) =>
@@ -678,7 +684,8 @@ _None recorded yet._
           reason: 'resolved sessions promote to skills.md same as interactive');
     });
 
-    test('non-debugComplete status saves a reminder instead of archiving, '
+    test(
+        'non-debugComplete status saves a reminder instead of archiving, '
         'handoff left untouched', () async {
       final io = _io(handoff: _richHandoff); // status: debug-in-progress
 
@@ -705,7 +712,8 @@ _None recorded yet._
               'discards an unresolved session\'s context');
     });
 
-    test('prints a Headless decision summary before writing the reminder '
+    test(
+        'prints a Headless decision summary before writing the reminder '
         'archive entry — the reminder write happens with no human prompt '
         'too, same as the resolved path\'s fuller summary', () async {
       final io = _io(handoff: _richHandoff); // status: debug-in-progress
@@ -736,7 +744,8 @@ _None recorded yet._
       expect(printed, contains('Record type : reminder'));
     });
 
-    test('never records the unspecified sentinel as a real hot-path file '
+    test(
+        'never records the unspecified sentinel as a real hot-path file '
         'when no hot files are known', () async {
       final completeHandoff = _bareHandoff.replaceFirst(
         'suggest-investigating',

@@ -36,10 +36,10 @@ class MockClaudeRunner {
         StepMode mode = StepMode.project,
       }) async {
         captured.add(CallRecord(
-          model:        model,
+          model: model,
           systemPrompt: systemPrompt,
-          message:      message,
-          mode:         mode,
+          message: message,
+          mode: mode,
         ));
         // Find first response whose key appears in the message; fallback to first entry.
         final text = responses.entries
@@ -48,6 +48,9 @@ class MockClaudeRunner {
                 .firstOrNull ??
             responses.values.firstOrNull ??
             '';
-        return StepResult(text: text, usage: const Usage(input: 100, output: 50, cacheRead: 0, cost: 0.001));
+        return StepResult(
+            text: text,
+            usage:
+                const Usage(input: 100, output: 50, cacheRead: 0, cost: 0.001));
       };
 }

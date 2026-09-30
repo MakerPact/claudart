@@ -52,8 +52,8 @@ class MemoryFileIO implements FileIO {
   List<String> listFiles(String dirPath, {String? extension}) {
     final dir = _norm(dirPath);
     return files.keys.where((k) {
-      final inDir = k.startsWith('$dir/') &&
-          !k.substring(dir.length + 1).contains('/');
+      final inDir =
+          k.startsWith('$dir/') && !k.substring(dir.length + 1).contains('/');
       return inDir && (extension == null || k.endsWith(extension));
     }).toList();
   }
@@ -81,8 +81,7 @@ class _NormalisedKeyMap extends MapBase<String, String> {
   static String _norm(String path) => path.replaceAll('\\', '/');
 
   @override
-  String? operator [](Object? key) =>
-      key is String ? _inner[_norm(key)] : null;
+  String? operator [](Object? key) => key is String ? _inner[_norm(key)] : null;
 
   @override
   void operator []=(String key, String value) => _inner[_norm(key)] = value;

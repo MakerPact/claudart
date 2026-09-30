@@ -12,7 +12,8 @@ import 'package:test/test.dart';
 
 const _projectRoot = '/tmp/test-project';
 
-PipelineContext _ctx({required String reasonerOut, required String plannerOut}) =>
+PipelineContext _ctx(
+        {required String reasonerOut, required String plannerOut}) =>
     const PipelineContext(
       projectRoot: _projectRoot,
       bug: '',
@@ -22,7 +23,8 @@ PipelineContext _ctx({required String reasonerOut, required String plannerOut}) 
 
 void main() {
   group('SuggestSteps.applier — target-section fallback', () {
-    test('all targeted sections present → prompt contains only those sections', () {
+    test('all targeted sections present → prompt contains only those sections',
+        () {
       const analysis = '<ROOT_CAUSE>rc</ROOT_CAUSE>'
           '<SCOPE_FILES>sf</SCOPE_FILES>'
           '<CONSTRAINTS>c</CONSTRAINTS>';
@@ -36,12 +38,15 @@ void main() {
       expect(prompt, isNot(contains('<ROOT_CAUSE>')));
     });
 
-    test('a targeted section missing from the analysis → falls back to the '
-        'full analysis, not a partial prompt missing that section entirely', () {
+    test(
+        'a targeted section missing from the analysis → falls back to the '
+        'full analysis, not a partial prompt missing that section entirely',
+        () {
       // Analysis is missing SCOPE_FILES even though the change plan targets it.
       const analysis = '<ROOT_CAUSE>rc</ROOT_CAUSE>'
           '<CONSTRAINTS>c</CONSTRAINTS>';
-      const changePlan = '<CHANGES>Update SCOPE_FILES and CONSTRAINTS</CHANGES>';
+      const changePlan =
+          '<CHANGES>Update SCOPE_FILES and CONSTRAINTS</CHANGES>';
 
       final prompt = SuggestSteps.applier(1).buildPrompt(
         _ctx(reasonerOut: analysis, plannerOut: changePlan),
@@ -56,12 +61,15 @@ void main() {
       // the very section the change plan targets and _mergeAnalysis() can
       // append it. A blanket "don't output anything not shown above" would
       // silently block the one thing this refinement pass needs to add.
-      expect(prompt, isNot(contains('Do not output any section not shown above')));
+      expect(
+          prompt, isNot(contains('Do not output any section not shown above')));
       expect(prompt, contains('SCOPE_FILES'));
     });
 
-    test('no recognized section names in the change plan → full analysis sent', () {
-      const analysis = '<ROOT_CAUSE>rc</ROOT_CAUSE><CONSTRAINTS>c</CONSTRAINTS>';
+    test('no recognized section names in the change plan → full analysis sent',
+        () {
+      const analysis =
+          '<ROOT_CAUSE>rc</ROOT_CAUSE><CONSTRAINTS>c</CONSTRAINTS>';
       const changePlan = '<CHANGES>Something vague</CHANGES>';
 
       final prompt = SuggestSteps.applier(1).buildPrompt(
@@ -89,7 +97,8 @@ void main() {
       expect(merged, contains('<CONSTRAINTS>c</CONSTRAINTS>'));
     });
 
-    test('a section the applier emits that the base analysis never had is '
+    test(
+        'a section the applier emits that the base analysis never had is '
         'appended, not silently dropped — replaceFirst is a no-op when the '
         'tag is not already present, which is exactly the case '
         '_applierPrompt\'s own fallback sends the applier the full analysis '
@@ -107,7 +116,8 @@ void main() {
       expect(merged, contains('<ROOT_CAUSE>now provided</ROOT_CAUSE>'));
     });
 
-    test('a tag absent from the applier\'s own response leaves that section '
+    test(
+        'a tag absent from the applier\'s own response leaves that section '
         'untouched in the base — correct no-op, not a bug', () {
       final ctx = _ctx(
         reasonerOut: '<ROOT_CAUSE>rc</ROOT_CAUSE><CONSTRAINTS>c</CONSTRAINTS>',

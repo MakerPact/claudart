@@ -57,7 +57,8 @@ void main() {
 
     test('PipelineCompleted carries no per-step status change', () {
       const event = PipelineCompleted(
-        ctx: PipelineContext(projectRoot: '/tmp', bug: '', expected: '', files: []),
+        ctx: PipelineContext(
+            projectRoot: '/tmp', bug: '', expected: '', files: []),
       );
       expect(StepStatusFromEvent.fromEvent(event), isNull);
     });

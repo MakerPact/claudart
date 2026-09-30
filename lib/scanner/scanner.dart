@@ -83,19 +83,16 @@ class ScanResult {
 // Detection patterns
 final _blocPattern = RegExp(r'class\s+(\w+)\s+extends\s+Bloc<');
 final _cubitPattern = RegExp(r'class\s+(\w+)\s+extends\s+Cubit<');
-final _blocStatePattern = RegExp(
-    r'(?:sealed\s+)?class\s+(\w+State)\b');
-final _blocEventPattern = RegExp(
-    r'(?:sealed\s+)?class\s+(\w+Event)\b');
-final _repositoryPattern = RegExp(
-    r'(?:abstract\s+)?class\s+(\w+Repository)\b');
-final _widgetPattern = RegExp(
-    r'class\s+(\w+)\s+extends\s+(?:Stateless|Stateful)Widget\b');
+final _blocStatePattern = RegExp(r'(?:sealed\s+)?class\s+(\w+State)\b');
+final _blocEventPattern = RegExp(r'(?:sealed\s+)?class\s+(\w+Event)\b');
+final _repositoryPattern = RegExp(r'(?:abstract\s+)?class\s+(\w+Repository)\b');
+final _widgetPattern =
+    RegExp(r'class\s+(\w+)\s+extends\s+(?:Stateless|Stateful)Widget\b');
 final _extensionPattern = RegExp(r'extension\s+(\w+)\s+on\s+');
 final _callbackPattern = RegExp(r'typedef\s+(\w+)\s*=');
-final _providerPattern = RegExp(
-    r'final\s+(\w+Provider)\s*=\s*(?:Provider|StateNotifierProvider|'
-    r'StreamProvider|FutureProvider|ChangeNotifierProvider)');
+final _providerPattern =
+    RegExp(r'final\s+(\w+Provider)\s*=\s*(?:Provider|StateNotifierProvider|'
+        r'StreamProvider|FutureProvider|ChangeNotifierProvider)');
 final _enumPattern = RegExp(r'enum\s+(\w+)\s*\{');
 final _mixinPattern = RegExp(r'mixin\s+(\w+)\b');
 final _classPattern = RegExp(r'class\s+(\w+)\b');

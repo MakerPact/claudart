@@ -75,7 +75,8 @@ void _rerenderMenu(List<String> items, int selected) {
     _writeItem(items[i], selected: i == selected);
   }
   stdout.write('${ansi.clearLine}\n');
-  stdout.write('${ansi.clearLine}  ${ansi.dim}↑↓ navigate   enter select${ansi.reset}\n');
+  stdout.write(
+      '${ansi.clearLine}  ${ansi.dim}↑↓ navigate   enter select${ansi.reset}\n');
 }
 
 void _clearMenu(int itemCount) {
@@ -124,7 +125,7 @@ int _numberedFallback(List<String> items) {
   while (true) {
     stdout.write('Select (1–${items.length}) > ');
     final raw = stdin.readLineSync();
-    if (raw == null) return 0;  // EOF — non-interactive, default to first item
+    if (raw == null) return 0; // EOF — non-interactive, default to first item
     final input = raw.trim();
     final n = int.tryParse(input);
     if (n != null && n >= 1 && n <= items.length) return n - 1;

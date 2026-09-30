@@ -20,7 +20,7 @@ import '../helpers/mocks.dart';
 // loop past a successful reader+plan step.
 
 const _projectRoot = '/projects/my-app';
-const _workspace   = '/workspaces/my-app';
+const _workspace = '/workspaces/my-app';
 
 class _ExitException implements Exception {
   final int code;
@@ -43,10 +43,17 @@ MemoryFileIO _io() {
   return io;
 }
 
-PlannerLog _silentPlannerLog() => PlannerLog(path: '/tmp/ignored', appender: (_, __) {});
+PlannerLog _silentPlannerLog() =>
+    PlannerLog(path: '/tmp/ignored', appender: (_, __) {});
 
-PipelineExecutor _executorWithNoOutput() =>
-    PipelineExecutor(runner: ({required model, required systemPrompt, required message, required workingDir, StepMode mode = StepMode.project}) async => null);
+PipelineExecutor _executorWithNoOutput() => PipelineExecutor(
+    runner: (
+            {required model,
+            required systemPrompt,
+            required message,
+            required workingDir,
+            StepMode mode = StepMode.project}) async =>
+        null);
 
 void main() {
   group('runFlow — validation', () {

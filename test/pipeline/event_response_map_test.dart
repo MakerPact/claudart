@@ -16,10 +16,10 @@ void main() {
   group('toResponse — PipelineEvent → AgentResponse', () {
     test('AgentStarted → null (spinner is the active-step pulse)', () {
       const event = AgentStarted(
-        stepId:       'reader',
-        label:        'Reading',
-        model:        AgentModel.haiku,
-        displayStep:  1,
+        stepId: 'reader',
+        label: 'Reading',
+        model: AgentModel.haiku,
+        displayStep: 1,
         displayTotal: 3,
       );
       expect(toResponse(event, speaker: speaker, workspace: ws), isNull);
@@ -28,7 +28,7 @@ void main() {
     test('AgentCompleted → Result carrying the step id', () {
       const event = AgentCompleted(
         stepId: 'reader',
-        usage:  Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0),
+        usage: Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0),
       );
       final r = toResponse(event, speaker: speaker, workspace: ws);
       expect(r, isA<Result>());
@@ -45,7 +45,8 @@ void main() {
     });
 
     test('AgentFailed with a reason forwards it as errorType', () {
-      const event = AgentFailed(stepId: 'plan', reason: 'claude exited 1: boom');
+      const event =
+          AgentFailed(stepId: 'plan', reason: 'claude exited 1: boom');
       final r = toResponse(event, speaker: speaker, workspace: ws);
       expect((r! as Blocker).errorType, equals('claude exited 1: boom'));
     });
@@ -58,8 +59,8 @@ void main() {
 
     test('AgentEscalating → Question carrying the question', () {
       const event = AgentEscalating(
-        stepId:         'plan',
-        question:       'which file holds the label?',
+        stepId: 'plan',
+        question: 'which file holds the label?',
         unknownContext: 'foo',
       );
       final r = toResponse(event, speaker: speaker, workspace: ws);
@@ -71,27 +72,36 @@ void main() {
 
     test('AgentResumed → null', () {
       expect(
-        toResponse(const AgentResumed(stepId: 'plan'), speaker: speaker, workspace: ws),
+        toResponse(const AgentResumed(stepId: 'plan'),
+            speaker: speaker, workspace: ws),
         isNull,
       );
     });
 
     test('AwaitingApproval → null', () {
-      expect(toResponse(const AwaitingApproval(), speaker: speaker, workspace: ws), isNull);
+      expect(
+          toResponse(const AwaitingApproval(), speaker: speaker, workspace: ws),
+          isNull);
     });
 
     test('PlanDraft → null (rendered via render.planDraft)', () {
-      expect(toResponse(const PlanDraft(plan: 'do x'), speaker: speaker, workspace: ws), isNull);
+      expect(
+          toResponse(const PlanDraft(plan: 'do x'),
+              speaker: speaker, workspace: ws),
+          isNull);
     });
 
     test('PipelineCompleted → null', () {
       const ctx = PipelineContext(
         projectRoot: '/tmp/p',
-        bug:         'b',
-        expected:    'e',
-        files:       [],
+        bug: 'b',
+        expected: 'e',
+        files: [],
       );
-      expect(toResponse(const PipelineCompleted(ctx: ctx), speaker: speaker, workspace: ws), isNull);
+      expect(
+          toResponse(const PipelineCompleted(ctx: ctx),
+              speaker: speaker, workspace: ws),
+          isNull);
     });
   });
 }

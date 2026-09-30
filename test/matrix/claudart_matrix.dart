@@ -13,7 +13,7 @@ import 'pipeline_feature.dart';
 import 'pipeline_flow_type.dart';
 
 final claudartMatrix = Dartrix(
-  axes:     [PipelineFlowType.values],
+  axes: [PipelineFlowType.values],
   features: PipelineFeature.values,
 );
 
@@ -25,7 +25,8 @@ void assertNoGaps() {
   tearDownAll(() {
     final gaps = claudartMatrix.gaps();
     if (gaps.isEmpty) return;
-    final lines = gaps.map((g) => '  ${g.variant.description} × ${g.feature.description}');
+    final lines = gaps
+        .map((g) => '  ${g.variant.description} × ${g.feature.description}');
     fail('Coverage gaps:\n${lines.join('\n')}');
   });
 }

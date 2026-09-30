@@ -37,14 +37,14 @@ void main() {
 
   group('debugEnabled — runtime × env matrix', () {
     final cases = <(bool runtime, String? envValue, bool expected)>[
-      (false, null,                            false), // both off
-      (false, '0',                             false), // env set but not "1"
-      (false, '',                              false), // env empty
-      (false, 'true',                          false), // env truthy-looking but not "1"
-      (true,  null,                            true),  // runtime only
-      (false, kClaudartDebugEnabledValue,      true),  // env only
-      (true,  kClaudartDebugEnabledValue,      true),  // both on
-      (true,  '0',                             true),  // runtime overrides env=0
+      (false, null, false), // both off
+      (false, '0', false), // env set but not "1"
+      (false, '', false), // env empty
+      (false, 'true', false), // env truthy-looking but not "1"
+      (true, null, true), // runtime only
+      (false, kClaudartDebugEnabledValue, true), // env only
+      (true, kClaudartDebugEnabledValue, true), // both on
+      (true, '0', true), // runtime overrides env=0
     ];
 
     for (final (runtime, envValue, expected) in cases) {
@@ -104,8 +104,7 @@ void main() {
 
   // ── utf8ByteLength ──────────────────────────────────────────────────────
 
-  group('utf8ByteLength returns real byte counts (not UTF-16 code units)',
-      () {
+  group('utf8ByteLength returns real byte counts (not UTF-16 code units)', () {
     test('ASCII string: bytes == chars', () {
       expect(utf8ByteLength('hello'), equals(5));
     });
@@ -269,8 +268,7 @@ void main() {
       }, returnsNormally);
     });
 
-    test('forTesting with a sink that throws — writeStepHeader propagates',
-        () {
+    test('forTesting with a sink that throws — writeStepHeader propagates', () {
       // The IOException-swallow contract is specific to file IO via
       // [_appendToFile]. Sinks passed via [forTesting] are a test
       // affordance; they propagate their own exceptions so a buggy

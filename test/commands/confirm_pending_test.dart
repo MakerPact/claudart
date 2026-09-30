@@ -138,7 +138,9 @@ void main() {
       expect(PendingConfirmationStore.load(_workspace, io: io), isNull);
     });
 
-    test('--clear takes priority even if --question/--on-confirm are also passed', () async {
+    test(
+        '--clear takes priority even if --question/--on-confirm are also passed',
+        () async {
       final io = _io();
       await runConfirmPending(
         ['--clear', '--question', 'q', '--on-confirm', 'claudart save'],

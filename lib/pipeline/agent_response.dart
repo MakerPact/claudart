@@ -32,7 +32,7 @@ enum Speaker {
 
   String get label => switch (this) {
         Speaker.claudart => 'claudart',
-        Speaker.agent    => 'agent',
+        Speaker.agent => 'agent',
         Speaker.subagent => 'subagent',
       };
 }
@@ -51,12 +51,12 @@ enum SubtaskState {
   /// colour-coded titles match every other state surface (zedup's rendering
   /// of this same enum, via its own StateHueRendering extension).
   StateHue get hue => switch (this) {
-        SubtaskState.ready          => StateHue.ready,
-        SubtaskState.blocked        => StateHue.inactive,
+        SubtaskState.ready => StateHue.ready,
+        SubtaskState.blocked => StateHue.inactive,
         SubtaskState.awaitingAnswer => StateHue.paused,
-        SubtaskState.running        => StateHue.active,
-        SubtaskState.done           => StateHue.success,
-        SubtaskState.failed         => StateHue.error,
+        SubtaskState.running => StateHue.active,
+        SubtaskState.done => StateHue.success,
+        SubtaskState.failed => StateHue.error,
       };
 }
 
@@ -144,7 +144,8 @@ final class Plan extends AgentResponse {
   final String goal;
   final List<Subtask> subtasks;
 
-  const Plan({required Speaker speaker, required this.goal, required this.subtasks})
+  const Plan(
+      {required Speaker speaker, required this.goal, required this.subtasks})
       : super(speaker);
 
   @override
@@ -254,11 +255,11 @@ final class Result extends AgentResponse {
       throw StateError(neverGuessViolation);
     }
     return Result(
-      speaker:      speaker,
-      workspace:    subtask.workspace,
-      subtask:      subtask.id,
+      speaker: speaker,
+      workspace: subtask.workspace,
+      subtask: subtask.id,
       filesTouched: filesTouched,
-      summary:      summary,
+      summary: summary,
     );
   }
 
@@ -335,7 +336,8 @@ final class Replan extends AgentResponse {
 List<AgentResponse> floatQuestions(Iterable<AgentResponse> responses) {
   final indexed = responses.toList().asMap().entries.toList();
   indexed.sort((a, b) {
-    final byKind = a.value.kind.sortPriority.compareTo(b.value.kind.sortPriority);
+    final byKind =
+        a.value.kind.sortPriority.compareTo(b.value.kind.sortPriority);
     return byKind != 0 ? byKind : a.key.compareTo(b.key);
   });
   return [for (final e in indexed) e.value];

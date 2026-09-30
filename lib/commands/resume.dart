@@ -45,13 +45,15 @@ Future<void> runResume({
   final workspace = entry.workspacePath;
   final archives = loadIndex(workspace, io: fileIO);
   if (archives.isEmpty) {
-    print('\nNo archives found for this project. Run `claudart setup` instead.\n');
+    print(
+        '\nNo archives found for this project. Run `claudart setup` instead.\n');
     exit_(0);
   }
 
   final newest = archives.first;
   final snapshotPath = p.join(archiveDirFor(workspace), newest.handoffFile);
-  final snapshot = fileIO.fileExists(snapshotPath) ? fileIO.read(snapshotPath) : '';
+  final snapshot =
+      fileIO.fileExists(snapshotPath) ? fileIO.read(snapshotPath) : '';
 
   print('Resuming from: ${newest.handoffFile} (${newest.branch})\n');
 
@@ -71,9 +73,10 @@ Future<void> runResume({
     fileFinderFn: fileFinderFn,
     defaultBug: _cleanOrNull(readSection(snapshot, 'Bug')),
     defaultExpected: _cleanOrNull(readSection(snapshot, 'Expected Behavior')),
-    defaultFiles: _cleanOrNull(readSubSection(readSection(snapshot, 'Scope'), 'Files in play')),
-    defaultEntryPoints: _cleanOrNull(
-        readSubSection(readSection(snapshot, 'Scope'), 'Key entry points in play')),
+    defaultFiles: _cleanOrNull(
+        readSubSection(readSection(snapshot, 'Scope'), 'Files in play')),
+    defaultEntryPoints: _cleanOrNull(readSubSection(
+        readSection(snapshot, 'Scope'), 'Key entry points in play')),
   );
 }
 
@@ -81,4 +84,6 @@ Future<void> runResume({
 /// (`_Not yet determined._`, `_Nothing yet._`) when the section is empty —
 /// never useful as a pre-filled default.
 String? _cleanOrNull(String raw) =>
-    (raw.isEmpty || raw.startsWith('_Not') || raw.startsWith('_Nothing')) ? null : raw;
+    (raw.isEmpty || raw.startsWith('_Not') || raw.startsWith('_Nothing'))
+        ? null
+        : raw;

@@ -1,13 +1,14 @@
 import 'package:test/test.dart';
 import 'package:claudart/commands/save.dart';
-import 'package:claudart/commands/teardown.dart' show runTeardown, TeardownCategory;
+import 'package:claudart/commands/teardown.dart'
+    show runTeardown, TeardownCategory;
 import 'package:claudart/paths.dart';
 import 'package:claudart/registry.dart';
 import 'package:path/path.dart' as p;
 import 'helpers/mocks.dart';
 
 const _root = '/e2e/claudart';
-const _ws   = '/e2e/ws/claudart';
+const _ws = '/e2e/ws/claudart';
 
 const _handoff = '''# Agent Handoff — claudart
 
@@ -120,7 +121,8 @@ String? Function(String, {bool optional}) _prompts(List<String?> queue) {
 
 void main() {
   group('e2e — save → teardown full workflow', () {
-    test('save writes checkpoint with branch name and root cause in skills', () async {
+    test('save writes checkpoint with branch name and root cause in skills',
+        () async {
       final io = _makeIO();
       final result = await runSave(
         io: io,
@@ -137,7 +139,9 @@ void main() {
       expect(skills, contains('cooked mode')); // root cause in pending
     });
 
-    test('teardown after save: archives handoff, resets it, updates skills with pre-populated values', () async {
+    test(
+        'teardown after save: archives handoff, resets it, updates skills with pre-populated values',
+        () async {
       final io = _makeIO();
       // First save to produce a checkpoint and seed skills.
       await runSave(
@@ -152,13 +156,14 @@ void main() {
         projectRootOverride: _root,
         confirmFn: (_) => true,
         promptFn: _prompts([
-          'Replaced stdin.readLineSync with raw-mode line editor.',  // fixSummary
-          null,  // hotFiles — accept default (lib/ui/line_editor.dart etc.)
-          null,  // coldFiles — skip
-          null,  // pattern — accept default (root cause text)
+          'Replaced stdin.readLineSync with raw-mode line editor.', // fixSummary
+          null, // hotFiles — accept default (lib/ui/line_editor.dart etc.)
+          null, // coldFiles — skip
+          null, // pattern — accept default (root cause text)
           'Implement raw-mode line editor with ESC sequence handling.',
         ]),
-        pickFn: (_, {int startIndex = 0}) => TeardownCategory.stateManagement.index,
+        pickFn: (_, {int startIndex = 0}) =>
+            TeardownCategory.stateManagement.index,
         exitFn: (c) => throw Exception('exit($c)'),
       );
 
@@ -173,10 +178,12 @@ void main() {
 
       // Skills updated with teardown entries.
       final skills = io.read(skillsPathFor(_ws));
-      expect(skills, contains('state-management'));           // category
-      expect(skills, contains('cooked mode'));                // pre-populated pattern from root cause
-      expect(skills, contains('line_editor'));                // pre-populated hot file from changedFiles
-      expect(skills, contains('resolved'));                   // session index
+      expect(skills, contains('state-management')); // category
+      expect(skills,
+          contains('cooked mode')); // pre-populated pattern from root cause
+      expect(skills,
+          contains('line_editor')); // pre-populated hot file from changedFiles
+      expect(skills, contains('resolved')); // session index
     });
 
     test('save checkpoint is preserved after teardown (audit trail)', () async {
@@ -191,9 +198,14 @@ void main() {
         projectRootOverride: _root,
         confirmFn: (_) => true,
         promptFn: _prompts([
-          'Fixed it.', null, null, null, 'Use line editor.',
+          'Fixed it.',
+          null,
+          null,
+          null,
+          'Use line editor.',
         ]),
-        pickFn: (_, {int startIndex = 0}) => TeardownCategory.stateManagement.index,
+        pickFn: (_, {int startIndex = 0}) =>
+            TeardownCategory.stateManagement.index,
         exitFn: (c) => throw Exception('exit($c)'),
       );
 

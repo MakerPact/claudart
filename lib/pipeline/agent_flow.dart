@@ -32,69 +32,69 @@ enum AgentFlow {
   /// Pipeline steps use their own model choices (haiku reader, sonnet reasoner).
   /// Steps are built dynamically via SuggestSteps.phases(fileCount) in suggest.dart.
   suggest(
-    preferredModel:  AgentModel.opus,
-    steps:           [],
-    hasCommandFile:  true,
+    preferredModel: AgentModel.opus,
+    steps: [],
+    hasCommandFile: true,
   ),
 
   /// Deterministic scoped implementation — minimal diff, no exploration.
   debug(
-    preferredModel:  AgentModel.sonnet,
-    steps:           DebugSteps.all,
-    hasCommandFile:  true,
+    preferredModel: AgentModel.sonnet,
+    steps: DebugSteps.all,
+    hasCommandFile: true,
   ),
 
   /// Session setup — workspace init, handoff scaffold.
   setup(
-    preferredModel:  AgentModel.haiku,
-    steps:           SetupSteps.all,
-    hasCommandFile:  true,
+    preferredModel: AgentModel.haiku,
+    steps: SetupSteps.all,
+    hasCommandFile: true,
   ),
 
   /// Checkpoint session — snapshot handoff, deposit facts to skills.
   save(
-    preferredModel:  AgentModel.haiku,
-    steps:           SaveSteps.all,
-    hasCommandFile:  true,
+    preferredModel: AgentModel.haiku,
+    steps: SaveSteps.all,
+    hasCommandFile: true,
   ),
 
   /// Session teardown — close workspace, update project README.
   teardown(
-    preferredModel:  AgentModel.haiku,
-    steps:           [],
-    hasCommandFile:  true,
+    preferredModel: AgentModel.haiku,
+    steps: [],
+    hasCommandFile: true,
   ),
 
   /// Agent-constructed session — user provides freeform prompt; agents
   /// classify, plan, get approval, and construct the handoff automatically.
   /// Experimental variant of suggest.
   flow(
-    preferredModel:  AgentModel.sonnet,
-    steps:           [],   // steps accessed via FlowSteps.* directly in flow.dart
-    hasCommandFile:  true,
+    preferredModel: AgentModel.sonnet,
+    steps: [], // steps accessed via FlowSteps.* directly in flow.dart
+    hasCommandFile: true,
   ),
 
   /// Constrained single-doc lookup — fast, targeted reference answer.
   research(
-    preferredModel:  AgentModel.haiku,
-    steps:           [],
-    hasCommandFile:  false,
+    preferredModel: AgentModel.haiku,
+    steps: [],
+    hasCommandFile: false,
   ),
 
   /// Conversational — no context injection, balanced default.
   free(
-    preferredModel:  AgentModel.sonnet,
-    steps:           [],
-    hasCommandFile:  false,
+    preferredModel: AgentModel.sonnet,
+    steps: [],
+    hasCommandFile: false,
   ),
 
   /// CLI shell-out — no API call, no pipeline steps.
   /// Used by zedup for slash commands that delegate to claudart CLI directly
   /// (e.g. /save, /status, /teardown). preferredModel is null.
   cli(
-    preferredModel:  null,
-    steps:           [],
-    hasCommandFile:  false,
+    preferredModel: null,
+    steps: [],
+    hasCommandFile: false,
   ),
 
   /// Visual design review + spec generation. Routed by the planner when
@@ -104,9 +104,9 @@ enum AgentFlow {
   /// match categorization.dart's routeModel — design work routes to opus
   /// there too, after comparing output quality directly.
   guiDesign(
-    preferredModel:  AgentModel.opus,
-    steps:           [],
-    hasCommandFile:  false,
+    preferredModel: AgentModel.opus,
+    steps: [],
+    hasCommandFile: false,
   );
 
   const AgentFlow({
@@ -150,13 +150,15 @@ enum AgentFlow {
   /// ∀ v ∈ AgentFlow.values where v.hasCommandFile → v.commandTemplate(w, n).isNotEmpty
   /// Enforced by the exhaustive switch — adding a variant without a template arm
   /// is a compile error.
-  String commandTemplate(String workspacePath, String projectName) => switch (this) {
-        AgentFlow.suggest  => suggestCommandTemplate(workspacePath, projectName),
-        AgentFlow.debug    => debugCommandTemplate(workspacePath, projectName),
-        AgentFlow.setup    => setupCommandTemplate(workspacePath, projectName),
-        AgentFlow.save     => saveCommandTemplate(workspacePath, projectName),
-        AgentFlow.teardown => teardownCommandTemplate(workspacePath, projectName),
-        AgentFlow.flow     => flowCommandTemplate(workspacePath, projectName),
+  String commandTemplate(String workspacePath, String projectName) =>
+      switch (this) {
+        AgentFlow.suggest => suggestCommandTemplate(workspacePath, projectName),
+        AgentFlow.debug => debugCommandTemplate(workspacePath, projectName),
+        AgentFlow.setup => setupCommandTemplate(workspacePath, projectName),
+        AgentFlow.save => saveCommandTemplate(workspacePath, projectName),
+        AgentFlow.teardown =>
+          teardownCommandTemplate(workspacePath, projectName),
+        AgentFlow.flow => flowCommandTemplate(workspacePath, projectName),
         AgentFlow.research ||
         AgentFlow.free ||
         AgentFlow.cli ||
@@ -175,13 +177,13 @@ enum AgentFlow {
   /// Maps a slash command string (e.g. '/suggest') to an [AgentFlow].
   /// Returns null for unrecognised commands.
   static AgentFlow? fromSlashCommand(String cmd) => switch (cmd) {
-        '/suggest'  => AgentFlow.suggest,
-        '/debug'    => AgentFlow.debug,
-        '/setup'    => AgentFlow.setup,
-        '/save'     => AgentFlow.save,
+        '/suggest' => AgentFlow.suggest,
+        '/debug' => AgentFlow.debug,
+        '/setup' => AgentFlow.setup,
+        '/save' => AgentFlow.save,
         '/teardown' => AgentFlow.teardown,
-        '/flow'     => AgentFlow.flow,
+        '/flow' => AgentFlow.flow,
         '/research' => AgentFlow.research,
-        _           => null,
+        _ => null,
       };
 }

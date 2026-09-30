@@ -16,7 +16,7 @@ import '../helpers/mocks.dart';
 // that, not an injection seam; this covers what's safely testable today.
 
 const _projectRoot = '/projects/my-app';
-const _workspace   = '/workspaces/my-app';
+const _workspace = '/workspaces/my-app';
 
 class _ExitException implements Exception {
   final int code;
@@ -86,8 +86,14 @@ MemoryFileIO _io({String? handoff = _handoffWithScope}) {
 /// Executor whose runner always returns null — simulates the reader step
 /// producing nothing (e.g. claude CLI not installed/authenticated),
 /// without ever reaching the interactive review loop.
-PipelineExecutor _executorWithNoOutput() =>
-    PipelineExecutor(runner: ({required model, required systemPrompt, required message, required workingDir, StepMode mode = StepMode.project}) async => null);
+PipelineExecutor _executorWithNoOutput() => PipelineExecutor(
+    runner: (
+            {required model,
+            required systemPrompt,
+            required message,
+            required workingDir,
+            StepMode mode = StepMode.project}) async =>
+        null);
 
 void main() {
   group('runSuggest — validation', () {
@@ -142,7 +148,8 @@ void main() {
       );
     });
 
-    test('handoff is left untouched — no partial write on reader failure', () async {
+    test('handoff is left untouched — no partial write on reader failure',
+        () async {
       final io = _io();
       try {
         await runSuggest(

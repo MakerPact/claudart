@@ -61,7 +61,9 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            const StepResult(text: 'raw output', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(
+                text: 'raw output',
+                usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
       final ctx = await exec.runFuture(
@@ -74,7 +76,8 @@ void main() {
       expect(ctx['a'], equals('RAW OUTPUT'));
     });
 
-    test('routing matches against the postProcess result, not the raw text — '
+    test(
+        'routing matches against the postProcess result, not the raw text — '
         'lets postProcess inject a tag the raw output never emitted', () async {
       final step = AgentStep(
         id: 'a',
@@ -83,7 +86,8 @@ void main() {
         systemPrompt: 'sys',
         buildPrompt: (_) => 'msg',
         routes: const {RouteTag.handoff: Complete()},
-        postProcess: (raw, ctx) => '<${RouteTag.handoff.wireTag}>$raw</${RouteTag.handoff.wireTag}>',
+        postProcess: (raw, ctx) =>
+            '<${RouteTag.handoff.wireTag}>$raw</${RouteTag.handoff.wireTag}>',
       );
       // A second step that would only ever run via routing fallthrough —
       // run() advances to the next step in `steps` when no route matches.
@@ -105,12 +109,16 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            const StepResult(text: 'no tags here', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(
+                text: 'no tags here',
+                usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
-      final events = await exec
-          .run(steps: [step, decoy], ctx: _ctx(), displayStep: 1, displayTotal: 2)
-          .toList();
+      final events = await exec.run(
+          steps: [step, decoy],
+          ctx: _ctx(),
+          displayStep: 1,
+          displayTotal: 2).toList();
 
       // Note: PipelineCompleted always fires exactly once regardless of
       // whether a route matched (a fallthrough past the last step also
@@ -118,7 +126,8 @@ void main() {
       // injected tag. Asserting decoy never started does: Complete()
       // terminates the pipeline immediately after step 'a' only if the
       // tag postProcess injected was actually matched.
-      final startedIds = events.whereType<AgentStarted>().map((e) => e.stepId).toList();
+      final startedIds =
+          events.whereType<AgentStarted>().map((e) => e.stepId).toList();
       expect(startedIds, equals(['a']));
       expect(events.whereType<PipelineCompleted>(), hasLength(1));
     });
@@ -140,7 +149,9 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            const StepResult(text: 'unchanged', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(
+                text: 'unchanged',
+                usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
       final ctx = await exec.runFuture(
@@ -155,7 +166,8 @@ void main() {
   });
 
   group('PipelineExecutor — AgentCompleted forwards StepResult metadata', () {
-    test('thinking/stopReason/durationMs/numTurns reach the emitted event, '
+    test(
+        'thinking/stopReason/durationMs/numTurns reach the emitted event, '
         'not just the parsing helpers that produce them', () async {
       final step = AgentStep(
         id: 'a',
@@ -174,18 +186,17 @@ void main() {
           StepMode mode = StepMode.project,
         }) async =>
             const StepResult(
-              text: 'answer',
-              usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
-              thinking: 'reasoning text',
-              stopReason: 'end_turn',
-              durationMs: 4321,
-              numTurns: 3,
-            ),
+          text: 'answer',
+          usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
+          thinking: 'reasoning text',
+          stopReason: 'end_turn',
+          durationMs: 4321,
+          numTurns: 3,
+        ),
       );
 
-      final events = await exec
-          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
-          .toList();
+      final events = await exec.run(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1).toList();
 
       final completed = events.whereType<AgentCompleted>().single;
       expect(completed.thinking, equals('reasoning text'));
@@ -194,7 +205,8 @@ void main() {
       expect(completed.numTurns, equals(3));
     });
 
-    test('null metadata fields on StepResult forward as null, not dropped '
+    test(
+        'null metadata fields on StepResult forward as null, not dropped '
         'silently or defaulted', () async {
       final step = AgentStep(
         id: 'a',
@@ -213,14 +225,13 @@ void main() {
           StepMode mode = StepMode.project,
         }) async =>
             const StepResult(
-              text: 'answer',
-              usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
-            ),
+          text: 'answer',
+          usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
+        ),
       );
 
-      final events = await exec
-          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
-          .toList();
+      final events = await exec.run(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1).toList();
 
       final completed = events.whereType<AgentCompleted>().single;
       expect(completed.thinking, isNull);
@@ -252,15 +263,15 @@ void main() {
             throw Exception('claude exited 1: boom'),
       );
 
-      final events = await exec
-          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
-          .toList();
+      final events = await exec.run(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1).toList();
 
       final failed = events.whereType<AgentFailed>().single;
       expect(failed.reason, contains('claude exited 1: boom'));
     });
 
-    test('a runner returning null with no thrown exception leaves reason '
+    test(
+        'a runner returning null with no thrown exception leaves reason '
         'null, not a synthesized message', () async {
       final exec = PipelineExecutor(
         runner: ({
@@ -273,9 +284,8 @@ void main() {
             null,
       );
 
-      final events = await exec
-          .run(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1)
-          .toList();
+      final events = await exec.run(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1).toList();
 
       final failed = events.whereType<AgentFailed>().single;
       expect(failed.reason, isNull);
@@ -283,7 +293,8 @@ void main() {
   });
 
   group('PipelineExecutor — AgentStarted.isRevisit', () {
-    test('false the first time a step runs, true when a route loops back to it', () async {
+    test('false the first time a step runs, true when a route loops back to it',
+        () async {
       // 'plan' routes to 'clarify' via QuestionBranch; 'clarify' routes
       // back to 'plan' via FeedBackTo; plan's second call emits HANDOFF,
       // routed to Complete() so the pipeline terminates cleanly instead of
@@ -296,22 +307,22 @@ void main() {
       // keeps the check a typed AgentModel comparison, not a bare string.
       var planCalls = 0;
       final plan = AgentStep(
-        id:    'plan',
+        id: 'plan',
         label: 'Plan',
         model: AgentModel.sonnet,
         systemPrompt: 'sys',
-        buildPrompt:  (_) => 'msg',
+        buildPrompt: (_) => 'msg',
         routes: {
           RouteTag.question: const QuestionBranch('clarify'),
-          RouteTag.handoff:  const Complete(),
+          RouteTag.handoff: const Complete(),
         },
       );
       final clarify = AgentStep(
-        id:    'clarify',
+        id: 'clarify',
         label: 'Clarify',
         model: AgentModel.haiku,
         systemPrompt: 'sys',
-        buildPrompt:  (_) => 'msg',
+        buildPrompt: (_) => 'msg',
         routes: {
           RouteTag.answer: const FeedBackTo('plan'),
         },
@@ -329,31 +340,37 @@ void main() {
             planCalls++;
             if (planCalls == 1) {
               return StepResult(
-                text:  '<${RouteTag.question.wireTag}>what?</${RouteTag.question.wireTag}>',
+                text:
+                    '<${RouteTag.question.wireTag}>what?</${RouteTag.question.wireTag}>',
                 usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
               );
             }
             return StepResult(
-              text:  '<${RouteTag.handoff.wireTag}>done</${RouteTag.handoff.wireTag}>',
+              text:
+                  '<${RouteTag.handoff.wireTag}>done</${RouteTag.handoff.wireTag}>',
               usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
             );
           }
           return StepResult(
-            text:  '<${RouteTag.answer.wireTag}>ok</${RouteTag.answer.wireTag}>',
+            text: '<${RouteTag.answer.wireTag}>ok</${RouteTag.answer.wireTag}>',
             usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0),
           );
         },
       );
 
-      final events = await exec
-          .run(steps: [plan, clarify], ctx: _ctx(), displayStep: 1, displayTotal: 2)
-          .toList();
+      final events = await exec.run(
+          steps: [plan, clarify],
+          ctx: _ctx(),
+          displayStep: 1,
+          displayTotal: 2).toList();
 
       final started = events.whereType<AgentStarted>().toList();
-      expect(started.map((e) => e.stepId).toList(), equals(['plan', 'clarify', 'plan']));
+      expect(started.map((e) => e.stepId).toList(),
+          equals(['plan', 'clarify', 'plan']));
       expect(started[0].isRevisit, isFalse, reason: 'plan\'s first run');
       expect(started[1].isRevisit, isFalse, reason: 'clarify\'s first run');
-      expect(started[2].isRevisit, isTrue, reason: 'plan, looped back to via clarify\'s FeedBackTo');
+      expect(started[2].isRevisit, isTrue,
+          reason: 'plan, looped back to via clarify\'s FeedBackTo');
     });
   });
 
@@ -378,11 +395,14 @@ void main() {
           StepMode mode = StepMode.project,
         }) async {
           capturedMode = mode;
-          return const StepResult(text: '', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
+          return const StepResult(
+              text: '',
+              usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
         },
       );
 
-      await exec.runFuture(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1);
+      await exec.runFuture(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1);
 
       expect(capturedMode, equals(StepMode.bare));
     });
@@ -406,11 +426,14 @@ void main() {
           StepMode mode = StepMode.project,
         }) async {
           capturedMode = mode;
-          return const StepResult(text: '', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
+          return const StepResult(
+              text: '',
+              usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
         },
       );
 
-      await exec.runFuture(steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1);
+      await exec.runFuture(
+          steps: [step], ctx: _ctx(), displayStep: 1, displayTotal: 1);
 
       expect(capturedMode, equals(StepMode.project));
     });
@@ -433,9 +456,12 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            StepResult(text: text, usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
+            StepResult(
+                text: text,
+                usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
 
-    test('verbose: true prints the trace line when postProcess rewrites output', () async {
+    test('verbose: true prints the trace line when postProcess rewrites output',
+        () async {
       final exec = PipelineExecutor(runner: staticRunner('raw'), verbose: true);
 
       final printed = await _capturePrinted(() => exec.runFuture(
@@ -448,7 +474,9 @@ void main() {
       expect(printed, contains('postProcess fired on "a"'));
     });
 
-    test('verbose: false never prints the trace line, even when postProcess rewrites', () async {
+    test(
+        'verbose: false never prints the trace line, even when postProcess rewrites',
+        () async {
       final exec = PipelineExecutor(runner: staticRunner('raw'));
 
       final printed = await _capturePrinted(() => exec.runFuture(
@@ -461,7 +489,9 @@ void main() {
       expect(printed, isNot(contains('postProcess fired')));
     });
 
-    test('verbose: true but postProcess does not change the output — no trace line', () async {
+    test(
+        'verbose: true but postProcess does not change the output — no trace line',
+        () async {
       final step = AgentStep(
         id: 'a',
         label: 'Step A',
@@ -484,7 +514,8 @@ void main() {
   });
 
   group('consumeClaudeStream — real stream-json shapes, no mocks', () {
-    test('accumulates thinking text across content_block_delta events and '
+    test(
+        'accumulates thinking text across content_block_delta events and '
         'reads the thinking-token count off message_delta', () async {
       final lines = [
         '{"type":"stream_event","event":{"type":"message_start"}}',
@@ -528,14 +559,17 @@ void main() {
       expect(result.thinking, isNull);
       expect(result.thinkingTokens, equals(0));
       // Blank lines are skipped entirely — never collected.
-      expect(result.lines, equals([
-        'not json at all',
-        '{"type":"stream_event","event":{"type":"message_stop"}}',
-        '{"type":"stream_event"}',
-      ]));
+      expect(
+          result.lines,
+          equals([
+            'not json at all',
+            '{"type":"stream_event","event":{"type":"message_stop"}}',
+            '{"type":"stream_event"}',
+          ]));
     });
 
-    test('valid JSON that is not an object at any level is ignored, not '
+    test(
+        'valid JSON that is not an object at any level is ignored, not '
         'thrown — a bare null/array/number/string decodes successfully but '
         'is the wrong shape for every level this parser expects', () async {
       final lines = [

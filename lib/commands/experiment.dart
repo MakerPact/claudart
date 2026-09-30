@@ -47,11 +47,8 @@ Future<void> runExperiment(
   }
 
   // ── Build log file path ────────────────────────────────────────────────────
-  final ts = DateTime.now()
-      .toIso8601String()
-      .replaceAll(':', '-')
-      .split('.')
-      .first;
+  final ts =
+      DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
   final safeName = name.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
   fileIO.createDir(experimentsDir);
   final logFile = p.join(experimentsDir, '${safeName}_$ts.ansi');
@@ -86,7 +83,8 @@ Future<void> runExperiment(
       '# Exit code: $exitCode\n';
   fileIO.write(logFile, meta);
 
-  stdout.writeln('\n✓ Experiment complete — ${sw.elapsedMilliseconds}ms  (exit $exitCode)');
+  stdout.writeln(
+      '\n✓ Experiment complete — ${sw.elapsedMilliseconds}ms  (exit $exitCode)');
   stdout.writeln('  Log: $logFile\n');
   await stdout.flush();
 

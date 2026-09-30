@@ -45,15 +45,16 @@ typedef ClaudeRunner = Future<StepResult?> Function({
   StepMode mode,
 });
 
-typedef UserPrompter     = Future<String> Function(String question);
-typedef ApprovalSelector = Future<int>   Function(List<String> options);
+typedef UserPrompter = Future<String> Function(String question);
+typedef ApprovalSelector = Future<int> Function(List<String> options);
 
 // ── PipelineExecutor ──────────────────────────────────────────────────────────
 
 class PipelineExecutor {
-  final ClaudeRunner    _runner;
-  final UserPrompter    _prompter;
+  final ClaudeRunner _runner;
+  final UserPrompter _prompter;
   final ApprovalSelector _approvalSelector;
+
   /// When true (set via WorkspaceOwner.strict), every step output is validated
   /// against its declared route tags. A step with routes but no matching tag
   /// escalates to the user instead of silently falling through.
@@ -68,13 +69,13 @@ class PipelineExecutor {
   final bool verbose;
 
   PipelineExecutor({
-    ClaudeRunner?     runner,
-    UserPrompter?     prompter,
+    ClaudeRunner? runner,
+    UserPrompter? prompter,
     ApprovalSelector? approvalSelector,
-    this.strict  = false,
+    this.strict = false,
     this.verbose = false,
-  })  : _runner           = runner           ?? defaultClaudeRunner,
-        _prompter         = prompter         ?? _defaultPrompter,
+  })  : _runner = runner ?? defaultClaudeRunner,
+        _prompter = prompter ?? _defaultPrompter,
         _approvalSelector = approvalSelector ?? _defaultApprovalSelector;
 
   /// Runs [steps] and emits [PipelineEvent]s for each lifecycle transition.
@@ -97,7 +98,7 @@ class PipelineExecutor {
     }
 
     final stepMap = {for (final s in steps) s.id: s};
-    var current   = steps.first;
+    var current = steps.first;
     // Tracks which step ids have already run this pipeline call, so a
     // routing loop-back (FeedBackTo, EscalateUser returning to the step
     // that asked) is distinguishable from ordinary forward advance —
@@ -118,23 +119,23 @@ class PipelineExecutor {
       final isRevisit = visited.contains(current.id);
       visited.add(current.id);
       yield AgentStarted(
-        stepId:       current.id,
-        label:        current.label,
-        model:        stepModel,
-        displayStep:  displayStep + localIndex,
+        stepId: current.id,
+        label: current.label,
+        model: stepModel,
+        displayStep: displayStep + localIndex,
         displayTotal: displayTotal,
-        isRevisit:    isRevisit,
+        isRevisit: isRevisit,
       );
 
       String? failureReason;
       StepResult? result;
       try {
         result = await _runner(
-          model:        stepModel,
+          model: stepModel,
           systemPrompt: current.systemPrompt,
-          message:      current.buildPrompt(ctx),
-          workingDir:   ctx.projectRoot,
-          mode:         current.mode,
+          message: current.buildPrompt(ctx),
+          workingDir: ctx.projectRoot,
+          mode: current.mode,
         );
       } on Exception catch (e) {
         failureReason = e.toString();
@@ -151,9 +152,8 @@ class PipelineExecutor {
           ? current.postProcess!(rawText, ctx)
           : rawText;
       final rewrote = current.postProcess != null && stored != rawText;
-      ctx = ctx
-          .withUsage(ctx.usage + result.usage)
-          .withSlot(current.id, stored);
+      ctx =
+          ctx.withUsage(ctx.usage + result.usage).withSlot(current.id, stored);
 
       yield AgentCompleted(
         stepId: current.id,
@@ -169,12 +169,12 @@ class PipelineExecutor {
       // [RouteTag] so downstream extractions read `.wireTag` once and
       // pass the wire string to `tagOrNull`. Uses `stored` (post-processed
       // text) so postProcess can inject tags to correct malformed output.
-      RouteTag?  matchedTag;
+      RouteTag? matchedTag;
       StepRoute? route;
       for (final entry in current.routes.entries) {
         if (tagOrNull(stored, entry.key.wireTag) != null) {
           matchedTag = entry.key;
-          route      = entry.value;
+          route = entry.value;
           break;
         }
       }
@@ -187,8 +187,7 @@ class PipelineExecutor {
               current.routes.keys.map((t) => '<${t.wireTag}>').join(', ');
           yield AgentEscalating(
             stepId: current.id,
-            question:
-                'Step "${current.id}" produced no recognised tag.\n'
+            question: 'Step "${current.id}" produced no recognised tag.\n'
                 '  Expected one of: $expected\n'
                 '  Continue anyway? [y to proceed / n to abort]',
           );
@@ -214,21 +213,22 @@ class PipelineExecutor {
 
         case QuestionBranch(:final lookupStepId):
           final question = tagOrNull(stored, matchedTag!.wireTag)!;
-          ctx     = ctx.withSlot(PipelineSlot.question, question);
+          ctx = ctx.withSlot(PipelineSlot.question, question);
           current = stepMap[lookupStepId]!;
 
         case FeedBackTo(:final stepId):
           final answer = tagOrNull(stored, matchedTag!.wireTag)!;
-          ctx     = ctx.appendClarification('Codebase lookup: $answer');
+          ctx = ctx.appendClarification('Codebase lookup: $answer');
           current = stepMap[stepId]!;
 
         case EscalateUser(:final returnToStepId):
-          final unknown  = tagOrNull(stored, matchedTag!.wireTag);
+          final unknown = tagOrNull(stored, matchedTag!.wireTag);
           final question = ctx[PipelineSlot.question] ?? '';
           yield AgentEscalating(
-            stepId:         current.id,
-            question:       question,
-            unknownContext: (unknown != null && unknown.isNotEmpty) ? unknown : null,
+            stepId: current.id,
+            question: question,
+            unknownContext:
+                (unknown != null && unknown.isNotEmpty) ? unknown : null,
           );
           final answer = await _prompter(question);
           if (answer.isNotEmpty) {
@@ -238,8 +238,7 @@ class PipelineExecutor {
           current = stepMap[returnToStepId]!;
 
         case ApprovalGate(:final planTag, :final nextStepId):
-          final plan =
-              tagOrNull(stored, planTag.wireTag) ?? stored;
+          final plan = tagOrNull(stored, planTag.wireTag) ?? stored;
           yield PlanDraft(plan: plan);
           yield const AwaitingApproval();
 
@@ -306,16 +305,17 @@ class PipelineExecutor {
 
     // Mutable spinner state — local to this subscription.
     Timer? spinnerTimer;
-    var    spinnerIdx = 0;
-    const  frames     = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-    var    stepLabel  = '';
-    var    stepTag    = '';
+    var spinnerIdx = 0;
+    const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    var stepLabel = '';
+    var stepTag = '';
 
     void startSpinner(String label, int step, int total) {
       stepLabel = label;
-      stepTag   = '${ansi.dim}[$step/$total]${ansi.reset}';
+      stepTag = '${ansi.dim}[$step/$total]${ansi.reset}';
       spinnerIdx = 0;
-      stdout.write('  ${ansi.cyan}${frames[0]}${ansi.reset}  $stepTag  $stepLabel');
+      stdout.write(
+          '  ${ansi.cyan}${frames[0]}${ansi.reset}  $stepTag  $stepLabel');
       spinnerTimer?.cancel();
       spinnerTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {
         spinnerIdx = (spinnerIdx + 1) % frames.length;
@@ -346,13 +346,17 @@ class PipelineExecutor {
     }
 
     await for (final event in run(
-      steps:        steps,
-      ctx:          ctx,
-      displayStep:  displayStep,
+      steps: steps,
+      ctx: ctx,
+      displayStep: displayStep,
       displayTotal: displayTotal,
     )) {
       switch (event) {
-        case AgentStarted(:final label, :final displayStep, :final displayTotal):
+        case AgentStarted(
+            :final label,
+            :final displayStep,
+            :final displayTotal
+          ):
           startSpinner(label, displayStep, displayTotal);
 
         case AgentCompleted(:final stepId, :final postProcessRewrote):
@@ -362,7 +366,8 @@ class PipelineExecutor {
           // left behind in the output.
           clearSpinner();
           if (verbose && postProcessRewrote) {
-            print('  ${ansi.dim}◦ postProcess fired on "$stepId" — output rewritten${ansi.reset}');
+            print(
+                '  ${ansi.dim}◦ postProcess fired on "$stepId" — output rewritten${ansi.reset}');
           }
           renderSubagentEvent(event);
 
@@ -401,17 +406,18 @@ Future<T?> runWithSpinner<T>({
   required Future<T?> Function() task,
   String Function(T)? stats,
 }) async {
-  const frames  = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   final stepTag = '${ansi.dim}[$step/$total]${ansi.reset}';
-  var   idx     = 0;
+  var idx = 0;
   stdout.write('  ${ansi.cyan}${frames[0]}${ansi.reset}  $stepTag  $label');
   final timer = Timer.periodic(const Duration(milliseconds: 80), (_) {
     idx = (idx + 1) % frames.length;
-    stdout.write('\x1B[2K\r  ${ansi.cyan}${frames[idx]}${ansi.reset}  $stepTag  $label');
+    stdout.write(
+        '\x1B[2K\r  ${ansi.cyan}${frames[idx]}${ansi.reset}  $stepTag  $label');
   });
   final result = await task();
   timer.cancel();
-  final icon    = result != null ? '${ansi.green}✓' : '${ansi.red}✗';
+  final icon = result != null ? '${ansi.green}✓' : '${ansi.red}✗';
   final statStr = result != null && stats != null
       ? '  ${ansi.dim}${stats(result)}${ansi.reset}'
       : '';
@@ -549,13 +555,13 @@ StepResult parseClaudeResultLine(
   required String? thinkingBuffer,
   required int thinkingTokens,
 }) {
-  final json  = jsonDecode(resultLine) as Map<String, dynamic>;
-  final text  = (json['result'] as String?) ?? '';
-  final raw   = json['usage']   as Map<String, dynamic>? ?? {};
+  final json = jsonDecode(resultLine) as Map<String, dynamic>;
+  final text = (json['result'] as String?) ?? '';
+  final raw = json['usage'] as Map<String, dynamic>? ?? {};
   final usage = Usage(
-    input:         (raw['input_tokens']                as int?) ?? 0,
-    output:        (raw['output_tokens']               as int?) ?? 0,
-    cacheRead:     (raw['cache_read_input_tokens']     as int?) ?? 0,
+    input: (raw['input_tokens'] as int?) ?? 0,
+    output: (raw['output_tokens'] as int?) ?? 0,
+    cacheRead: (raw['cache_read_input_tokens'] as int?) ?? 0,
     cacheCreation: (raw['cache_creation_input_tokens'] as int?) ?? 0,
     cost: (json['total_cost_usd'] as num?)?.toDouble() ?? 0,
     thinkingTokens: thinkingTokens,
@@ -599,11 +605,15 @@ Future<StepResult?> defaultClaudeRunner({
       [
         '--print',
         '--verbose',
-        '--output-format',            'stream-json',
+        '--output-format',
+        'stream-json',
         '--include-partial-messages',
-        '--session-id',    newClaudeSessionId(),
-        '--model',         model.alias,
-        '--system-prompt', systemPrompt,
+        '--session-id',
+        newClaudeSessionId(),
+        '--model',
+        model.alias,
+        '--system-prompt',
+        systemPrompt,
         '--dangerously-skip-permissions',
         if (mode == StepMode.bare) '--bare',
       ],
@@ -617,14 +627,16 @@ Future<StepResult?> defaultClaudeRunner({
     // answer text is repeated there. Accumulated here as the stream is
     // consumed rather than re-parsed afterward.
     final streamResult = await consumeClaudeStream(
-      process.stdout.transform(const Utf8Decoder()).transform(const LineSplitter()),
+      process.stdout
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter()),
       trace,
     );
     final lines = streamResult.lines;
     final thinkingBuffer = streamResult.thinking;
     final thinkingTokens = streamResult.thinkingTokens;
 
-    final err  = await process.stderr.transform(const Utf8Decoder()).join();
+    final err = await process.stderr.transform(const Utf8Decoder()).join();
     final code = await process.exitCode;
     trace.writeExit(exitCode: code, stderrText: err);
 

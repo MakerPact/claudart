@@ -38,10 +38,10 @@ enum CategorizeTag {
   /// Exhaustive switch — adding a variant is a compile error until the
   /// arm is filled in.
   String get wireTag => switch (this) {
-        CategorizeTag.category   => 'CATEGORY',
-        CategorizeTag.intent     => 'INTENT',
+        CategorizeTag.category => 'CATEGORY',
+        CategorizeTag.intent => 'INTENT',
         CategorizeTag.complexity => 'COMPLEXITY',
-        CategorizeTag.model      => 'MODEL',
+        CategorizeTag.model => 'MODEL',
       };
 
   /// Extracts the trimmed content of this tag from [rawOutput]. Returns
@@ -63,14 +63,14 @@ enum CategorizeTag {
   /// Exhaustive switch — adding a CategorizeTag variant forces a new
   /// arm here at compile time.
   List<String> get allowedValues => switch (this) {
-        CategorizeTag.category   =>
-          [for (final v in AgentCategory.values) v.name],
-        CategorizeTag.intent     =>
-          [for (final v in IntentClass.values) v.name],
-        CategorizeTag.complexity =>
-          [for (final v in ComplexityTier.values) v.name],
-        CategorizeTag.model      =>
-          [for (final v in AgentModel.values) v.name],
+        CategorizeTag.category => [
+            for (final v in AgentCategory.values) v.name
+          ],
+        CategorizeTag.intent => [for (final v in IntentClass.values) v.name],
+        CategorizeTag.complexity => [
+            for (final v in ComplexityTier.values) v.name
+          ],
+        CategorizeTag.model => [for (final v in AgentModel.values) v.name],
       };
 
   /// One-line description per allowed value, shown to the LLM as a
@@ -82,13 +82,16 @@ enum CategorizeTag {
   /// nouns and this self-reported tag isn't consulted by [routeModel]
   /// anyway.
   Map<String, String> get descriptions => switch (this) {
-        CategorizeTag.category   =>
-          {for (final v in AgentCategory.values) v.name: v.description},
-        CategorizeTag.intent     =>
-          {for (final v in IntentClass.values) v.name: v.description},
-        CategorizeTag.complexity =>
-          {for (final v in ComplexityTier.values) v.name: v.description},
-        CategorizeTag.model      => const {},
+        CategorizeTag.category => {
+            for (final v in AgentCategory.values) v.name: v.description
+          },
+        CategorizeTag.intent => {
+            for (final v in IntentClass.values) v.name: v.description
+          },
+        CategorizeTag.complexity => {
+            for (final v in ComplexityTier.values) v.name: v.description
+          },
+        CategorizeTag.model => const {},
       };
 }
 
@@ -146,12 +149,12 @@ String buildCategorizePrompt() {
 ///
 /// Invariant: active ∪ terminal = AgentCategory.values  (no uncategorised work)
 enum AgentCategory {
-  feature,   // new capability addition
-  bug,       // defect investigation / repair
-  refactor,  // structural improvement without behaviour change
-  research,  // knowledge extraction / reference lookup
-  setup,     // workspace or environment configuration
-  gui;       // visual surface — widgets, painters, theme tokens
+  feature, // new capability addition
+  bug, // defect investigation / repair
+  refactor, // structural improvement without behaviour change
+  research, // knowledge extraction / reference lookup
+  setup, // workspace or environment configuration
+  gui; // visual surface — widgets, painters, theme tokens
 
   /// Intent classes valid for this category.
   ///
@@ -159,12 +162,16 @@ enum AgentCategory {
   /// Invariant: research.intents ∩ {IntentClass.implement} = ∅
   /// Invariant: gui.intents ⊆ {analyze, implement, design}
   Set<IntentClass> get intents => switch (this) {
-        feature  => {IntentClass.explore, IntentClass.analyze, IntentClass.implement},
-        bug      => {IntentClass.explore, IntentClass.analyze},
+        feature => {
+            IntentClass.explore,
+            IntentClass.analyze,
+            IntentClass.implement
+          },
+        bug => {IntentClass.explore, IntentClass.analyze},
         refactor => {IntentClass.analyze, IntentClass.implement},
         research => {IntentClass.explore, IntentClass.document},
-        setup    => {IntentClass.implement, IntentClass.document},
-        gui      => {IntentClass.analyze, IntentClass.implement, IntentClass.design},
+        setup => {IntentClass.implement, IntentClass.document},
+        gui => {IntentClass.analyze, IntentClass.implement, IntentClass.design},
       };
 
   /// One-line description shown to the categorize LLM alongside this
@@ -173,12 +180,12 @@ enum AgentCategory {
   /// member's own doc comment; kept as a runtime getter because Dart doc
   /// comments aren't reflectable.
   String get description => switch (this) {
-        feature  => 'new capability addition',
-        bug      => 'defect investigation or repair',
+        feature => 'new capability addition',
+        bug => 'defect investigation or repair',
         refactor => 'structural improvement without behaviour change',
         research => 'knowledge extraction or reference lookup',
-        setup    => 'workspace or environment configuration',
-        gui      => 'visual UI surface — widgets, painters, theme tokens',
+        setup => 'workspace or environment configuration',
+        gui => 'visual UI surface — widgets, painters, theme tokens',
       };
 }
 
@@ -186,11 +193,11 @@ enum AgentCategory {
 ///
 /// Partition: explore ∪ analyze ∪ implement ∪ document = IntentClass.values
 enum IntentClass {
-  explore,    // broad codebase or knowledge discovery
-  analyze,    // reasoning over known, bounded context
-  implement,  // code generation or modification
-  document,   // structured output — reference, glossary, report
-  design;     // structural/visual/informational design decisions
+  explore, // broad codebase or knowledge discovery
+  analyze, // reasoning over known, bounded context
+  implement, // code generation or modification
+  document, // structured output — reference, glossary, report
+  design; // structural/visual/informational design decisions
 
   /// One-line description shown to the categorize LLM alongside this
   /// value's bare name. `design` is deliberately not scoped to UI code
@@ -202,11 +209,15 @@ enum IntentClass {
   /// `document` on a task like "redesign this README" — both are
   /// plausible bare-word matches.
   String get description => switch (this) {
-        explore   => 'broad discovery over unfamiliar or large scope, correct answer not yet known',
-        analyze   => 'reasoning over a known, bounded context to reach a conclusion',
+        explore =>
+          'broad discovery over unfamiliar or large scope, correct answer not yet known',
+        analyze =>
+          'reasoning over a known, bounded context to reach a conclusion',
         implement => 'writing or modifying code to make a described change',
-        document  => 'producing structured factual output — reference, glossary, transcript — with no structural or design decisions involved',
-        design    => 'making structural, visual, or informational design decisions — information architecture, visual hierarchy, diagram/colour systems, spec generation — on a UI surface or a written document',
+        document =>
+          'producing structured factual output — reference, glossary, transcript — with no structural or design decisions involved',
+        design =>
+          'making structural, visual, or informational design decisions — information architecture, visual hierarchy, diagram/colour systems, spec generation — on a UI surface or a written document',
       };
 }
 
@@ -215,16 +226,18 @@ enum IntentClass {
 /// Partition: atomic ∪ compound ∪ systemic = ComplexityTier.values
 /// Invariant: atomic ∩ systemic = ∅  (no task is both isolated and cross-cutting)
 enum ComplexityTier {
-  atomic,    // isolated — single file, clear scope, no cross-cutting concerns
-  compound,  // multi-file — known dependencies, bounded blast radius
-  systemic;  // cross-cutting — architectural impact, affects multiple subsystems
+  atomic, // isolated — single file, clear scope, no cross-cutting concerns
+  compound, // multi-file — known dependencies, bounded blast radius
+  systemic; // cross-cutting — architectural impact, affects multiple subsystems
 
   /// One-line description shown to the categorize LLM alongside this
   /// value's bare name.
   String get description => switch (this) {
-        atomic    => 'isolated — single file, clear scope, no cross-cutting concerns',
-        compound  => 'multi-file — known dependencies, bounded blast radius',
-        systemic  => 'cross-cutting — architectural impact, affects multiple subsystems',
+        atomic =>
+          'isolated — single file, clear scope, no cross-cutting concerns',
+        compound => 'multi-file — known dependencies, bounded blast radius',
+        systemic =>
+          'cross-cutting — architectural impact, affects multiple subsystems',
       };
 }
 
@@ -264,13 +277,13 @@ AgentModel routeModel(
 
       // Any analysis or implementation at compound/atomic tier → balanced.
       // Compound exploration still benefits from balanced reasoning.
-      (_, IntentClass.analyze,   _) ||
+      (_, IntentClass.analyze, _) ||
       (_, IntentClass.implement, _) ||
-      (_, IntentClass.explore,   ComplexityTier.compound) =>
+      (_, IntentClass.explore, ComplexityTier.compound) =>
         AgentModel.sonnet,
 
       // Atomic exploration and all documentation → fast lookup tier.
-      (_, IntentClass.explore,  _) ||
+      (_, IntentClass.explore, _) ||
       (_, IntentClass.document, _) =>
         AgentModel.haiku,
     };

@@ -28,7 +28,8 @@ void main() {
     });
 
     test('returns up to k patterns', () {
-      final result = relevantSkillPatterns(_skillsContent, 'state management bug', k: 2);
+      final result =
+          relevantSkillPatterns(_skillsContent, 'state management bug', k: 2);
       expect(result.length, lessThanOrEqualTo(2));
     });
 
@@ -36,12 +37,15 @@ void main() {
       expect(relevantSkillPatterns(_skillsContent, ''), isEmpty);
     });
 
-    test('skills.md with no Root Cause Patterns section returns no patterns', () {
-      expect(relevantSkillPatterns('# Accumulated Skills\n', 'anything'), isEmpty);
+    test('skills.md with no Root Cause Patterns section returns no patterns',
+        () {
+      expect(
+          relevantSkillPatterns('# Accumulated Skills\n', 'anything'), isEmpty);
     });
 
     test('only pulls bullets from Root Cause Patterns, not other sections', () {
-      final result = relevantSkillPatterns(_skillsContent, 'matrix-driven tests', k: 3);
+      final result =
+          relevantSkillPatterns(_skillsContent, 'matrix-driven tests', k: 3);
       expect(result, everyElement(isNot(contains('Matrix-driven tests'))));
     });
   });

@@ -133,7 +133,9 @@ Future<void> main(List<String> rawArgs) async {
       await runStatus(prompt: rest.contains('--prompt'));
     case ClaudartCommand.teardown:
       await runTeardown(
-        mode: rest.contains('--headless') ? RunMode.headless : RunMode.interactive,
+        mode: rest.contains('--headless')
+            ? RunMode.headless
+            : RunMode.interactive,
       );
     case ClaudartCommand.suggest:
       await runSuggest();
@@ -176,12 +178,12 @@ Future<void> main(List<String> rawArgs) async {
           ? Registry.load().findByProjectRoot(reportRoot)
           : null;
       if (reportEntry != null) print('Project  : ${reportEntry.name}');
-      await runReport(fileIssue: fileIssue, workspacePath: reportEntry?.workspacePath);
+      await runReport(
+          fileIssue: fileIssue, workspacePath: reportEntry?.workspacePath);
     case ClaudartCommand.map:
       final mapRoot = detectGitContext()?.root;
-      final mapEntry = mapRoot != null
-          ? Registry.load().findByProjectRoot(mapRoot)
-          : null;
+      final mapEntry =
+          mapRoot != null ? Registry.load().findByProjectRoot(mapRoot) : null;
       if (mapEntry != null) print('Project  : ${mapEntry.name}');
       runMap(workspacePath: mapEntry?.workspacePath);
     case ClaudartCommand.experiment:
@@ -193,8 +195,8 @@ Future<void> main(List<String> rawArgs) async {
 
 int _compile() {
   final home = Platform.environment['HOME'] ?? '';
-  final out  = '$home/bin/claudart';
-  final src  = _resolveClaudartSource();
+  final out = '$home/bin/claudart';
+  final src = _resolveClaudartSource();
 
   if (src == null) {
     stderr.writeln(
@@ -258,7 +260,7 @@ String? _resolveClaudartSource() {
         final rootMatch = RegExp(r'"rootUri"\s*:\s*"([^"]+)"')
             .firstMatch(json.substring(nameMatch.start));
         if (rootMatch != null) {
-          final rawUri   = rootMatch.group(1)!;
+          final rawUri = rootMatch.group(1)!;
           // Resolve relative URIs (e.g. "../") against the config file's location.
           final rootPath = configFile.uri.resolve(rawUri).toFilePath();
           final candidate = File('${rootPath}bin/claudart.dart');
@@ -270,9 +272,10 @@ String? _resolveClaudartSource() {
 
   // 3. Persisted path from last successful compile.
   try {
-    final saved = File('${Platform.environment['HOME']}/.config/claudart/source')
-        .readAsStringSync()
-        .trim();
+    final saved =
+        File('${Platform.environment['HOME']}/.config/claudart/source')
+            .readAsStringSync()
+            .trim();
     if (saved.isNotEmpty) {
       final candidate = File('$saved/bin/claudart.dart');
       if (candidate.existsSync()) return candidate.path;

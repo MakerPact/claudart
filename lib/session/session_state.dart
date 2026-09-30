@@ -20,51 +20,53 @@ enum HandoffStatus {
   unknown;
 
   static HandoffStatus fromString(String s) => switch (s) {
-    'suggest-investigating' => suggestInvestigating,
-    'ready-for-suggest' => readyForSuggest,
-    'ready-for-debug' => readyForDebug,
-    'debug-in-progress' => debugInProgress,
-    'debug-complete' => debugComplete,
-    'needs-suggest' => needsSuggest,
-    _ => unknown,
-  };
+        'suggest-investigating' => suggestInvestigating,
+        'ready-for-suggest' => readyForSuggest,
+        'ready-for-debug' => readyForDebug,
+        'debug-in-progress' => debugInProgress,
+        'debug-complete' => debugComplete,
+        'needs-suggest' => needsSuggest,
+        _ => unknown,
+      };
 
   /// The canonical string value written to and read from handoff.md.
   /// [noHandoff] and [unknown] are display-only — never written to disk.
   String get value => switch (this) {
-    suggestInvestigating => 'suggest-investigating',
-    readyForSuggest => 'ready-for-suggest',
-    readyForDebug => 'ready-for-debug',
-    debugInProgress => 'debug-in-progress',
-    debugComplete => 'debug-complete',
-    needsSuggest => 'needs-suggest',
-    noHandoff => 'no-handoff',
-    unknown => 'unknown',
-  };
+        suggestInvestigating => 'suggest-investigating',
+        readyForSuggest => 'ready-for-suggest',
+        readyForDebug => 'ready-for-debug',
+        debugInProgress => 'debug-in-progress',
+        debugComplete => 'debug-complete',
+        needsSuggest => 'needs-suggest',
+        noHandoff => 'no-handoff',
+        unknown => 'unknown',
+      };
 
   /// Display label used in TUI status badges.
   String get label => value;
 
   /// True when the workflow expects `/suggest` next.
   bool get expectsSuggest => switch (this) {
-    suggestInvestigating ||
-    readyForSuggest ||
-    needsSuggest ||
-    noHandoff ||
-    unknown => true,
-    readyForDebug || debugInProgress || debugComplete => false,
-  };
+        suggestInvestigating ||
+        readyForSuggest ||
+        needsSuggest ||
+        noHandoff ||
+        unknown =>
+          true,
+        readyForDebug || debugInProgress || debugComplete => false,
+      };
 
   /// True when the workflow expects `/debug` next.
   bool get expectsDebug => switch (this) {
-    readyForDebug || debugInProgress => true,
-    suggestInvestigating ||
-    readyForSuggest ||
-    debugComplete ||
-    needsSuggest ||
-    noHandoff ||
-    unknown => false,
-  };
+        readyForDebug || debugInProgress => true,
+        suggestInvestigating ||
+        readyForSuggest ||
+        debugComplete ||
+        needsSuggest ||
+        noHandoff ||
+        unknown =>
+          false,
+      };
 }
 
 /// Read-only structured view of a handoff.md file.

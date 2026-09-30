@@ -32,8 +32,7 @@ Future<void> runScan({
     return;
   }
 
-  final effectiveScope =
-      full ? ScanScope.full : (scope ?? config.scanScope);
+  final effectiveScope = full ? ScanScope.full : (scope ?? config.scanScope);
   final projectRoot = config.projectRoot!;
 
   print(render.header('SENSITIVITY SCAN'));
@@ -73,7 +72,8 @@ Future<void> runScan({
     logger.logError(
       command: 'scan',
       errorType: 'threshold_hit',
-      fingerprint: 'scan.threshold_hit.${e.reason.toLowerCase().replaceAll(' ', '_')}',
+      fingerprint:
+          'scan.threshold_hit.${e.reason.toLowerCase().replaceAll(' ', '_')}',
       reason: e.reason,
       suggestion: e.suggestions.firstOrNull,
       extra: {'filesFound': e.filesFound, 'threshold': e.threshold},
@@ -98,15 +98,14 @@ Future<void> runScan({
         .map((n) => tokenMap.tokenFor(n, entry.key))
         .toList()
       ..sort();
-    final range = tokens.isNotEmpty
-        ? '${tokens.first}–${tokens.last}'
-        : '';
+    final range = tokens.isNotEmpty ? '${tokens.first}–${tokens.last}' : '';
     print('  ✓ $count ${entry.key}${count == 1 ? '' : 's'}'
         '${range.isNotEmpty ? '       → $range' : ''}');
   }
 
   if (newTokens > 0) {
-    print('  + $newTokens new token${newTokens == 1 ? '' : 's'} since last scan');
+    print(
+        '  + $newTokens new token${newTokens == 1 ? '' : 's'} since last scan');
   }
   print('Token map updated: $tokenMapPath');
 

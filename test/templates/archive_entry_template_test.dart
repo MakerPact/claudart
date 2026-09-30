@@ -24,7 +24,8 @@ void main() {
       expect(result, contains('superseded_by: shipped'));
     });
 
-    test('frontmatter keys appear in order: archived, source, superseded_by', () {
+    test('frontmatter keys appear in order: archived, source, superseded_by',
+        () {
       final result = archiveEntryTemplate(
         archived: DateTime(2026, 9, 26),
         source: 'README.md § Roadmap',

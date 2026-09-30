@@ -3,9 +3,18 @@
 // Exports the pipeline engine and session types for consumers (e.g. zedup).
 // Import with: import 'package:claudart/claudart.dart';
 
-export 'paths.dart' show handoffFileName, skillsFileName, archivesDirName, archiveIndexFileName, flowCheckpointFileName, parseWorkspaceDirFromStatusOutput, handoffPathFor;
+export 'paths.dart'
+    show
+        handoffFileName,
+        skillsFileName,
+        archivesDirName,
+        archiveIndexFileName,
+        flowCheckpointFileName,
+        parseWorkspaceDirFromStatusOutput,
+        handoffPathFor;
 export 'registry.dart' show Registry, RegistryEntry;
-export 'md_io.dart' show readSection, readStatus, updateSection, updateStatus, parseScopeFiles;
+export 'md_io.dart'
+    show readSection, readStatus, updateSection, updateStatus, parseScopeFiles;
 export 'pipeline/agent_model.dart';
 export 'pipeline/agent_flow.dart';
 export 'pipeline/agents/confirmation.dart';

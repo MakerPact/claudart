@@ -47,27 +47,28 @@ enum DesignSurface {
         DesignSurface.guiWidget ||
         DesignSurface.guiPainter ||
         DesignSurface.guiUi ||
-        DesignSurface.guiTheme => true,
+        DesignSurface.guiTheme =>
+          true,
         DesignSurface.logic => false,
       };
 
   /// Short label for log lines and the planner JSONL.
   String get tag => switch (this) {
-        DesignSurface.guiWidget   => 'widget',
-        DesignSurface.guiPainter  => 'painter',
-        DesignSurface.guiUi       => 'ui',
-        DesignSurface.guiTheme    => 'theme',
-        DesignSurface.logic       => 'logic',
+        DesignSurface.guiWidget => 'widget',
+        DesignSurface.guiPainter => 'painter',
+        DesignSurface.guiUi => 'ui',
+        DesignSurface.guiTheme => 'theme',
+        DesignSurface.logic => 'logic',
       };
 
   /// Directory-name substrings (slash-bounded, lower-case) that signal
   /// this surface. Match wins regardless of basename.
   List<String> get directoryHints => switch (this) {
-        DesignSurface.guiWidget   => const ['/widgets/'],
-        DesignSurface.guiPainter  => const ['/painters/'],
-        DesignSurface.guiUi       => const ['/ui/'],
-        DesignSurface.guiTheme    => const ['/theme/', '/style/'],
-        DesignSurface.logic       => const [],
+        DesignSurface.guiWidget => const ['/widgets/'],
+        DesignSurface.guiPainter => const ['/painters/'],
+        DesignSurface.guiUi => const ['/ui/'],
+        DesignSurface.guiTheme => const ['/theme/', '/style/'],
+        DesignSurface.logic => const [],
       };
 
   /// Basename substrings (lower-case) that signal this surface when
@@ -75,10 +76,11 @@ enum DesignSurface {
   /// `/painters/` directory still route to [guiPainter].
   List<String> get basenameHints => switch (this) {
         DesignSurface.guiPainter => const ['painter'],
-        DesignSurface.guiTheme   => const ['theme', 'style'],
+        DesignSurface.guiTheme => const ['theme', 'style'],
         DesignSurface.guiWidget ||
         DesignSurface.guiUi ||
-        DesignSurface.logic => const [],
+        DesignSurface.logic =>
+          const [],
       };
 }
 
@@ -86,7 +88,7 @@ enum DesignSurface {
 /// variants in declaration order — first match wins — so adding a new
 /// surface only requires placing it at the right priority slot.
 DesignSurface classifyPath(String path) {
-  final lower    = path.toLowerCase();
+  final lower = path.toLowerCase();
   final basename = _basenameOf(lower);
   final hasDartExtension = basename.endsWith(_dartExtension);
   for (final surface in DesignSurface.values) {

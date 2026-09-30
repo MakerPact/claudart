@@ -23,12 +23,12 @@ import 'ansi.dart' as ansi;
 /// medium (ANSI escape codes), independent of zedup's nocterm mapping.
 String hueCode(StateHue hue) => switch (hue) {
       StateHue.inactive => ansi.grey,
-      StateHue.loading  => ansi.cyan,
-      StateHue.ready    => ansi.white,
-      StateHue.active   => ansi.yellow,
-      StateHue.paused   => ansi.magenta,
-      StateHue.error    => ansi.red,
-      StateHue.success  => ansi.green,
+      StateHue.loading => ansi.cyan,
+      StateHue.ready => ansi.white,
+      StateHue.active => ansi.yellow,
+      StateHue.paused => ansi.magenta,
+      StateHue.error => ansi.red,
+      StateHue.success => ansi.green,
     };
 
 /// Wraps a block in a continuous gutter rule coloured by [hue]: the header on
@@ -47,9 +47,9 @@ String block(StateHue hue, String headerLine, List<String> bodyLines) {
 /// The block's first line: `<speaker>  <glyph> <KIND>  <subtitle>`. The kind
 /// badge is coloured by the response hue; speaker and subtitle stay dim.
 String _headerLine(AgentResponse r, String subtitle) {
-  final lane  = ansi.c(ansi.dim, r.speaker.label);
+  final lane = ansi.c(ansi.dim, r.speaker.label);
   final badge = ansi.c(hueCode(r.hue), '${r.kind.icon} ${r.kind.label}');
-  final tail  = subtitle.isEmpty ? '' : '  ${ansi.c(ansi.dim, subtitle)}';
+  final tail = subtitle.isEmpty ? '' : '  ${ansi.c(ansi.dim, subtitle)}';
   return '$lane  $badge$tail';
 }
 
@@ -69,7 +69,8 @@ List<Subtask> _dependencyOrder(List<Subtask> tasks) {
     out.add(t);
   }
 
-  for (final t in [...tasks]..sort((a, b) => a.priority.compareTo(b.priority))) {
+  for (final t in [...tasks]
+    ..sort((a, b) => a.priority.compareTo(b.priority))) {
     visit(t);
   }
   return out;
@@ -88,14 +89,25 @@ String render(AgentResponse r) {
       ];
       return block(r.hue, _headerLine(r, goal), body);
 
-    case Progress(:final workspace, :final subtask, :final flow, :final blocked):
+    case Progress(
+        :final workspace,
+        :final subtask,
+        :final flow,
+        :final blocked
+      ):
       return block(
         r.hue,
         _headerLine(r, '$workspace / $subtask'),
         ['${flow.name} · ${blocked ? 'blocked' : 'running'}'],
       );
 
-    case Question(:final origin, :final workspace, :final blockedSubtask, :final question, :final options):
+    case Question(
+        :final origin,
+        :final workspace,
+        :final blockedSubtask,
+        :final question,
+        :final options
+      ):
       final body = <String>[
         question,
         for (final o in options) '  - $o',
@@ -107,7 +119,13 @@ String render(AgentResponse r) {
         body,
       );
 
-    case Action(:final workspace, :final subtask, :final verb, :final target, :final summary):
+    case Action(
+        :final workspace,
+        :final subtask,
+        :final verb,
+        :final target,
+        :final summary
+      ):
       final note = summary.isEmpty ? '' : ansi.c(ansi.dim, '  — $summary');
       return block(
         r.hue,
@@ -115,11 +133,17 @@ String render(AgentResponse r) {
         ['${verb.glyph} ${verb.name} $target$note'],
       );
 
-    case Result(:final workspace, :final subtask, :final filesTouched, :final summary):
+    case Result(
+        :final workspace,
+        :final subtask,
+        :final filesTouched,
+        :final summary
+      ):
       final body = <String>[
         summary,
         if (filesTouched.isNotEmpty)
-          ansi.c(ansi.dim, '${filesTouched.length} file(s): ${filesTouched.join(', ')}'),
+          ansi.c(ansi.dim,
+              '${filesTouched.length} file(s): ${filesTouched.join(', ')}'),
       ];
       return block(r.hue, _headerLine(r, '$workspace / $subtask'), body);
 
@@ -166,8 +190,7 @@ String classification({
 
 /// A draft plan emitted by the agent at the approval gate, framed as a block.
 String planDraft(String plan) {
-  final headerLine =
-      '${ansi.c(ansi.dim, Speaker.agent.label)}  '
+  final headerLine = '${ansi.c(ansi.dim, Speaker.agent.label)}  '
       '${ansi.c(hueCode(StateHue.ready), '◆ Plan')}  '
       '${ansi.c(ansi.dim, 'draft — awaiting approval')}';
   return block(StateHue.ready, headerLine, plan.split('\n'));
@@ -210,9 +233,8 @@ String header(String title) {
 /// blank.
 String status(StatusBadge badge, String label, {String? detail}) {
   final glyph = ansi.c(badge.colorCode, badge.icon);
-  final tail = (detail == null || detail.isEmpty)
-      ? ''
-      : '  ${ansi.c(ansi.dim, detail)}';
+  final tail =
+      (detail == null || detail.isEmpty) ? '' : '  ${ansi.c(ansi.dim, detail)}';
   return '  $glyph  $label$tail';
 }
 

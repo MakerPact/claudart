@@ -22,7 +22,8 @@ void main() {
       expect(base, contains('/workspace/knowledge/generic/testing.md'));
     });
 
-    test('omits the Generic practices heading entirely when no files given', () {
+    test('omits the Generic practices heading entirely when no files given',
+        () {
       final t = claudeTemplate(
         workspacePath: '/workspace',
         projectName: 'my-app',
@@ -47,7 +48,10 @@ void main() {
     });
 
     test('workflow protocol includes a plan step between verify and test', () {
-      expect(base, contains('**Plan** — state what you intend to do before writing code'));
+      expect(
+          base,
+          contains(
+              '**Plan** — state what you intend to do before writing code'));
     });
 
     test('git rules forbid pushing to remote', () {

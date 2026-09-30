@@ -59,7 +59,8 @@ ConfirmationOption? extractConfirmationOption(String rawOutput) {
 /// same seam-closing rationale as `buildCategorizePrompt` in
 /// categorization.dart.
 String confirmationProtocolInstructions() {
-  final allowed = ConfirmationOption.values.map((option) => option.name).join(', ');
+  final allowed =
+      ConfirmationOption.values.map((option) => option.name).join(', ');
   return 'When you present something for the user to confirm before '
       'proceeding, after they reply, classify their reply into exactly '
       'one of: $allowed. Emit your classification as a single value inside '

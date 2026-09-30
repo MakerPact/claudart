@@ -24,7 +24,8 @@ some content
 ''';
 
     test('returns trimmed section content', () {
-      expect(readSection(doc, 'Bug'), 'Widget does not update on state change.');
+      expect(
+          readSection(doc, 'Bug'), 'Widget does not update on state change.');
     });
 
     test('strips trailing separator', () {
@@ -49,7 +50,8 @@ some content
 
 Content with special header.
 ''';
-      expect(readSection(docWithRegex, 'Special (Header) [Regex]'), 'Content with special header.');
+      expect(readSection(docWithRegex, 'Special (Header) [Regex]'),
+          'Content with special header.');
     });
 
     test('returns first match when multiple sections have the same header', () {
@@ -87,7 +89,8 @@ Second content
 
     test('appends new section when not found', () {
       final result = updateSection(doc, 'Missing', 'added');
-      expect(result, '## Status\n\nold-status\n\n## Other\n\ncontent\n\n## Missing\n\nadded\n');
+      expect(result,
+          '## Status\n\nold-status\n\n## Other\n\ncontent\n\n## Missing\n\nadded\n');
     });
 
     test('appends new section to empty document', () {

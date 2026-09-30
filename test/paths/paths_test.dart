@@ -8,11 +8,13 @@ void main() {
 
     test('workspaceFor returns correct path', () {
       const projectName = 'test_project';
-      expect(workspaceFor(projectName), equals(p.join(workspacesRoot, projectName)));
+      expect(workspaceFor(projectName),
+          equals(p.join(workspacesRoot, projectName)));
     });
 
     test('handoffPathFor returns correct path', () {
-      expect(handoffPathFor(workspace), equals(p.join(workspace, 'handoff.md')));
+      expect(
+          handoffPathFor(workspace), equals(p.join(workspace, 'handoff.md')));
     });
 
     test('skillsPathFor returns correct path', () {
@@ -20,7 +22,8 @@ void main() {
     });
 
     test('pendingConfirmationPathFor returns correct path', () {
-      expect(pendingConfirmationPathFor(workspace), equals(p.join(workspace, 'pending_confirmation.json')));
+      expect(pendingConfirmationPathFor(workspace),
+          equals(p.join(workspace, 'pending_confirmation.json')));
     });
 
     test('archiveDirFor returns correct path', () {
@@ -28,31 +31,38 @@ void main() {
     });
 
     test('configPathFor returns correct path', () {
-      expect(configPathFor(workspace), equals(p.join(workspace, 'config.json')));
+      expect(
+          configPathFor(workspace), equals(p.join(workspace, 'config.json')));
     });
 
     test('knowledgeDirFor returns correct path', () {
-      expect(knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
+      expect(
+          knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
     });
 
     test('knowledgeDirFor returns correct path', () {
-      expect(knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
+      expect(
+          knowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge')));
     });
 
     test('genericKnowledgeDirFor returns correct path', () {
-      expect(genericKnowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge', 'generic')));
+      expect(genericKnowledgeDirFor(workspace),
+          equals(p.join(workspace, 'knowledge', 'generic')));
     });
 
     test('projectsKnowledgeDirFor returns correct path', () {
-      expect(projectsKnowledgeDirFor(workspace), equals(p.join(workspace, 'knowledge', 'projects')));
+      expect(projectsKnowledgeDirFor(workspace),
+          equals(p.join(workspace, 'knowledge', 'projects')));
     });
 
     test('claudeCommandsDirFor returns correct path', () {
-      expect(claudeCommandsDirFor(workspace), equals(p.join(workspace, '.claude', 'commands')));
+      expect(claudeCommandsDirFor(workspace),
+          equals(p.join(workspace, '.claude', 'commands')));
     });
 
     test('tokenMapPathFor returns correct path', () {
-      expect(tokenMapPathFor(workspace), equals(p.join(workspace, 'token_map.json')));
+      expect(tokenMapPathFor(workspace),
+          equals(p.join(workspace, 'token_map.json')));
     });
 
     test('logsDirFor returns correct path', () {
@@ -60,7 +70,8 @@ void main() {
     });
 
     test('experimentsDirFor returns correct path', () {
-      expect(experimentsDirFor(workspace), equals(p.join(workspace, 'experiments')));
+      expect(experimentsDirFor(workspace),
+          equals(p.join(workspace, 'experiments')));
     });
   });
 
@@ -68,7 +79,8 @@ void main() {
     const projectRoot = '/mock/project_root';
 
     test('claudeMdPathFor returns correct path', () {
-      expect(claudeMdPathFor(projectRoot), equals(p.join(projectRoot, 'CLAUDE.md')));
+      expect(claudeMdPathFor(projectRoot),
+          equals(p.join(projectRoot, 'CLAUDE.md')));
     });
   });
 }

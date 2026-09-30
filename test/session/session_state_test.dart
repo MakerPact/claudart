@@ -143,12 +143,14 @@ void main() {
 
   group('HandoffStatus round-trip — new variants', () {
     test('readyForSuggest round-trips via fromString / value', () {
-      expect(HandoffStatus.fromString('ready-for-suggest'), equals(HandoffStatus.readyForSuggest));
+      expect(HandoffStatus.fromString('ready-for-suggest'),
+          equals(HandoffStatus.readyForSuggest));
       expect(HandoffStatus.readyForSuggest.value, equals('ready-for-suggest'));
     });
 
     test('debugComplete round-trips via fromString / value', () {
-      expect(HandoffStatus.fromString('debug-complete'), equals(HandoffStatus.debugComplete));
+      expect(HandoffStatus.fromString('debug-complete'),
+          equals(HandoffStatus.debugComplete));
       expect(HandoffStatus.debugComplete.value, equals('debug-complete'));
     });
 

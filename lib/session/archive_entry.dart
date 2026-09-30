@@ -14,21 +14,22 @@ enum ArchiveKind {
 
   String get label => name;
 
-  static ArchiveKind fromString(String s) =>
-      ArchiveKind.values.firstWhere((v) => v.name == s,
-          orElse: () => ArchiveKind.archive);
+  static ArchiveKind fromString(String s) => ArchiveKind.values
+      .firstWhere((v) => v.name == s, orElse: () => ArchiveKind.archive);
 }
 
 class ArchiveEntry {
-  final String      id;
+  final String id;
   final ArchiveKind kind;
-  final String      description;
-  final String      branch;
-  final DateTime    createdAt;
+  final String description;
+  final String branch;
+  final DateTime createdAt;
+
   /// Filename (relative to archive/) of the handoff snapshot.
-  final String      handoffFile;
+  final String handoffFile;
+
   /// Non-empty when skills.md was updated (archive kind only).
-  final String?     skillsDelta;
+  final String? skillsDelta;
 
   const ArchiveEntry({
     required this.id,
@@ -41,21 +42,21 @@ class ArchiveEntry {
   });
 
   factory ArchiveEntry.fromJson(Map<String, dynamic> json) => ArchiveEntry(
-        id:           json['id']          as String,
-        kind:         ArchiveKind.fromString(json['kind'] as String),
-        description:  json['description'] as String,
-        branch:       json['branch']      as String,
-        createdAt:    DateTime.parse(json['createdAt'] as String),
-        handoffFile:  json['handoffFile'] as String,
-        skillsDelta:  json['skillsDelta'] as String?,
+        id: json['id'] as String,
+        kind: ArchiveKind.fromString(json['kind'] as String),
+        description: json['description'] as String,
+        branch: json['branch'] as String,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        handoffFile: json['handoffFile'] as String,
+        skillsDelta: json['skillsDelta'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
-        'id':          id,
-        'kind':        kind.label,
+        'id': id,
+        'kind': kind.label,
         'description': description,
-        'branch':      branch,
-        'createdAt':   createdAt.toIso8601String(),
+        'branch': branch,
+        'createdAt': createdAt.toIso8601String(),
         'handoffFile': handoffFile,
         if (skillsDelta != null) 'skillsDelta': skillsDelta,
       };

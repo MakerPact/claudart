@@ -93,7 +93,8 @@ void main() {
       expect(io.fileExists(globalMdPath), isFalse);
     });
 
-    test('console-printed "active" count agrees with the markdown body — '
+    test(
+        'console-printed "active" count agrees with the markdown body — '
         'both exclude deprecated tokens', () {
       final tokenData = {
         'Bloc:A': {'r': 'VolumeBloc'},
@@ -101,7 +102,8 @@ void main() {
       };
       io.write(tokenMapPath, jsonEncode(tokenData));
 
-      final printed = _capturePrinted(() => runMap(io: io, workspacePath: workspace));
+      final printed =
+          _capturePrinted(() => runMap(io: io, workspacePath: workspace));
       final markdown = io.read(tokenMapMdPath);
 
       // The markdown body's "Total" line already computes this correctly
