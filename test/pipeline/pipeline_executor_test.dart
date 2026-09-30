@@ -61,7 +61,7 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            StepResult(text: 'raw output', usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(text: 'raw output', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
       final ctx = await exec.runFuture(
@@ -105,7 +105,7 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            StepResult(text: 'no tags here', usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(text: 'no tags here', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
       final events = await exec
@@ -140,7 +140,7 @@ void main() {
           required workingDir,
           StepMode mode = StepMode.project,
         }) async =>
-            StepResult(text: 'unchanged', usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
+            const StepResult(text: 'unchanged', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0)),
       );
 
       final ctx = await exec.runFuture(
@@ -378,7 +378,7 @@ void main() {
           StepMode mode = StepMode.project,
         }) async {
           capturedMode = mode;
-          return StepResult(text: '', usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
+          return const StepResult(text: '', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
         },
       );
 
@@ -406,7 +406,7 @@ void main() {
           StepMode mode = StepMode.project,
         }) async {
           capturedMode = mode;
-          return StepResult(text: '', usage: const Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
+          return const StepResult(text: '', usage: Usage(input: 1, output: 1, cacheRead: 0, cost: 0));
         },
       );
 

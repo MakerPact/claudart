@@ -27,16 +27,26 @@ String? parseWorkspaceDirFromStatusOutput(String output) {
 
 /// Root directory containing all project workspaces.
 /// Resolved from CLAUDART_WORKSPACE env var, falls back to ~/.claudart/
+/// (HOME on POSIX, USERPROFILE on Windows).
 final String workspacesRoot = () {
   final env = Platform.environment['CLAUDART_WORKSPACE'];
   if (env != null && env.isNotEmpty) {
     if (env.startsWith('~/')) {
-      return p.join(Platform.environment['HOME']!, env.substring(2));
+      return p.join(homeDir(), env.substring(2));
     }
     return env;
   }
-  return p.join(Platform.environment['HOME']!, '.claudart');
+  return p.join(homeDir(), '.claudart');
 }();
+
+/// The user's home directory: HOME when set (POSIX), USERPROFILE on Windows.
+String homeDir() {
+  final home = Platform.environment['HOME'];
+  if (home != null && home.isNotEmpty) return home;
+  final profile = Platform.environment['USERPROFILE'];
+  if (profile != null && profile.isNotEmpty) return profile;
+  return '.';
+}
 
 /// Registry of all known project workspaces.
 String get registryPath => p.join(workspacesRoot, 'registry.json');
@@ -69,4 +79,3 @@ String experimentsDirFor(String ws) => p.join(ws, 'experiments');
 /// [projectRoot]/CLAUDE.md — not to be confused with the deprecated,
 /// legacy-global-workspace `claudeMdPath` getter below.
 String claudeMdPathFor(String projectRoot) => p.join(projectRoot, 'CLAUDE.md');
-

@@ -100,13 +100,13 @@ MemoryFileIO _makeIO() {
 
 List<String> _checkpoints(MemoryFileIO io) => io.files.keys
     .where((k) =>
-        k.startsWith(p.join(_ws, 'archive')) &&
+        k.startsWith(normPath(p.join(_ws, 'archive'))) &&
         p.basename(k).startsWith('checkpoint_'))
     .toList();
 
 List<String> _archives(MemoryFileIO io) => io.files.keys
     .where((k) =>
-        k.startsWith(p.join(_ws, 'archive')) &&
+        k.startsWith(normPath(p.join(_ws, 'archive'))) &&
         p.basename(k).startsWith('handoff_'))
     .toList();
 

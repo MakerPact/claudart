@@ -280,7 +280,7 @@ void main() {
         exitFn: _throwExit,
       );
       final archived = io.files.keys
-          .where((k) => k.startsWith(p.join(_workspace, 'archive')))
+          .where((k) => k.startsWith(normPath(p.join(_workspace, 'archive'))))
           .toList();
       expect(archived, isEmpty);
     });

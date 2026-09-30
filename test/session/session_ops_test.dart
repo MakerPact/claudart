@@ -43,7 +43,7 @@ void main() {
       final io = _io(withLink: false);
       archiveHandoff(_workspace, _activeHandoff, 'fix/null-ref', io: io);
       final files = io.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(files, hasLength(1));
     });
@@ -52,7 +52,7 @@ void main() {
       final io = _io(withLink: false);
       archiveHandoff(_workspace, _activeHandoff, 'fix/null-ref-v2', io: io);
       final key = io.files.keys
-          .firstWhere((k) => k.startsWith(archiveDirFor(_workspace)));
+          .firstWhere((k) => k.startsWith(normPath(archiveDirFor(_workspace))));
       expect(key, contains('fix_null-ref-v2'));
     });
 
@@ -60,7 +60,7 @@ void main() {
       final io = _io(withLink: false);
       archiveHandoff(_workspace, _activeHandoff, 'main', io: io);
       final key = io.files.keys
-          .firstWhere((k) => k.startsWith(archiveDirFor(_workspace)));
+          .firstWhere((k) => k.startsWith(normPath(archiveDirFor(_workspace))));
       expect(io.read(key), equals(_activeHandoff));
     });
   });
@@ -100,7 +100,7 @@ void main() {
       final io = _io();
       await closeSession(_workspace, _project, io: io);
       final archived = io.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(archived, hasLength(1));
     });
@@ -122,7 +122,7 @@ void main() {
       await closeSession(_workspace, _project, io: io);
       // Archive written, handoff reset, symlink gone.
       final archived = io.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(archived, hasLength(1));
       expect(io.read(handoffPathFor(_workspace)), equals(blankHandoff));
@@ -137,7 +137,7 @@ void main() {
       io.write(handoffPathFor(_workspace), '');
       await closeSession(_workspace, _project, io: io);
       final archived = io.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(archived, hasLength(1));
       expect(archived.first, contains('unknown'));
@@ -157,7 +157,7 @@ void main() {
         throwsA(isA<SessionCloseException>()),
       );
       final archived = io.delegate.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(archived, isEmpty);
     });
@@ -195,7 +195,7 @@ void main() {
         throwsA(isA<SessionCloseException>()),
       );
       final archived = io.delegate.files.keys
-          .where((k) => k.startsWith(archiveDirFor(_workspace)))
+          .where((k) => k.startsWith(normPath(archiveDirFor(_workspace))))
           .toList();
       expect(archived, isEmpty);
     });

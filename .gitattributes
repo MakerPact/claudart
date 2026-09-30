@@ -1,0 +1,16 @@
+# Force LF in the working tree for all text files — claudart's parsers and
+# tests are line-ending sensitive (regexes and literal comparisons match \n).
+# Without this, Windows checkouts with core.autocrlf=true get CRLF files and
+# 40+ tests fail. Normalize in the repo, keep LF on every platform.
+* text=auto eol=lf
+*.dart text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.png binary
+*.jpg binary
+*.gif binary
+*.svg text eol=lf

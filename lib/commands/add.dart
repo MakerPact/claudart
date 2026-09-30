@@ -178,7 +178,7 @@ Future<void> runAdd({
   // 9 — Register in Claude Code's own auto-memory so a session started
   // here already knows the project exists.
   final memoryRoot = claudeMemoryRootOverride ??
-      p.join(Platform.environment['HOME'] ?? '', '.claude', 'projects');
+      p.join(homeDir(), '.claude', 'projects');
   final projectHash = projectRoot.replaceAll('/', '-');
   final memoryDir = p.join(memoryRoot, projectHash, 'memory');
   fileIO.createDir(memoryDir);
@@ -250,4 +250,3 @@ String? _defaultPrompt(String question, {String? defaultValue}) {
   final input = editor.readLine(optional: true);
   return (input == null || input.isEmpty) ? defaultValue : input;
 }
-

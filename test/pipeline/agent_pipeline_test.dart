@@ -30,7 +30,7 @@ final _applierXml  = _fixture('applier_output.xml');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-PipelineContext _baseCtx() => PipelineContext(
+PipelineContext _baseCtx() => const PipelineContext(
       projectRoot: '/tmp/test_project',
       bug:         'Label is null when not provided',
       expected:    'Widget shows default label',
@@ -132,7 +132,8 @@ void main() {
       // Second planner call produces CHANGES after receiving the answer
       var plannerCallCount = 0;
       final mock = MockClaudeRunner({});
-      ClaudeRunner countingRunner = ({
+      final exec = PipelineExecutor(
+        runner: ({
         required AgentModel model,
         required String systemPrompt,
         required String message,
@@ -141,15 +142,12 @@ void main() {
       }) async {
         mock.captured.add(CallRecord(model: model, systemPrompt: systemPrompt, message: message));
         if (model == AgentModel.haiku) {
-          return StepResult(text: answerXml, usage: const Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0));
+          return const StepResult(text: answerXml, usage: Usage(input: 50, output: 20, cost: 0.0005, cacheRead: 0));
         }
         plannerCallCount++;
         final text = plannerCallCount == 1 ? questionXml : _plannerXml;
         return StepResult(text: text, usage: const Usage(input: 200, output: 80, cost: 0.002, cacheRead: 0));
-      };
-
-      final exec = PipelineExecutor(
-        runner:   countingRunner,
+      },
         prompter: (_) async => '', // no user escalation expected
       );
       final ctx = await exec.runFuture(
@@ -175,7 +173,8 @@ void main() {
     (sel) async {
       // Mock: planner → CHANGES; applier → updated XML
       var step = 0;
-      ClaudeRunner twoStepRunner = ({
+      final exec = PipelineExecutor(
+        runner: ({
         required AgentModel model,
         required String systemPrompt,
         required String message,
@@ -185,9 +184,8 @@ void main() {
         step++;
         final text = step == 1 ? _plannerXml : _applierXml;
         return StepResult(text: text, usage: const Usage(input: 100, output: 50, cost: 0.001, cacheRead: 0));
-      };
-
-      final exec = PipelineExecutor(runner: twoStepRunner);
+      },
+      );
       final ctx  = await exec.runFuture(
         steps: SuggestSteps.refinement(1),
         ctx: _baseCtx()

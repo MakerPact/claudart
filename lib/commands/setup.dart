@@ -240,22 +240,33 @@ final class _NotFound extends _FileResolution {
   final String token;
 }
 
-/// Default [FileFinderFn] — delegates to the OS `find` command, skipping
-/// hidden dirs and common build artefacts.
+/// Default [FileFinderFn] — pure-Dart recursive walk, skipping hidden
+/// dirs and common build artefacts. (Previously delegated to the OS
+/// `find` command, which does not exist on Windows.)
 List<String> _defaultFileFinder(String projectRoot, String basename) {
-  final result = Process.runSync(
-    'find',
-    [projectRoot, '-type', 'f', '-name', basename,
-     '!', '-path', '*/.dart_tool/*',
-     '!', '-path', '*/.git/*',
-     '!', '-path', '*/build/*',
-    ],
-  );
-  return (result.stdout as String)
-      .split('\n')
-      .map((l) => l.trim())
-      .where((l) => l.isNotEmpty)
-      .toList();
+  final matches = <String>[];
+  final skipDirs = <String>{'.dart_tool', '.git', 'build'};
+  void walk(Directory dir) {
+    List<FileSystemEntity> entries;
+    try {
+      entries = dir.listSync(followLinks: false);
+    } on FileSystemException {
+      return; // unreadable directory — skip it
+    }
+    for (final entry in entries) {
+      if (entry is Directory) {
+        final name = p.basename(entry.path);
+        if (skipDirs.contains(name)) continue;
+        walk(entry);
+      } else if (entry is File && p.basename(entry.path) == basename) {
+        matches.add(entry.path);
+      }
+    }
+  }
+
+  final root = Directory(projectRoot);
+  if (root.existsSync()) walk(root);
+  return matches;
 }
 
 /// Resolves a single [token] to a [_FileResolution] using [finder].
@@ -265,7 +276,9 @@ _FileResolution _resolveToken(
   FileFinderFn finder,
 ) {
   final paths = finder(projectRoot, p.basename(token))
-      .map((abs) => p.relative(abs, from: projectRoot))
+      // Normalise to forward slashes: handoff content is markdown, where
+      // '/' is the canonical separator on every platform.
+      .map((abs) => p.relative(abs, from: projectRoot).replaceAll('\\', '/'))
       .toList();
 
   return paths.isEmpty ? _NotFound(token) : _Resolved(paths);

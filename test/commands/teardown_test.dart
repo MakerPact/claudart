@@ -189,7 +189,7 @@ MemoryFileIO _io({String? handoff}) {
 /// Returns all archive files (not checkpoints) written under the workspace.
 List<String> _archives(MemoryFileIO io) => io.files.keys
     .where((k) =>
-        k.startsWith(p.join(_workspace, 'archive')) &&
+        k.startsWith(normPath(p.join(_workspace, 'archive'))) &&
         p.basename(k).startsWith('handoff_'))
     .toList();
 

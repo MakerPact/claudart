@@ -7,6 +7,8 @@
 
 import 'dart:convert';
 import 'dart:io' as io;
+import 'package:path/path.dart' as p;
+import 'package:claudart/paths.dart' show homeDir;
 
 import '../pipeline/agent_flow.dart';
 import '../pipeline/agent_model.dart';
@@ -137,8 +139,7 @@ class PlannerLog {
   final void Function(String path, String line) appender;
 
   static String _defaultPath() {
-    final home = io.Platform.environment['HOME'] ?? '.';
-    return '$home/.claudart/planner.jsonl';
+    return p.join(homeDir(), '.claudart', 'planner.jsonl');
   }
 
   static void _defaultAppend(String path, String line) {

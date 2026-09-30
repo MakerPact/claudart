@@ -5,8 +5,8 @@ String saveCommandTemplate(String workspacePath, String projectName) =>
 description: Checkpoint session — $projectName
 ---
 
-''' +
-    r'''You are running **/save** — the session checkpoint command.
+'''
+    '''You are running **/save** — the session checkpoint command.
 
 Save locks in confirmed knowledge from the current session without ending it.
 It writes a checkpoint snapshot, deposits confirmed facts into pending skills,
@@ -16,9 +16,7 @@ and updates the registry. The handoff is NOT reset. The session stays open.
 
 ## Step 1 — Read handoff.md
 
-Read `''' +
-    workspacePath +
-    r'''/handoff.md` in full.
+Read `$workspacePath/handoff.md` in full.
 
 Display a summary to the user:
 
@@ -37,14 +35,12 @@ Attempted  : <what was attempted — or "nothing yet">
 Ask: "Does this reflect the current confirmed state? Any corrections before
 saving?"
 
-''' +
-    confirmationProtocolInstructions() +
+'''
+    '${confirmationProtocolInstructions()}'
     r'''
 
 - `confirm` → proceed immediately to Step 3.
-- `modify` → apply the correction to `''' +
-    workspacePath +
-    r'''/handoff.md` first, then proceed to Step 3.
+- `modify` → apply the correction to `$workspacePath/handoff.md` first, then proceed to Step 3.
 - `clarify` → ask a follow-up question. Do not proceed to Step 3.
 - `reject` → stop. Do not run `claudart save`.
 
@@ -57,12 +53,8 @@ claudart save
 ```
 
 This writes:
-- A checkpoint to `''' +
-    workspacePath +
-    r'''/archive/checkpoint_*`
-- Confirmed root cause (if present) to `''' +
-    workspacePath +
-    r'''/skills.md` under `## Pending`
+- A checkpoint to `$workspacePath/archive/checkpoint_*`
+- Confirmed root cause (if present) to `$workspacePath/skills.md` under `## Pending`
 - Updates the registry timestamp
 
 ---

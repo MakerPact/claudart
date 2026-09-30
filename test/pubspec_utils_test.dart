@@ -1,5 +1,6 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
+import 'package:path/path.dart' as p;
 import 'package:claudart/pubspec_utils.dart';
 import 'helpers/mocks.dart';
 
@@ -51,8 +52,11 @@ void main() {
   group('readProjectEnv (MockFileIO)', () {
     test('calls fileExists then read on the pubspec path', () {
       final mock = MockFileIO();
-      when(() => mock.fileExists('/project/pubspec.yaml')).thenReturn(true);
-      when(() => mock.read('/project/pubspec.yaml'))
+      // readProjectEnv builds the path with p.join(), which is
+      // platform-native ('\ ' on Windows) — stub the native form.
+      final pubspecPath = p.join('/project', 'pubspec.yaml');
+      when(() => mock.fileExists(pubspecPath)).thenReturn(true);
+      when(() => mock.read(pubspecPath))
           .thenReturn('environment:\n  sdk: ^3.8.0\n');
 
       final env = readProjectEnv('/project', io: mock);

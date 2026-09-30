@@ -212,7 +212,9 @@ bool _walkDirsSortedBounded(Directory dir, String projectRoot, List<String> out,
   }
   for (final child in children) {
     if (out.length >= limit) return true;
-    out.add(p.relative(child.path, from: projectRoot));
+    // Forward-slash form: the index is prompt content, where '/' is the
+    // canonical separator on every platform.
+    out.add(p.relative(child.path, from: projectRoot).replaceAll('\\', '/'));
     if (_walkDirsSortedBounded(child, projectRoot, out, limit)) return true;
   }
   return false;

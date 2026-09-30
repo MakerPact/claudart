@@ -259,7 +259,7 @@ MemoryFileIO _io({String handoff = _fullHandoff}) {
 
 List<String> _checkpoints(MemoryFileIO io) => io.files.keys
     .where((k) =>
-        k.startsWith(p.join(_workspace, 'archive')) &&
+        k.startsWith(normPath(p.join(_workspace, 'archive'))) &&
         p.basename(k).startsWith('checkpoint_'))
     .toList();
 

@@ -123,7 +123,7 @@ void main() {
         exitFn: (code) => throw _ExitException(code),
       );
       final archived = io.files.keys
-          .where((k) => k.startsWith(p.join(_workspace, 'archive')))
+          .where((k) => k.startsWith(normPath(p.join(_workspace, 'archive'))))
           .toList();
       expect(archived, hasLength(1));
     });
@@ -206,7 +206,7 @@ void main() {
       // Archive still happens — killing a real-directory workspace works
       // the same as killing a symlinked one.
       final archived = io.files.keys
-          .where((k) => k.startsWith(p.join(_workspace, 'archive')))
+          .where((k) => k.startsWith(normPath(p.join(_workspace, 'archive'))))
           .toList();
       expect(archived, hasLength(1));
     });

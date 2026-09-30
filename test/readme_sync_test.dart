@@ -78,7 +78,7 @@ void main() {
         ...Directory('lib').listSync(recursive: true),
         ...Directory('bin').listSync(recursive: true),
         ...Directory('tool').listSync(recursive: true),
-      ].whereType<File>().map((f) => f.path).toList();
+      ].whereType<File>().map((f) => f.path.replaceAll('\\', '/')).toList();
 
       final refs = RegExp(r'[A-Za-z0-9_/]+\.dart')
           .allMatches(prose)
