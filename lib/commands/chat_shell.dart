@@ -1,3 +1,5 @@
+import 'package:path/path.dart' as p;
+import '../ui/uga_filter.dart';
 // chat_shell.dart — the interactive chat shell (the agentflow front door).
 //
 // Conversation is the DEFAULT. You open the shell (zedup's dashboard launches it
@@ -17,7 +19,8 @@ import '../git_utils.dart';
 import '../md_io.dart' show readSection;
 import '../paths.dart';
 import '../pipeline/agent_model.dart';
-import '../pipeline/pipeline_executor.dart' show ClaudeRunner, defaultClaudeRunner;
+import '../pipeline/pipeline_executor.dart'
+    show ClaudeRunner, defaultClaudeRunner;
 import '../registry.dart';
 import '../ui/ansi.dart' as ansi;
 import '../ui/render.dart' as render;
@@ -31,6 +34,7 @@ enum ChatCommand {
   suggest,
   help,
   quit,
+  uga,
   message;
 
   /// Parses a typed line. Plain text (no leading `/`) is a conversational
@@ -41,16 +45,21 @@ enum ChatCommand {
     if (t.isEmpty) return ChatCommand.help;
     if (!t.startsWith('/')) return ChatCommand.message;
     final word = t.substring(1).toLowerCase().split(' ').first;
+
+    if (word.startsWith('uga')) {
+      return ChatCommand.uga;
+    }
     return switch (word) {
-      'flow'                  => ChatCommand.flow,
-      'suggest'               => ChatCommand.suggest,
+      'flow' => ChatCommand.flow,
+      'suggest' => ChatCommand.suggest,
       'quit' || 'exit' || 'q' => ChatCommand.quit,
-      _                       => ChatCommand.help,
+      _ => ChatCommand.help,
     };
   }
 }
 
-const String _commandHint = 'talk to me, or invoke  /flow · /suggest · /quit';
+const String _commandHint =
+    'talk to me, or invoke  /flow · /suggest · /uga [0-5] · /quit';
 
 /// The read→parse→dispatch loop, isolated for testing with injected I/O and
 /// handlers. Plain text routes to [onMessage]; slash commands dispatch. Returns
@@ -60,6 +69,7 @@ Future<void> runChatLoop({
   required void Function(String) out,
   required Future<void> Function() onFlow,
   required Future<void> Function() onSuggest,
+  required Future<void> Function(String args) onUga,
   required Future<void> Function(String text) onMessage,
 }) async {
   while (true) {
@@ -70,8 +80,19 @@ Future<void> runChatLoop({
         await onFlow();
       case ChatCommand.suggest:
         await onSuggest();
+
       case ChatCommand.help:
         out(ansi.c(ansi.dim, '  $_commandHint'));
+      case ChatCommand.uga:
+        final t = line.trim();
+        final lowerT = t.toLowerCase();
+        final ugaIndex = lowerT.indexOf('uga');
+        String args = '';
+        if (ugaIndex != -1) {
+          args = t.substring(ugaIndex + 3).trim();
+        }
+        await onUga(args);
+
       case ChatCommand.quit:
         return;
       case ChatCommand.message:
@@ -99,28 +120,69 @@ Future<void> runChatShell({
 
   print(render.header('CLAUDART'));
   if (entry == null) {
-    print('\n  Not in a registered project — run `claudart link` here first.\n');
+    print(
+        '\n  Not in a registered project — run `claudart link` here first.\n');
     exit_(0);
   }
 
   final systemPrompt = _chatSystemPrompt(fileIO, entry.workspacePath);
   final history = <String>[]; // alternating "you: …" / "claudart: …" turns
 
+  int currentUgaLevel = 0;
+  final ugaConfigPath = p.join(entry.workspacePath, 'uga_words.txt');
+  if (!fileIO.fileExists(ugaConfigPath)) {
+    // Write defaults so the user/AI has something to edit
+    UgaFilter().save(fileIO, ugaConfigPath);
+  }
+  final ugaFilter = UgaFilter.load(fileIO, ugaConfigPath);
+
   print('  workspace: ${ansi.c(ansi.bold, entry.name)}');
   print(ansi.c(ansi.dim, '  $_commandHint\n'));
 
   await runChatLoop(
-    readLine:  _promptingReadLine,
-    out:       print,
-    onFlow:    () => runFlow(),
+    readLine: _promptingReadLine,
+    out: print,
+    onFlow: () => runFlow(),
     onSuggest: () => runSuggest(),
+    onUga: (args) async {
+      if (args.isEmpty || args == 'list') {
+        if (currentUgaLevel == 0) {
+          print('uga is currently disabled all words are passed on');
+        } else {
+          final words = ugaFilter.getWordsForLevel(currentUgaLevel);
+          print(
+              'these words are being removed currently: $words to change this use slash uga0-5 to select the level 0 turns the word filter off, and to edit the word list see file $ugaConfigPath to customize the word list or have your ai edit it for you.');
+        }
+        return;
+      }
+      if (args == 'on') {
+        currentUgaLevel = UgaFilter.maxLevel;
+        print('uga turned on (level $currentUgaLevel)');
+        return;
+      }
+      if (args == 'off') {
+        currentUgaLevel = 0;
+        print('uga turned off');
+        return;
+      }
+      final level = int.tryParse(args);
+      if (level != null && level >= 0 && level <= UgaFilter.maxLevel) {
+        currentUgaLevel = level;
+        print('uga set to level $level');
+      } else {
+        print(
+            'Invalid uga command. Use /uga on, /uga off, /uga list, or /uga 0-5.');
+      }
+    },
     onMessage: (text) async {
-      history.add('you: $text');
+      final String processedText = ugaFilter.applyFilter(text, currentUgaLevel);
+      history.add('you: $processedText');
+
       final reply = await run(
-        model:        AgentModel.haiku,
+        model: AgentModel.haiku,
         systemPrompt: systemPrompt,
-        message:      history.join('\n\n'),
-        workingDir:   entry.projectRoot,
+        message: history.join('\n\n'),
+        workingDir: entry.projectRoot,
       );
       if (reply == null) {
         print(ansi.c(ansi.red, '  (no reply — is the claude CLI available?)'));
@@ -138,7 +200,8 @@ String _chatSystemPrompt(FileIO io, String workspace) {
   final skillsPath = skillsPathFor(workspace);
   final handoff = io.fileExists(handoffPath) ? io.read(handoffPath) : '';
   final skills = io.fileExists(skillsPath) ? io.read(skillsPath) : '';
-  final bug = handoff.isEmpty ? '(no active session)' : readSection(handoff, 'Bug');
+  final bug =
+      handoff.isEmpty ? '(no active session)' : readSection(handoff, 'Bug');
   return 'You are claudart, the workflow agent for this project. Converse '
       'naturally and concisely. When the user wants to start structured work, '
       'point them at /flow or /suggest.\n\n'

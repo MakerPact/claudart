@@ -16,6 +16,10 @@ void main() {
       '  /flow ':     ChatCommand.flow,
       '/flow now':    ChatCommand.flow,
       '/suggest':     ChatCommand.suggest,
+      '/uga':         ChatCommand.uga,
+      '/uga 2':       ChatCommand.uga,
+      '/uga2':        ChatCommand.uga,
+      '/uga on':      ChatCommand.uga,
       '/quit':        ChatCommand.quit,
       '/exit':        ChatCommand.quit,
       '/q':           ChatCommand.quit,
@@ -33,18 +37,21 @@ void main() {
 
   group('runChatLoop', () {
     test('plain text routes to onMessage; slash commands dispatch', () async {
-      final lines = ['hello', '/flow', 'bye', '/quit', 'never'].iterator;
+      final lines = ['hello', '/flow', '/uga 2', '/UGA3', 'bye', '/quit', 'never'].iterator;
       final messages = <String>[];
       var flow = 0;
+      final ugaArgs = <String>[];
       await runChatLoop(
         readLine:  () => lines.moveNext() ? lines.current : null,
         out:       (_) {},
         onFlow:    () async => flow++,
         onSuggest: () async {},
+        onUga:     (args) async => ugaArgs.add(args),
         onMessage: (t) async => messages.add(t),
       );
       expect(messages, equals(['hello', 'bye']));
       expect(flow, equals(1)); // 'never' after /quit does not run
+      expect(ugaArgs, equals(['2', '3']));
     });
 
     test('returns on EOF without hanging', () async {
@@ -53,6 +60,7 @@ void main() {
         out:       (_) {},
         onFlow:    () async {},
         onSuggest: () async {},
+        onUga:     (_) async {},
         onMessage: (_) async {},
       );
     });
@@ -66,6 +74,7 @@ void main() {
         out:       out.add,
         onFlow:    () async => touched++,
         onSuggest: () async => touched++,
+        onUga:     (_) async => touched++,
         onMessage: (_) async => touched++,
       );
       expect(touched, equals(0));
