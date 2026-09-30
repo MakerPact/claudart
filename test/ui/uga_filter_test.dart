@@ -66,7 +66,7 @@ void main() {
     test('filters text correctly', () {
       final filter = UgaFilter('can you please');
 
-      final input = 'Can you please make the button larger?';
+      const input = 'Can you please make the button larger?';
 
       expect(filter.applyFilter(input, 0), input);
 

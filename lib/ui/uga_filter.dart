@@ -1,4 +1,3 @@
-import 'dart:io';
 import '../file_io.dart';
 
 class UgaFilter {
@@ -27,22 +26,21 @@ nothing everything someone anyone no-one everyone somebody anybody nobody everyb
 somewhere anywhere nowhere everywhere suppose believe understand see hear listen
 ''';
 
-  late List<String> _words;
+  late final List<String> _words;
 
   UgaFilter([String? customWords]) {
     final rawWords = customWords ?? defaultWords;
-    _words = rawWords
+    var wordsList = rawWords
         .replaceAll(RegExp(r'\s+'), ' ')
         .split(' ')
         .map((w) => w.trim().toLowerCase())
         .where((w) => w.isNotEmpty)
         .toList();
-    _words = _words.toSet().toList(); // Deduplicate custom lists too
-    // In a real implementation we would distinct them, but let's keep the exact list for now to allow user ordering.
-    // _words = _words.toSet().toList(); // Wait, instructions said to let the user order them.
+    wordsList = wordsList.toSet().toList(); // Deduplicate custom lists too
+
     // Ensure we have words
-    if (_words.isEmpty) {
-      _words = [
+    if (wordsList.isEmpty) {
+      wordsList = [
         'please',
         'can',
         'you',
@@ -53,6 +51,7 @@ somewhere anywhere nowhere everywhere suppose believe understand see hear listen
         'thank',
       ];
     }
+    _words = List.unmodifiable(wordsList);
   }
 
   factory UgaFilter.load(FileIO io, String configPath) {
@@ -66,21 +65,14 @@ somewhere anywhere nowhere everywhere suppose believe understand see hear listen
     io.write(configPath, _words.join(' '));
   }
 
-  List<String> getWords() => List.unmodifiable(_words);
+  List<String> getWords() => _words;
 
   List<String> getWordsForLevel(int level) {
-    if (level <= 0) return [];
-    if (level >= maxLevel) return List.unmodifiable(_words);
+    if (level <= 0) return const [];
+    if (level >= maxLevel) return _words;
 
     // Calculate chunk size. 5 levels means 4 non-zero levels (1, 2, 3, 4) plus level 5 (all words).
-    // The request said:
-    // level 5: all 200 words
-    // level 4: first 160 words (4/5)
-    // level 3: first 120 words (3/5)
-    // level 2: first 80 words (2/5)
-    // level 1: first 40 words (1/5)
-
-    int wordsToTake = (_words.length * level ~/ maxLevel);
+    final int wordsToTake = (_words.length * level ~/ maxLevel);
     return _words.take(wordsToTake).toList();
   }
 
@@ -92,8 +84,6 @@ somewhere anywhere nowhere everywhere suppose believe understand see hear listen
 
     // Build a regex to match these words as whole words, case-insensitively
     // We sort by length descending to match longest phrases first if any existed, though we split by space above.
-    // Actually, the user asked for words like "thank you" which we split into "thank" and "you".
-    // If they provided "thank you" on one line, we split it. Let's make sure it handles regex safely.
     final sortedWords = wordsToFilter.toList()
       ..sort((a, b) => b.length.compareTo(a.length));
 

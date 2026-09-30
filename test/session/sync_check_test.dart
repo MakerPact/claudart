@@ -510,7 +510,7 @@ void main() {
   // V = {debug, save, test}  G = {fromString}  →  3 required assertions
   // Known variants round-trip through .name; catch-all uses a named sentinel.
 
-  const _unknownOp = 'not-an-operation';
+  const unknownOp = 'not-an-operation';
 
   group('ClaudartOperation.fromString', () {
     test('debug variant round-trips', () {
@@ -529,7 +529,7 @@ void main() {
 
     test('unknown input → catch-all maps to test', () {
       expect(
-        ClaudartOperation.fromString(_unknownOp),
+        ClaudartOperation.fromString(unknownOp),
         ClaudartOperation.test,
       );
     });

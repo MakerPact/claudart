@@ -10,7 +10,7 @@ void main() {
   final tokens = ['User', 'UserRepository', 'LocalUser', 'Repository', 'Local'];
   final detector = _DummyDetector(tokens);
 
-  final text = 'User UserRepository LocalUser Repository Local UserLocal';
+  const text = 'User UserRepository LocalUser Repository Local UserLocal';
 
   final regexReplace = RegexReplaceAbstractor();
   print('Regex boundaries: ${regexReplace.abstract(text, map, detector)}');
