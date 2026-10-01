@@ -11,6 +11,7 @@ import 'package:claudart/commands/confirm_pending.dart';
 import 'package:claudart/commands/experiment.dart';
 import 'package:claudart/commands/init.dart';
 import 'package:claudart/commands/kill.dart';
+import 'package:claudart/commands/issue.dart';
 import 'package:claudart/commands/save.dart';
 import 'package:claudart/commands/launch.dart';
 import 'package:claudart/commands/link.dart';
@@ -54,6 +55,8 @@ Commands:
   rotate                 Archive current session, run build gate, seed next handoff from Pending Issues
   kill                   Abandon session: archive handoff, remove symlink (no skills update)
   resume                 Pre-populate setup from the most recent archive entry
+  issue <url>            Import a forge issue (GitHub/GitLab/…): fetch it, clone or
+                         verify the repo, cut a fix branch, and seed the handoff
   confirm-pending --question <q> --on-confirm <cmd>
                          Set the pending confirmation for this workspace
   confirm-pending --clear  Clear the pending confirmation
@@ -151,6 +154,8 @@ Future<void> main(List<String> rawArgs) async {
       await runKill();
     case ClaudartCommand.resume:
       await runResume();
+    case ClaudartCommand.issue:
+      await runIssue(rest);
     case ClaudartCommand.confirmPending:
       await runConfirmPending(rest);
     case ClaudartCommand.preflight:

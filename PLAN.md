@@ -939,6 +939,75 @@ graph LR
 
 ---
 
+### Phase 14 — `claudart issue <url>`: forge-issue import (complete)
+
+Paste a link to a bug-tracker issue — e.g.
+`https://github.com/arduino/Arduino/issues/12036` — and claudart
+detects the host, fetches the issue, ensures the right repo is cloned
+and current, creates a bug-fix branch, and writes the handoff with the
+issue as the Bug section — exactly as if the user had typed the issue
+text themselves. The user stays in the loop at every checkpoint; the
+feature removes only the manual heavy lifting (clone, branch, copy
+issue text). Downstream (`setup` → `suggest` → `debug`) is untouched:
+the state machine never knows where the Bug text came from.
+
+Approved design decisions (2026-09-30):
+
+- **Fetch**: REST API first, HTML scrape fallback for unknown hosts.
+- **V1 hosts**: GitHub (+ Enterprise) and GitLab (+ self-hosted), behind
+  a `ForgeAdapter` interface (`parseUrl` / `fetchIssue` / `defaultBranch`
+  / `cloneUrl`) so Bitbucket, Forgejo/Gitea/Codeberg, and others land as
+  follow-up adapters without touching the command layer.
+- **Clone location**: ask the user each time for fresh clones; existing
+  clones found via Registry / remote-URL match are reused after
+  verification (remote matches, default branch current after fetch).
+- **Automation depth**: fully interactive wizard — confirm repo match,
+  branch name, and handoff preview before each step commits.
+- **jj (Jujutsu)**: deferred. jj is git-compatible, so the git path
+  works for jj users initially; native colocation support is a follow-up.
+
+Planned deliverables:
+
+- `lib/commands/issue.dart` (new) — wizard flow, registry lookup,
+  repo-verification state machine (existing-clone remote mismatch /
+  stale default branch / dirty working tree → refuse, stash, or abort;
+  private-repo 401/404 → auth guidance, never a raw error).
+- `lib/forge/forge_adapter.dart` (new) — the adapter interface.
+- `lib/forge/github_adapter.dart`, `lib/forge/gitlab_adapter.dart` (new)
+  — v1 adapters.
+- `lib/forge/scrape_fallback.dart` (new) — last-resort HTML extraction
+  for hosts without a known adapter.
+- Handoff write reuses the existing template/handoff machinery
+  (`handoffPathFor`, `readSection`'s Bug / Expected Behavior / Scope
+  contract) — no new downstream surface.
+
+**Status:** complete 2026-09-30. Shipped: `lib/forge/forge_adapter.dart`
+(interface + `ForgeIssue`/`ForgeRepo` models + injectable
+`ForgeHttpClient` over `dart:io` — no new pub dependency),
+`github_adapter.dart` (github.com + Enterprise, token via
+GITHUB_TOKEN/GH_TOKEN), `gitlab_adapter.dart` (gitlab.com + self-hosted,
+nested groups, GITLAB_TOKEN), `scrape_fallback.dart` (generic hosts),
+`forge_registry.dart` (ordered resolution — fallback last),
+`repo_resolver.dart` (clone discovery via Registry remote-URL match,
+remote/fetch/clean-tree verification as a sealed outcome hierarchy,
+idempotent `fix/issue-N` branch reuse), `lib/commands/issue.dart`
+(the wizard), `issue` wired into `ClaudartCommand` + bin dispatch +
+usage. 35 new tests (adapters, URL parsing, registry routing,
+resolver outcomes, full happy-path wizard with canned HTTP + mocked
+git). Suite: 1,280 pass / 0 fail; analyzer carries only the three
+pre-existing legacy-plugin warnings; format clean.
+
+Notable bug the tests caught: `Registry.add` is immutable (returns a
+new Registry) — the wizard's first draft discarded the result, so the
+post-registration lookup missed the new entry. Fixed by rebinding.
+
+Deferred (recorded, not forgotten): Bitbucket + Forgejo/Gitea
+dedicated adapters (the scrape fallback covers them coarsely today),
+native jj (Jujutsu) colocation support, comment pagination beyond the
+first page, and a `--headless` mode for the wizard.
+
+---
+
 ## Key decisions log
 
 | Decision | Why |

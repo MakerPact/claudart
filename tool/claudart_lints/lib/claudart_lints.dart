@@ -52,8 +52,7 @@ class BareStringForEnum extends DartLintRule {
 
   static const _code = LintCode(
     name: 'bare_string_for_enum',
-    problemMessage:
-        'Switch dispatches on string literals instead of an enum. '
+    problemMessage: 'Switch dispatches on string literals instead of an enum. '
         'Model these cases as an enum and switch on it.',
     correctionMessage:
         'Introduce (or reuse) an enum whose variants are these string '
@@ -83,7 +82,8 @@ class BareStringForEnum extends DartLintRule {
     // Switch *expressions* (`switch (x) { 'a' => ... }`) are the same
     // dispatch shape and can bypass the statement-only check above.
     context.registry.addSwitchExpression((node) {
-      final literalCases = node.cases.where(_isStringLiteralExpressionCase).toList();
+      final literalCases =
+          node.cases.where(_isStringLiteralExpressionCase).toList();
       if (literalCases.length < 2) return;
       if (!literalCases.any((c) => _containsAction(c.expression))) return;
       reporter.atNode(node, _code);
@@ -124,7 +124,6 @@ class BareStringForEnum extends DartLintRule {
     final pattern = case_.guardedPattern.pattern;
     return pattern is ConstantPattern && pattern.expression is StringLiteral;
   }
-
 }
 
 /// Thrown by [_ActionExpressionFinder] the moment it finds an action, so the
@@ -144,7 +143,8 @@ class _ActionExpressionFinder extends RecursiveAstVisitor<void> {
   const _ActionExpressionFinder();
 
   @override
-  void visitMethodInvocation(MethodInvocation node) => throw const _ActionFound();
+  void visitMethodInvocation(MethodInvocation node) =>
+      throw const _ActionFound();
 
   @override
   void visitFunctionExpressionInvocation(FunctionExpressionInvocation node) =>
@@ -210,7 +210,8 @@ class _EnumValuesForLoopFinder extends RecursiveAstVisitor<void> {
   @override
   void visitForStatement(ForStatement node) {
     final forLoopParts = node.forLoopParts;
-    if (forLoopParts is ForEachParts && _isEnumValuesAccess(forLoopParts.iterable)) {
+    if (forLoopParts is ForEachParts &&
+        _isEnumValuesAccess(forLoopParts.iterable)) {
       matches.add(node);
     }
     super.visitForStatement(node);
@@ -219,9 +220,12 @@ class _EnumValuesForLoopFinder extends RecursiveAstVisitor<void> {
   /// True only when [iterableExpression] is `.values` accessed on an enum
   /// type itself (`SomeEnum.values`), verified via the resolved element —
   /// not by property name alone, which `someMap.values` also matches.
-  static bool _isEnumValuesAccess(Expression iterableExpression) => switch (iterableExpression) {
+  static bool _isEnumValuesAccess(Expression iterableExpression) =>
+      switch (iterableExpression) {
         PropertyAccess(:final propertyName, :final target) =>
-          propertyName.name == 'values' && target != null && _referencesEnum(target),
+          propertyName.name == 'values' &&
+              target != null &&
+              _referencesEnum(target),
         PrefixedIdentifier(:final identifier, :final prefix) =>
           identifier.name == 'values' && _referencesEnum(prefix),
         _ => false,
