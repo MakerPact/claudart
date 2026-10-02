@@ -27,6 +27,8 @@ somewhere anywhere nowhere everywhere suppose believe understand see hear listen
 ''';
 
   late final List<String> _words;
+  final Map<String, RegExp> _regexCache = {};
+  static final RegExp _whitespaceRegex = RegExp(r'\s+');
 
   UgaFilter([String? customWords]) {
     final rawWords = customWords ?? defaultWords;
@@ -88,11 +90,14 @@ somewhere anywhere nowhere everywhere suppose believe understand see hear listen
       ..sort((a, b) => b.length.compareTo(a.length));
 
     final pattern = sortedWords.map(RegExp.escape).join('|');
-    final regex = RegExp(r'\b(' + pattern + r')\b', caseSensitive: false);
+    final regex = _regexCache.putIfAbsent(
+      pattern,
+      () => RegExp(r'\b(' + pattern + r')\b', caseSensitive: false),
+    );
 
     // Replace the matched words with empty string, then clean up extra spaces
     String result = text.replaceAll(regex, '');
-    result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
+    result = result.replaceAll(_whitespaceRegex, ' ').trim();
     return result;
   }
 }

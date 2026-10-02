@@ -154,13 +154,13 @@ void main() {
       forgeRegistry: forges,
       processRunner: runner,
       confirmFn: (_) => true,
-      promptFn: (q, {optional = false}) => '/repos/Arduino',
+      promptFn: (q, {optional = false}) => 'test_repos/Arduino',
       exitFn: _throwExit,
     );
 
     // Registry now has the imported project.
     final registry = Registry.load(io: io);
-    final entry = registry.findByProjectRoot('/repos/Arduino');
+    final entry = registry.findByProjectRoot('test_repos/Arduino');
     expect(entry, isNotNull);
     expect(entry!.name, 'arduino_Arduino');
 
