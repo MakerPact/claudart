@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:claudart/forge/forge_adapter.dart';
 import 'package:claudart/forge/forge_registry.dart';
-import 'package:claudart/forge/forgejo_adapter.dart';
-import 'package:claudart/forge/gitee_adapter.dart';
 import 'package:claudart/forge/github_adapter.dart';
 import 'package:claudart/forge/gitlab_adapter.dart';
 import 'package:claudart/forge/scrape_fallback.dart';
