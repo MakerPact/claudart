@@ -48,23 +48,23 @@ void main() {
 
     test('parses a canonical issue URL', () {
       final repo = adapter.parseIssueUrl(
-          Uri.parse('https://github.com/arduino/Arduino/issues/12036'));
+          Uri.parse('https://github.com/example/example-repo/issues/12036'));
       expect(repo, isNotNull);
       expect(repo!.host, 'github.com');
-      expect(repo.owner, 'arduino');
-      expect(repo.repo, 'Arduino');
+      expect(repo.owner, 'example');
+      expect(repo.repo, 'example-repo');
       expect(repo.number, 12036);
-      expect(repo.slug, 'arduino/Arduino');
+      expect(repo.slug, 'example/example-repo');
     });
 
     test('rejects non-issue URLs', () {
       expect(
-        adapter.parseIssueUrl(Uri.parse('https://github.com/arduino/Arduino')),
+        adapter.parseIssueUrl(Uri.parse('https://github.com/example/example-repo')),
         isNull,
       );
       expect(
         adapter.parseIssueUrl(
-            Uri.parse('https://github.com/arduino/Arduino/pulls/5')),
+            Uri.parse('https://github.com/example/example-repo/pulls/5')),
         isNull,
       );
     });
@@ -72,7 +72,7 @@ void main() {
     test('rejects non-numeric issue numbers', () {
       expect(
         adapter.parseIssueUrl(
-            Uri.parse('https://github.com/arduino/Arduino/issues/abc')),
+            Uri.parse('https://github.com/example/example-repo/issues/abc')),
         isNull,
       );
     });
@@ -165,13 +165,13 @@ void main() {
   group('GithubAdapter.fetchIssue', () {
     final adapter = GithubAdapter();
     final repo = adapter.parseIssueUrl(
-        Uri.parse('https://github.com/arduino/Arduino/issues/12036'))!;
+        Uri.parse('https://github.com/example/example-repo/issues/12036'))!;
 
     test('ok response maps to ForgeIssue', () async {
       final client = FakeHttpClient({
-        'https://api.github.com/repos/arduino/Arduino/issues/12036':
+        'https://api.github.com/repos/example/example-repo/issues/12036':
             ForgeHttpResponse(200, _issueJson(comments: 2)),
-        'https://api.github.com/repos/arduino/Arduino/issues/12036/comments':
+        'https://api.github.com/repos/example/example-repo/issues/12036/comments':
             ForgeHttpResponse(
                 200,
                 jsonEncode([
@@ -188,7 +188,7 @@ void main() {
 
     test('404 yields auth guidance, not a raw error', () async {
       final client = FakeHttpClient({
-        'https://api.github.com/repos/arduino/Arduino/issues/12036':
+        'https://api.github.com/repos/example/example-repo/issues/12036':
             const ForgeHttpResponse(404, ''),
       });
       final result = await adapter.fetchIssue(repo, client: client);
@@ -274,9 +274,9 @@ void main() {
     test('GitHub returns default_branch from the repo endpoint', () async {
       final adapter = GithubAdapter();
       final repo = adapter.parseIssueUrl(
-          Uri.parse('https://github.com/arduino/Arduino/issues/1'))!;
+          Uri.parse('https://github.com/example/example-repo/issues/1'))!;
       final client = FakeHttpClient({
-        'https://api.github.com/repos/arduino/Arduino':
+        'https://api.github.com/repos/example/example-repo':
             const ForgeHttpResponse(200, '{"default_branch":"master"}'),
       });
       expect(await adapter.defaultBranch(repo, client: client), 'master');

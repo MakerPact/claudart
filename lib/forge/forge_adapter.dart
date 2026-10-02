@@ -18,8 +18,8 @@ import 'dart:io';
 /// A fetched issue: everything the handoff needs, host-agnostic.
 class ForgeIssue {
   final String host; // e.g. 'github.com'
-  final String owner; // e.g. 'arduino'
-  final String repo; // e.g. 'Arduino'
+  final String owner; // e.g. 'example'
+  final String repo; // e.g. 'example-repo'
   final int number; // e.g. 12036
   final String title;
   final String body;

@@ -44,7 +44,7 @@ Future<void> runIssue(
   if (args.isEmpty) {
     print(
       '\n✗ Usage: claudart issue <url>\n'
-      '  e.g. claudart issue https://github.com/arduino/Arduino/issues/12036\n',
+      '  e.g. claudart issue https://github.com/example/example-repo/issues/12036\n',
     );
     exit_(1);
   }

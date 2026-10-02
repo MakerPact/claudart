@@ -15,10 +15,10 @@ ProcessResult _fail([String stderr = 'boom']) =>
 
 ForgeRepo _repo() => const ForgeRepo(
       host: 'github.com',
-      owner: 'arduino',
-      repo: 'Arduino',
+      owner: 'example',
+      repo: 'example-repo',
       issueNumber: 12036,
-      issueUrl: 'https://github.com/arduino/Arduino/issues/12036',
+      issueUrl: 'https://github.com/example/example-repo/issues/12036',
     );
 
 void main() {
@@ -27,32 +27,32 @@ void main() {
       final runner = _MockRunner();
       when(() => runner.runSync('git', any(that: contains('get-url')),
               workingDirectory: any(named: 'workingDirectory')))
-          .thenReturn(_ok('https://github.com/arduino/Arduino.git'));
+          .thenReturn(_ok('https://github.com/example/example-repo.git'));
       final resolver = RepoResolver(runner);
       final registry = Registry.empty().add(const RegistryEntry(
-        name: 'Arduino',
-        projectRoot: '/repos/Arduino',
-        workspacePath: '/ws/Arduino',
+        name: 'example-repo',
+        projectRoot: '/repos/example-repo',
+        workspacePath: '/ws/example-repo',
         createdAt: '2026-01-01',
         lastSession: '2026-01-01',
       ));
-      expect(resolver.findRegisteredClone(_repo(), registry), '/repos/Arduino');
+      expect(resolver.findRegisteredClone(_repo(), registry), '/repos/example-repo');
     });
 
     test('matches ssh scp-style remote', () {
       final runner = _MockRunner();
       when(() => runner.runSync('git', any(that: contains('get-url')),
               workingDirectory: any(named: 'workingDirectory')))
-          .thenReturn(_ok('git@github.com:arduino/Arduino.git'));
+          .thenReturn(_ok('git@github.com:example/example-repo.git'));
       final resolver = RepoResolver(runner);
       final registry = Registry.empty().add(const RegistryEntry(
-        name: 'Arduino',
-        projectRoot: '/repos/Arduino',
-        workspacePath: '/ws/Arduino',
+        name: 'example-repo',
+        projectRoot: '/repos/example-repo',
+        workspacePath: '/ws/example-repo',
         createdAt: '2026-01-01',
         lastSession: '2026-01-01',
       ));
-      expect(resolver.findRegisteredClone(_repo(), registry), '/repos/Arduino');
+      expect(resolver.findRegisteredClone(_repo(), registry), '/repos/example-repo');
     });
 
     test('different repo → no match', () {
@@ -77,7 +77,7 @@ void main() {
       final runner = _MockRunner();
       when(() => runner.runSync('git', any(that: contains('get-url')),
               workingDirectory: any(named: 'workingDirectory')))
-          .thenReturn(_ok('https://github.com/arduino/Arduino.git'));
+          .thenReturn(_ok('https://github.com/example/example-repo.git'));
       when(() => runner.run('git', any(that: contains('fetch')),
               workingDirectory: any(named: 'workingDirectory')))
           .thenAnswer((_) async => _ok());
@@ -90,9 +90,9 @@ void main() {
 
       final resolver = RepoResolver(runner);
       final outcome = await resolver.verifyClone(
-        clonePath: '/repos/Arduino',
+        clonePath: '/repos/example-repo',
         repo: _repo(),
-        cloneUrl: 'https://github.com/arduino/Arduino.git',
+        cloneUrl: 'https://github.com/example/example-repo.git',
       );
       expect(outcome, isA<RepoReady>());
       expect((outcome as RepoReady).branch, 'main');
@@ -108,7 +108,7 @@ void main() {
       final outcome = await resolver.verifyClone(
         clonePath: '/repos/wrong',
         repo: _repo(),
-        cloneUrl: 'https://github.com/arduino/Arduino.git',
+        cloneUrl: 'https://github.com/example/example-repo.git',
       );
       expect(outcome, isA<RemoteMismatch>());
       expect((outcome as RemoteMismatch).actualRemote,
@@ -119,7 +119,7 @@ void main() {
       final runner = _MockRunner();
       when(() => runner.runSync('git', any(that: contains('get-url')),
               workingDirectory: any(named: 'workingDirectory')))
-          .thenReturn(_ok('https://github.com/arduino/Arduino.git'));
+          .thenReturn(_ok('https://github.com/example/example-repo.git'));
       when(() => runner.run('git', any(that: contains('fetch')),
               workingDirectory: any(named: 'workingDirectory')))
           .thenAnswer((_) async => _ok());
@@ -129,9 +129,9 @@ void main() {
 
       final resolver = RepoResolver(runner);
       final outcome = await resolver.verifyClone(
-        clonePath: '/repos/Arduino',
+        clonePath: '/repos/example-repo',
         repo: _repo(),
-        cloneUrl: 'https://github.com/arduino/Arduino.git',
+        cloneUrl: 'https://github.com/example/example-repo.git',
       );
       expect(outcome, isA<DirtyTree>());
     });
@@ -140,16 +140,16 @@ void main() {
       final runner = _MockRunner();
       when(() => runner.runSync('git', any(that: contains('get-url')),
               workingDirectory: any(named: 'workingDirectory')))
-          .thenReturn(_ok('https://github.com/arduino/Arduino.git'));
+          .thenReturn(_ok('https://github.com/example/example-repo.git'));
       when(() => runner.run('git', any(that: contains('fetch')),
               workingDirectory: any(named: 'workingDirectory')))
           .thenAnswer((_) async => _fail('no network'));
 
       final resolver = RepoResolver(runner);
       final outcome = await resolver.verifyClone(
-        clonePath: '/repos/Arduino',
+        clonePath: '/repos/example-repo',
         repo: _repo(),
-        cloneUrl: 'https://github.com/arduino/Arduino.git',
+        cloneUrl: 'https://github.com/example/example-repo.git',
       );
       expect(outcome, isA<GitError>());
       expect((outcome as GitError).message, contains('fetch'));
@@ -167,7 +167,7 @@ void main() {
 
       final resolver = RepoResolver(runner);
       final result = resolver.createFixBranch(
-        clonePath: '/repos/Arduino',
+        clonePath: '/repos/example-repo',
         issueNumber: 12036,
         baseBranch: 'master',
       );
@@ -187,7 +187,7 @@ void main() {
 
       final resolver = RepoResolver(runner);
       final result = resolver.createFixBranch(
-        clonePath: '/repos/Arduino',
+        clonePath: '/repos/example-repo',
         issueNumber: 12036,
         baseBranch: 'main',
       );

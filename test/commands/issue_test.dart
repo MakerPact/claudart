@@ -33,8 +33,8 @@ class _ExitException implements Exception {
 
 Never _throwExit(int code) => throw _ExitException(code);
 
-const _issueUrl = 'https://github.com/arduino/Arduino/issues/12036';
-const _issueApi = 'https://api.github.com/repos/arduino/Arduino/issues/12036';
+const _issueUrl = 'https://github.com/example/example-repo/issues/12036';
+const _issueApi = 'https://api.github.com/repos/example/example-repo/issues/12036';
 
 /// A GitHub adapter with a canned HTTP client — the wizard's fetch step
 /// hits the real API shape without a socket.
@@ -73,7 +73,7 @@ void main() {
   test('non-issue URL → exit 1', () async {
     expect(
       () => runIssue(
-        ['https://github.com/arduino/Arduino'],
+        ['https://github.com/example/example-repo'],
         io: MemoryFileIO(),
         forgeRegistry: ForgeRegistry.builtin(),
         processRunner: _MockRunner(),
@@ -124,7 +124,7 @@ void main() {
               {'name': 'bug'}
             ],
           })),
-      'https://api.github.com/repos/arduino/Arduino':
+      'https://api.github.com/repos/example/example-repo':
           const ForgeHttpResponse(200, '{"default_branch":"master"}'),
     });
     final adapter = _CannedGithubAdapter(http);
@@ -154,15 +154,15 @@ void main() {
       forgeRegistry: forges,
       processRunner: runner,
       confirmFn: (_) => true,
-      promptFn: (q, {optional = false}) => 'test_repos/Arduino',
+      promptFn: (q, {optional = false}) => 'test_repos/example-repo',
       exitFn: _throwExit,
     );
 
     // Registry now has the imported project.
     final registry = Registry.load(io: io);
-    final entry = registry.findByProjectRoot('test_repos/Arduino');
+    final entry = registry.findByProjectRoot('test_repos/example-repo');
     expect(entry, isNotNull);
-    expect(entry!.name, 'arduino_Arduino');
+    expect(entry!.name, 'example_example-repo');
 
     // Handoff written with the issue as the Bug section.
     final handoff = io.read(handoffPathFor(entry.workspacePath));
